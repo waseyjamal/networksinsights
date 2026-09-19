@@ -14,6 +14,7 @@ Use Biome for lint and format. It was set up in Mission 3 (2026-09-20).
 - `@biomejs/biome` 2.5.14 is a root devDependency at an exact version.
 - `biome.json` at the repo root: 2-space indent, LF, line width 100; linter with `preset: "recommended"` (`rules.recommended` is deprecated in 2.5.14); VCS integration with git and `useIgnoreFile`, so `.gitignore` is respected; `public/` folders are excluded because they hold static assets served as-is.
 - Astro support is switched on with `html.experimentalFullSupportEnabled` and `html.formatter.enabled`. `html.formatter.selfCloseVoidElements` is `always`, to keep the existing `<meta ... />` style.
+- Two Astro security rules are enabled at `error` level in Mission 4 (2026-09-20). Both are in Biome's `nursery` group in 2.5.14, so they are not in the recommended preset and are set explicitly in `biome.json`: `noAstroSetHtmlDirective` (`set:html` injects raw HTML, an XSS risk) and `useAstroClientOnlyDirectiveValue` (`client:only` must name its framework). Nursery rules can be renamed or moved in a later Biome release, so re-check them on every Biome upgrade.
 - Scripts: `pnpm lint` (`biome check .`, no writes) and `pnpm fix` (`biome check --write .`, safe fixes only).
 
 What Biome covers in `.astro` files:
@@ -26,7 +27,7 @@ What Biome covers in `.astro` files:
 What it does not cover:
 
 - Type checking. `astro check` does that (`pnpm typecheck`).
-- Astro-specific rules `noAstroSetHtmlDirective` and `useAstroClientOnlyDirectiveValue`. They are not in the recommended preset, so they are off.
+- Astro-specific rules other than the two enabled above. Nothing else beyond the recommended preset is on.
 - Guaranteed stability. Biome's own language table marks Astro parsing, formatting and linting as partial.
 
 Biome does not handle Markdown or YAML at all, so those files are not checked.
