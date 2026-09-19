@@ -5,6 +5,12 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "files": {
+    "includes": [
+      "**",
+      "!**/public"
+    ]
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -15,7 +21,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "preset": "recommended"
     }
   },
   "html": {
