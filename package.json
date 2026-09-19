@@ -9,7 +9,12 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
     "preview": "pnpm --filter web preview",
-    "check": "pnpm --filter web check"
+    "lint": "biome check .",
+    "fix": "biome check --write .",
+    "typecheck": "pnpm --filter web check",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
