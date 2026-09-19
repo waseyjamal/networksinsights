@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "networksinsights",
+  "packageManager": "pnpm@11.27.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "preview": "pnpm --filter web preview",
+    "check": "pnpm --filter web check"
+  }
+}
