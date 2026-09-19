@@ -15,7 +15,11 @@ Run from the repo root:
 - `pnpm dev` — start the dev server
 - `pnpm build` — build for production
 - `pnpm preview` — preview the production build
-- `pnpm check` — run Astro's type checker
+- `pnpm lint` — Biome check, no writes
+- `pnpm fix` — Biome check with safe fixes written
+- `pnpm typecheck` — run Astro's type checker
+- `pnpm test` — run the tests
+- `pnpm check` — typecheck, lint and test, stopping at the first failure
 
 ## Documentation
 
