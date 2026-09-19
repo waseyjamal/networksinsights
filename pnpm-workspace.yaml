@@ -5,3 +5,5 @@ packages:
 savePrefix: "="
 engineStrict: true
 minimumReleaseAge: 4320
+allowBuilds:
+  esbuild: false
