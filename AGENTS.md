@@ -45,7 +45,14 @@ Run from the repo root:
 
 - `pnpm dev` — start the dev server
 - `pnpm build` — production build
-- `pnpm check` — type check (`astro check`)
+- `pnpm preview` — preview the production build
+- `pnpm lint` — Biome check, no writes
+- `pnpm fix` — Biome check with safe fixes written
+- `pnpm typecheck` — type check the web app (`astro check`)
+- `pnpm test` — run Vitest (fails if no tests are found)
+- `pnpm check` — typecheck, then lint, then test; stops at the first failure
+
+Git hooks (husky, see ADR 0024): pre-commit runs Biome on staged files; pre-push runs `pnpm check`.
 
 ## Docs map
 

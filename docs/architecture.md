@@ -69,8 +69,8 @@ Cloudflare Workers with static assets (Mission 5).
 | # | Mission | Status |
 |---|---|---|
 | 1 | Project skeleton | Done |
-| 2 | Project brain | In progress |
-| 3 | Quality gates | |
+| 2 | Project brain | Done |
+| 3 | Quality gates | In progress |
 | 4 | CI pipeline | |
 | 5 | Deploy pipeline | |
 | 6 | Design system | |
