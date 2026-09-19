@@ -10,5 +10,10 @@
     "build": "pnpm --filter web build",
     "preview": "pnpm --filter web preview",
     "check": "pnpm --filter web check"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "husky": "9.1.7",
+    "vitest": "4.1.11"
   }
 }
