@@ -50,9 +50,12 @@ Run from the repo root:
 - `pnpm fix` — Biome check with safe fixes written
 - `pnpm typecheck` — type check the web app (`astro check`)
 - `pnpm test` — run Vitest (fails if no tests are found)
+- `pnpm test:e2e` — build, then run the Playwright E2E tests on chromium, firefox and webkit against `astro preview`. Not part of `pnpm check` or the pre-push hook because it is slow; it runs in CI and on demand. First run needs `pnpm --filter web exec playwright install` (browsers go to Playwright's cache outside the repo).
 - `pnpm check` — typecheck, then lint, then test; stops at the first failure
 
 Git hooks (husky, see ADR 0024): pre-commit runs Biome on staged files; pre-push runs `pnpm check`.
+
+CI (see ADR 0025): `.github/workflows/ci.yml` runs job `quality` (`pnpm check`, `pnpm build`) and job `e2e` (`pnpm test:e2e`) on every pull request to `main` and every push to `main`. Actions are pinned to full commit SHAs.
 
 ## Docs map
 

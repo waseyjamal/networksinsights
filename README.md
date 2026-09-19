@@ -20,6 +20,7 @@ Run from the repo root:
 - `pnpm typecheck` — run Astro's type checker
 - `pnpm test` — run the tests
 - `pnpm check` — typecheck, lint and test, stopping at the first failure
+- `pnpm test:e2e` — build, then run the Playwright E2E tests
 
 ## Documentation
 

@@ -18,7 +18,11 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "nursery": {
+        "noAstroSetHtmlDirective": "error",
+        "useAstroClientOnlyDirectiveValue": "error"
+      }
     }
   },
   "html": {
