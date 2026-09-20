@@ -26,6 +26,7 @@ Dependencies:
 Safety:
 - Never commit secrets or `.env` files.
 - No global installs and no global config changes.
+- Never deploy from a local machine; deploys happen only through CI.
 
 ## License rule
 
@@ -57,11 +58,14 @@ Git hooks (husky, see ADR 0024): pre-commit runs Biome on staged files; pre-push
 
 CI (see ADR 0025): `.github/workflows/ci.yml` runs job `quality` (`pnpm check`, `pnpm build`) and job `e2e` (`pnpm test:e2e`) on every pull request to `main` and every push to `main`. Actions are pinned to full commit SHAs.
 
+Deploy (see ADR 0027): after `quality` and `e2e` pass, `ci.yml` job `preview` uploads a per-PR preview version, and job `deploy` deploys production on push to `main`. `.github/workflows/rollback.yml` is a manual rollback, from `main` only. Wrangler is pinned in `apps/web` and runs through pnpm in CI only. Runbook: `docs/runbooks/deploy-and-rollback.md`.
+
 ## Docs map
 
 - `docs/architecture.md` — goals, layout, runtimes, quality targets, mission table
 - `docs/tool-contract.md` — the contract every tool follows (draft until Mission 8)
 - `docs/adr/` — one file per architecture decision
+- `docs/runbooks/` — step-by-step procedures (deploy and rollback)
 
 ## Changing a decision
 
