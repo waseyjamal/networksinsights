@@ -1,0 +1,152 @@
+---
+import { parseTokens, resolveColor } from "../../lib/tokens";
+import tokensCss from "../../styles/tokens.css?raw";
+
+// Every swatch is drawn from the real tokens.css, so this page cannot show a stale color.
+const tokens = parseTokens(tokensCss);
+
+const scales = ["indigo", "violet", "cyan", "slate"].map((name) => ({
+  name,
+  steps: [...tokens.staticTokens]
+    .filter(([token]) => token.startsWith(`--color-${name}-`))
+    .map(([token, value]) => ({ token, step: token.split("-").pop() ?? "", value })),
+}));
+
+const groups = [
+  {
+    title: "Surfaces and borders",
+    names: ["bg", "surface", "surface-raised", "surface-sunken", "border", "border-strong"],
+  },
+  { title: "Text", names: ["fg", "fg-muted", "fg-subtle", "inverse", "inverse-fg"] },
+  {
+    title: "Brand",
+    names: [
+      "brand",
+      "brand-hover",
+      "brand-active",
+      "brand-fg",
+      "brand-ui",
+      "brand-ui-fg",
+      "brand-text",
+      "brand-soft",
+      "brand-soft-fg",
+      "ring",
+    ],
+  },
+  {
+    title: "Semantic",
+    names: [
+      "success",
+      "success-soft",
+      "success-text",
+      "warning",
+      "warning-soft",
+      "warning-text",
+      "danger",
+      "danger-soft",
+      "danger-text",
+      "danger-solid",
+      "danger-solid-hover",
+      "on-danger",
+      "info",
+      "info-soft",
+      "info-text",
+    ],
+  },
+  { title: "Glass", names: ["glass", "glass-border"] },
+  {
+    title: "Category accents (small icon tints only)",
+    names: [...tokens.bridge].filter((name) => name.startsWith("cat-")),
+  },
+].map((group) => ({
+  ...group,
+  tokens: group.names.map((name) => ({
+    name,
+    light: resolveColor(tokens.light.get(`--${name}`) ?? "", tokens.light, tokens.staticTokens),
+    dark: resolveColor(tokens.dark.get(`--${name}`) ?? "", tokens.dark, tokens.staticTokens),
+  })),
+}));
+---
+
+<div class="space-y-12">
+  <div class="space-y-4">
+    <h3 class="text-xl">Palette</h3>
+    <p class="max-w-2xl text-fg-muted">
+      The static palette. It is the same in both themes. Components never use it directly; they use
+      the theme tokens below.
+    </p>
+    <div class="space-y-3">
+      {scales.map((scale) => (
+  <div>
+    <p class="mb-2 font-mono text-sm text-fg-muted">{scale.name}</p>
+    <ul class="grid grid-cols-6 gap-2 sm:grid-cols-11">
+      {scale.steps.map((step) => (
+        <li>
+          <div
+            class="h-12 rounded-lg border border-border"
+            style={`background: var(${step.token})`}
+            title={step.value}
+          />
+          <span class="mt-1 block text-center font-mono text-xs text-fg-muted">{step.step}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+))}
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <h3 class="text-xl">Brand gradient</h3>
+    <p class="max-w-2xl text-fg-muted">
+      Indigo, violet, cyan. Only for brand moments: the hero glow and gradient borders. Never behind
+      body text.
+    </p>
+    <div
+      class="h-16 rounded-2xl border border-border"
+      style="background: var(--gradient-brand)"
+      role="img"
+      aria-label="Brand gradient from indigo through violet to cyan"
+    ></div>
+  </div>
+
+  <div class="space-y-4">
+    <h3 class="text-xl">Theme tokens</h3>
+    <p class="max-w-2xl text-fg-muted">
+      Each token has a light and a dark value. Both swatches show at once, whatever theme the page
+      is in.
+    </p>
+    {groups.map((group) => (
+  <div class="space-y-3">
+    <h4 class="text-base font-semibold">{group.title}</h4>
+    <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {group.tokens.map((token) => (
+        <li class="flex items-center gap-3 rounded-xl border border-border bg-surface p-3">
+          <span class="flex shrink-0 overflow-hidden rounded-lg border border-border">
+            <span
+              data-theme="light"
+              class="block size-10"
+              style={`background: var(--${token.name})`}
+            />
+            <span
+              data-theme="dark"
+              class="block size-10"
+              style={`background: var(--${token.name})`}
+            />
+          </span>
+          <span class="min-w-0">
+            <code class="block truncate text-sm">--{token.name}</code>
+            <span class="block truncate font-mono text-xs text-fg-muted" title={token.light}>
+              L {token.light}
+            </span>
+            <span class="block truncate font-mono text-xs text-fg-muted" title={token.dark}>
+              D {token.dark}
+            </span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+))}
+  </div>
+</div>

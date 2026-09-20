@@ -1,0 +1,26 @@
+---
+import { themeOptions } from "./attrs";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** Unique per toggle on a page: each toggle is its own radio group. */
+  id?: string;
+}
+
+const { id = "theme" } = Astro.props;
+
+// Light / dark / system as three native radio buttons in a fieldset. The head script in
+// Base.astro applies the choice, stores it in localStorage and marks the current one. Without
+// JavaScript there is nothing to toggle, so the control stays hidden (components.css).
+---
+
+<fieldset class="ni-theme-toggle">
+  <legend class="sr-only">Theme</legend>
+  {themeOptions.map((option) => (
+  <label class="ni-theme-toggle__opt" data-value={option.value}>
+    <input type="radio" name={`${id}-choice`} value={option.value} data-ni-theme />
+    <Icon name={option.icon} />
+    <span class="sr-only">{option.label}</span>
+  </label>
+))}
+</fieldset>

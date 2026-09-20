@@ -1,0 +1,23 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { controlAttrs } from "./attrs";
+import Field from "./Field.astro";
+
+interface Props extends HTMLAttributes<"input"> {
+  id: string;
+  label?: string | undefined;
+  hint?: string | undefined;
+  error?: string | undefined;
+}
+
+const { id, label, hint, error, class: className, ...rest } = Astro.props;
+---
+
+<Field id={id} label={label} hint={hint} error={error}>
+  <input
+    class:list={["ni-input", className]}
+    id={id}
+    {...controlAttrs({ id, hint, error })}
+    {...rest}
+  />
+</Field>

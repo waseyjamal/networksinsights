@@ -1,0 +1,38 @@
+---
+import { PRIVACY_TEXT } from "./attrs";
+import Badge from "./Badge.astro";
+import Icon from "./Icon.astro";
+
+// The main tool workspace card and the only glow border on the site. Slots:
+//   default  the input area (a Dropzone, fields)
+//   badge    next to the title (status)
+//   actions  the primary action and secondary buttons
+//   result   the result area (announced politely when it changes)
+interface Props {
+  /** Unique on the page. */
+  id: string;
+  title: string;
+  description?: string;
+}
+
+const { id, title, description } = Astro.props;
+---
+
+<section class="ni-workspace" aria-labelledby={`${id}-title`}>
+  <div class="ni-workspace__header">
+    <div>
+      <h2 class="ni-workspace__title" id={`${id}-title`}>{title}</h2>
+      {description && <p class="ni-workspace__text">{description}</p>}
+    </div>
+    <slot name="badge" />
+  </div>
+  <slot />
+  <div class="ni-workspace__actions"><slot name="actions" /></div>
+  <div class="ni-workspace__result" aria-live="polite">
+    <p class="ni-workspace__result-label">Result</p>
+    <slot name="result" />
+  </div>
+  <div class="ni-workspace__footer">
+    <Badge tone="success"><Icon name="lock" size="sm" />{PRIVACY_TEXT}</Badge>
+  </div>
+</section>

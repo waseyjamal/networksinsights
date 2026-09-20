@@ -1,0 +1,69 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { type TabItem, tabAttrs } from "./attrs";
+
+// WAI-ARIA Tabs pattern: roving tabindex, arrow keys, Home and End, automatic activation.
+// Put one <TabPanel> per tab in the default slot. Without JavaScript the tab that is marked
+// `selected` is shown and the other panels stay in the HTML (hidden), so crawlers still read them.
+interface Props extends HTMLAttributes<"div"> {
+  /** Unique on the page. Prefix of all element ids. */
+  id: string;
+  /** Accessible name of the tab list. */
+  label: string;
+  tabs: TabItem[];
+  /** Id of the selected tab. Defaults to the first. */
+  selected?: string;
+}
+
+const { id, label, tabs, selected = tabs[0]?.id, class: className, ...rest } = Astro.props;
+---
+
+<div class:list={["ni-tabs", className]} data-ni-tabs {...rest}>
+  <div class="ni-tabs__list" role="tablist" aria-label={label}>
+    {tabs.map((tab) => {
+  const { tabIndex, ...attrs } = tabAttrs(id, tab.id, tab.id === selected);
+  return (
+    <button type="button" class="ni-tab" tabindex={tabIndex} {...attrs}>
+      {tab.label}
+    </button>
+  );
+})}
+  </div>
+  <slot />
+</div>
+
+<script>
+import { nextTabIndex } from "./attrs";
+
+function init(root: HTMLElement) {
+  const tabs = [...root.querySelectorAll<HTMLElement>('[role="tab"]')];
+
+  const select = (tab: HTMLElement, focus: boolean) => {
+    for (const other of tabs) {
+      const active = other === tab;
+      other.setAttribute("aria-selected", String(active));
+      other.tabIndex = active ? 0 : -1;
+      const panel = document.getElementById(other.getAttribute("aria-controls") ?? "");
+      if (panel) panel.hidden = !active;
+    }
+    if (focus) tab.focus();
+  };
+
+  root.addEventListener("click", (event) => {
+    const tab = (event.target as HTMLElement).closest<HTMLElement>('[role="tab"]');
+    if (tab && tabs.includes(tab)) select(tab, false);
+  });
+
+  root.addEventListener("keydown", (event) => {
+    const current = tabs.indexOf(event.target as HTMLElement);
+    if (current === -1) return;
+    const next = nextTabIndex(event.key, current, tabs.length);
+    const tab = next === null ? undefined : tabs[next];
+    if (!tab) return;
+    event.preventDefault();
+    select(tab, true);
+  });
+}
+
+for (const root of document.querySelectorAll<HTMLElement>("[data-ni-tabs]")) init(root);
+</script>

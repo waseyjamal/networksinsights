@@ -1,0 +1,32 @@
+---
+import Icon from "./Icon.astro";
+import Kbd from "./Kbd.astro";
+
+// The visual shell of the future Ctrl+K search. Behavior (opening, results) comes with the
+// search mission. It is a landmark (role="search") but not a <form>, so it cannot navigate.
+interface Props {
+  id?: string;
+  label?: string;
+  placeholder?: string;
+}
+
+const {
+  id = "command-bar",
+  label = "Search tools",
+  placeholder = "Search 500+ tools",
+} = Astro.props;
+---
+
+{/* biome-ignore lint/a11y/useSemanticElements: the <search> element is not supported in Safari 16.4, our floor */}
+<div class="ni-commandbar" role="search">
+  <Icon name="search" />
+  <input
+    class="ni-commandbar__input"
+    id={id}
+    type="search"
+    aria-label={label}
+    placeholder={placeholder}
+    autocomplete="off"
+  />
+  <span class="ni-commandbar__hint" aria-hidden="true"><Kbd>Ctrl</Kbd><Kbd>K</Kbd></span>
+</div>

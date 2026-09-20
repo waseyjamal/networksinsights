@@ -1,0 +1,25 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { type CardPadding, cardAttrs } from "./attrs";
+
+interface Props extends HTMLAttributes<"div"> {
+  padding?: CardPadding;
+  /** Lifts on hover. Use it when the whole card is a link (pass `href`). */
+  interactive?: boolean;
+  /** Renders the card as a link (<a>). */
+  href?: string;
+}
+
+const { padding, interactive, href, class: className, ...rest } = Astro.props;
+const attrs = cardAttrs({ padding, interactive: interactive ?? Boolean(href) });
+---
+
+{href ? (
+  <a class:list={["ni-card", className]} href={href} {...attrs} {...rest}>
+    <slot />
+  </a>
+) : (
+  <div class:list={["ni-card", className]} {...attrs} {...rest}>
+    <slot />
+  </div>
+)}

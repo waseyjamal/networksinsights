@@ -1,0 +1,33 @@
+---
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** The id of the control inside. The label and the messages are wired to it. */
+  id: string;
+  label?: string | undefined;
+  hint?: string | undefined;
+  error?: string | undefined;
+}
+
+const { id, label, hint, error } = Astro.props;
+---
+
+<div class="ni-field">
+  {label && (
+  <label class="ni-field__label" for={id}>
+    {label}
+  </label>
+)}
+  <slot />
+  {hint && (
+  <p class="ni-field__hint" id={`${id}-hint`}>
+    {hint}
+  </p>
+)}
+  {error && (
+  <p class="ni-field__error" id={`${id}-error`}>
+    <Icon name="alert" size="sm" />
+    {error}
+  </p>
+)}
+</div>

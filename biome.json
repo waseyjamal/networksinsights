@@ -31,5 +31,10 @@
       "enabled": true,
       "selfCloseVoidElements": "always"
     }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   }
 }

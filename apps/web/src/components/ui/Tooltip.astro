@@ -1,0 +1,36 @@
+---
+import { type TooltipSide, tooltipAttrs } from "./attrs";
+
+// The trigger goes in the default slot and must carry aria-describedby={id}, so screen readers
+// announce the text. It shows on hover and on keyboard focus, stays open while the pointer is on
+// it, and Esc dismisses it (WCAG 1.4.13).
+interface Props {
+  /** Unique on the page. The trigger points to it with aria-describedby. */
+  id: string;
+  text: string;
+  side?: TooltipSide;
+}
+
+const { id, text, side } = Astro.props;
+---
+
+<span class="ni-tooltip" {...tooltipAttrs({ side })}>
+  <slot />
+  <span class="ni-tooltip__content" role="tooltip" id={id}>{text}</span>
+</span>
+
+<script>
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  for (const tip of document.querySelectorAll<HTMLElement>(".ni-tooltip")) {
+    if (tip.matches(":hover, :focus-within")) tip.setAttribute("data-dismissed", "true");
+  }
+});
+
+const reset = (event: Event) => {
+  const tip = (event.target as HTMLElement).closest<HTMLElement>(".ni-tooltip");
+  tip?.removeAttribute("data-dismissed");
+};
+document.addEventListener("pointerout", reset);
+document.addEventListener("focusout", reset);
+</script>

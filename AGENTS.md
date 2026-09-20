@@ -23,6 +23,9 @@ Dependencies:
 - Never approve dependency build scripts (`allowBuilds` stays denied by default).
 - Before adding any dependency, state in the plan why it is needed, its size impact and its license.
 
+UI:
+- UI must use design tokens and existing components; new components go into the design system first.
+
 Safety:
 - Never commit secrets or `.env` files.
 - No global installs and no global config changes.
@@ -64,6 +67,7 @@ Deploy (see ADR 0027): after `quality` and `e2e` pass, `ci.yml` job `preview` up
 
 - `docs/architecture.md` — goals, layout, runtimes, quality targets, mission table
 - `docs/tool-contract.md` — the contract every tool follows (draft until Mission 8)
+- `docs/design-system.md` — the Signal design system: how to use tokens and components
 - `docs/adr/` — one file per architecture decision
 - `docs/runbooks/` — step-by-step procedures (deploy and rollback)
 

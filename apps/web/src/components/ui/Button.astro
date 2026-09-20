@@ -1,0 +1,28 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { type ButtonVariant, buttonAttrs, type ControlSize } from "./attrs";
+
+interface Props extends Omit<HTMLAttributes<"button">, "type"> {
+  variant?: ButtonVariant;
+  size?: ControlSize;
+  loading?: boolean;
+  /** Renders a link (<a>) that looks like a button. */
+  href?: string;
+  type?: "button" | "submit" | "reset";
+}
+
+const { variant, size, loading, href, type = "button", class: className, ...rest } = Astro.props;
+const attrs = buttonAttrs({ variant, size, loading });
+---
+
+{href ? (
+  <a class:list={["ni-btn", className]} href={href} {...attrs} {...rest}>
+    {loading && <span class="ni-btn__spinner" aria-hidden="true" />}
+    <slot />
+  </a>
+) : (
+  <button class:list={["ni-btn", className]} type={type} {...attrs} {...rest}>
+    {loading && <span class="ni-btn__spinner" aria-hidden="true" />}
+    <slot />
+  </button>
+)}
