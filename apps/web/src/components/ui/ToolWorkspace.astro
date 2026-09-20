@@ -13,9 +13,16 @@ interface Props {
   id: string;
   title: string;
   description?: string;
+  /**
+   * The privacy sentence in the footer. A tool page passes what privacyStatement() derives from
+   * the tool's runtime; nobody writes it by hand (ADR 0034). The default is the on-device case.
+   */
+  privacy?: string;
+  /** False when the input leaves the device, which changes the badge from a lock to an upload. */
+  privacyOnDevice?: boolean;
 }
 
-const { id, title, description } = Astro.props;
+const { id, title, description, privacy = PRIVACY_TEXT, privacyOnDevice = true } = Astro.props;
 ---
 
 <section class="ni-workspace" aria-labelledby={`${id}-title`}>
@@ -27,12 +34,20 @@ const { id, title, description } = Astro.props;
     <slot name="badge" />
   </div>
   <slot />
-  <div class="ni-workspace__actions"><slot name="actions" /></div>
+  {Astro.slots.has("actions") && (
+  <div class="ni-workspace__actions">
+    <slot name="actions" />
+  </div>
+)}
+  {Astro.slots.has("result") && (
   <div class="ni-workspace__result" aria-live="polite">
     <p class="ni-workspace__result-label">Result</p>
     <slot name="result" />
   </div>
+)}
   <div class="ni-workspace__footer">
-    <Badge tone="success"><Icon name="lock" size="sm" />{PRIVACY_TEXT}</Badge>
+    <Badge tone={privacyOnDevice ? "success" : "info"}>
+      <Icon name={privacyOnDevice ? "lock" : "upload"} size="sm" />{privacy}
+    </Badge>
   </div>
 </section>

@@ -1,0 +1,81 @@
+---
+import type { GetStaticPaths } from "astro";
+import ToolPage from "../components/tool/ToolPage.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import EmptyState from "../components/ui/EmptyState.astro";
+import LinkList from "../components/ui/LinkList.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { categories, categoryById, categoryHref } from "../config/categories";
+import { pageTitle, sitePages } from "../config/site";
+import Page from "../layouts/Page.astro";
+import { getTool, tools, toolsInCategory } from "../lib/registry";
+import type { Tool } from "../lib/registry/build";
+import { loadContent } from "../lib/registry/content";
+import { loadIsland } from "../lib/registry/islands";
+
+// One route for both flat URL kinds: /pdf-tools/ is a category page, /word-counter/ is a tool page
+// (ADR 0014, ADR 0030). Astro allows only one dynamic route at this level, so the two share this
+// module and the page decides which one it is rendering.
+//
+// The tool branch is the only place that loads a tool's island or its content. A category page
+// never reaches those imports, so it keeps its zero framework JavaScript (zero-js.test.ts).
+export const getStaticPaths = (() => [
+  ...categories.map((category) => ({
+    params: { slug: category.slug },
+    props: { category, tool: undefined },
+  })),
+  ...tools.map((tool) => ({
+    params: { slug: tool.manifest.id },
+    props: { category: undefined, tool },
+  })),
+]) satisfies GetStaticPaths;
+
+/** Everything the tool template needs. The registry has already proved each lookup resolves. */
+async function viewOf(tool: Tool) {
+  const category = categoryById(tool.manifest.category);
+  if (!category) throw new Error(`Tool ${tool.manifest.id} has no category`);
+  return {
+    tool,
+    category,
+    related: tool.manifest.related.flatMap((id) => getTool(id) ?? []),
+    Island: await loadIsland(tool.dir),
+    Content: await loadContent(tool.dir),
+  };
+}
+
+const { category, tool } = Astro.props;
+const view = tool ? await viewOf(tool) : undefined;
+const inCategory = category ? toolsInCategory(category.id) : [];
+---
+
+{view && <ToolPage {...view} />}
+
+{category && (
+  <Page title={pageTitle(category.name)} description={category.metaDescription}>
+    <div class="grid gap-4">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.name }]} />
+      <PageHeader title={category.name} intro={category.intro} />
+    </div>
+    {inCategory.length > 0 ? (
+      <LinkList
+        label={`Tools in ${category.name.toLowerCase()}`}
+        items={inCategory.map((item) => ({ label: item.manifest.name, href: item.href }))}
+      />
+    ) : (
+      <EmptyState title="No tools in this category yet" icon={category.icon}>
+        <p>Tools appear here as they are added. In the meantime, browse the other categories.</p>
+        <Fragment slot="actions">
+          <LinkList
+            label="Other categories"
+            items={[
+              ...categories
+                .filter((other) => other.id !== category.id)
+                .map((other) => ({ label: other.name, href: categoryHref(other) })),
+              { label: sitePages.tools.label, href: sitePages.tools.href },
+            ]}
+          />
+        </Fragment>
+      </EmptyState>
+    )}
+  </Page>
+)}

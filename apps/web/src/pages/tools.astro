@@ -6,11 +6,17 @@ import PageHeader from "../components/ui/PageHeader.astro";
 import { categories, categoryHref } from "../config/categories";
 import { pageTitle } from "../config/site";
 import Page from "../layouts/Page.astro";
+import { tools, toolsInCategory } from "../lib/registry";
 
 const categoryLinks = categories.map((category) => ({
   label: category.name,
   href: categoryHref(category),
 }));
+
+// Only the categories that have tools, so the page never shows an empty heading (ADR 0033).
+const groups = categories
+  .map((category) => ({ category, tools: toolsInCategory(category.id) }))
+  .filter((group) => group.tools.length > 0);
 ---
 
 <Page
@@ -24,10 +30,28 @@ const categoryLinks = categories.map((category) => ({
       intro="Every tool on NetworksInsights is listed here, grouped by category."
     />
   </div>
+  {tools.length > 0 ? (
+  <div class="grid gap-8">
+    {groups.map((group) => (
+      <section class="space-y-4" aria-labelledby={`category-${group.category.id}`}>
+        <h2 id={`category-${group.category.id}`} class="text-2xl">
+          <a href={categoryHref(group.category)}>{group.category.name}</a>
+        </h2>
+        <LinkList
+          items={group.tools.map((tool) => ({
+            label: tool.manifest.name,
+            href: tool.href,
+          }))}
+        />
+      </section>
+    ))}
+  </div>
+) : (
   <EmptyState title="No tools are live yet">
     <p>Tools appear here as they are added. Browse the categories to see what each one is for.</p>
     <Fragment slot="actions">
       <LinkList label="Categories" items={categoryLinks} />
     </Fragment>
   </EmptyState>
+)}
 </Page>

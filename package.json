@@ -12,7 +12,7 @@
     "preview": "pnpm --filter web preview",
     "lint": "biome check .",
     "fix": "biome check --write .",
-    "typecheck": "pnpm --filter web check",
+    "typecheck": "pnpm --filter @networksinsights/tool-sdk check && pnpm --filter web check",
     "test": "vitest run",
     "test:e2e": "pnpm build && pnpm --filter web test:e2e",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
