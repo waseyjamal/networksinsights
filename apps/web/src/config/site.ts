@@ -21,6 +21,11 @@ export function pageTitle(page: string): string {
 /** The home page title: "NetworksInsights — Free online tools". */
 export const homeTitle = `${site.name} — ${site.tagline}`;
 
+/** "<Tool name> — Free online tool | NetworksInsights": the title of every tool page. */
+export function toolTitle(name: string): string {
+  return pageTitle(`${name} — Free online tool`);
+}
+
 /**
  * URL segments of the pages that are not generated from a config, one per file in
  * src/pages. site.test.ts fails if this list and that folder disagree, so a new page cannot

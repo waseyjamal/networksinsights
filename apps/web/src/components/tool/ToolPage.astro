@@ -1,0 +1,89 @@
+---
+import { privacyStatement } from "@networksinsights/tool-sdk";
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import { type Category, categoryHref } from "../../config/categories";
+import { sitePages, toolTitle } from "../../config/site";
+import Page from "../../layouts/Page.astro";
+import type { Tool } from "../../lib/registry/build";
+import Badge from "../ui/Badge.astro";
+import Breadcrumbs from "../ui/Breadcrumbs.astro";
+import LinkList from "../ui/LinkList.astro";
+import PageHeader from "../ui/PageHeader.astro";
+import ToolWorkspace from "../ui/ToolWorkspace.astro";
+
+// The page every tool gets, built from its manifest and its content/en.mdx (ADR 0033).
+//
+// The island and the content arrive as props rather than being loaded here, so the template can
+// be rendered on its own in a test, with a fixture, through Astro's Container API.
+interface Props {
+  tool: Tool;
+  /** The tool's category, for the breadcrumb and the way back. */
+  category: Category;
+  /** The tools its manifest links to. Already looked up, so a missing one cannot reach this far. */
+  related: readonly Tool[];
+  /** The tool's island.astro, which mounts ui.tsx with client:load. */
+  Island: AstroComponentFactory;
+  /** The Content component of its content/en.mdx. */
+  Content: AstroComponentFactory;
+}
+
+const { tool, category, related, Island, Content } = Astro.props;
+const { manifest } = tool;
+
+// Never written by hand: the runtime decides what the page may claim (ADR 0034).
+const privacy = privacyStatement(manifest.runtime);
+
+// "stable" says nothing a visitor needs; the other two do.
+const status =
+  manifest.status === "beta"
+    ? { label: "Beta", tone: "warning" as const }
+    : manifest.status === "deprecated"
+      ? { label: "Deprecated", tone: "danger" as const }
+      : undefined;
+---
+
+<Page title={toolTitle(manifest.name)} description={manifest.summary}>
+  <div class="grid gap-4">
+    <Breadcrumbs
+      items={[
+  { label: "Home", href: "/" },
+  { label: category.name, href: categoryHref(category) },
+  { label: manifest.name },
+]}
+    />
+    <PageHeader title={manifest.name} intro={manifest.summary} />
+  </div>
+
+  <ToolWorkspace
+    id={manifest.id}
+    title={manifest.name}
+    privacy={privacy.text}
+    privacyOnDevice={privacy.onDevice}
+  >
+    {status && (
+  <Badge slot="badge" tone={status.tone}>
+    {status.label}
+  </Badge>
+)}
+    <Island />
+  </ToolWorkspace>
+
+  <div class="ni-prose">
+    <Content />
+  </div>
+
+  {related.length > 0 && (
+  <LinkList
+    label="Related tools"
+    items={related.map((other) => ({ label: other.manifest.name, href: other.href }))}
+  />
+)}
+
+  <LinkList
+    label="More"
+    items={[
+  { label: `All ${category.name.toLowerCase()}`, href: categoryHref(category) },
+  { label: sitePages.tools.label, href: sitePages.tools.href },
+]}
+  />
+</Page>

@@ -168,6 +168,11 @@ export function categoryHref(category: Pick<Category, "slug">): string {
   return `/${category.slug}/`;
 }
 
+/** The category with this id, or undefined. A tool's category is checked at build time (ADR 0033). */
+export function categoryById(id: string): Category | undefined {
+  return categories.find((category) => category.id === id);
+}
+
 export type CategoryId = (typeof categories)[number]["id"];
 
 /**

@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { categoryHref } from "../src/config/categories";
+import { sitePages } from "../src/config/site";
 import { collectResponses, compressed } from "./helpers";
 
 // Budgets and layout stability. Numbers are printed so the mission report can quote them.
@@ -143,6 +145,32 @@ test.describe("home page weight", () => {
     expect(await page.locator("script").count()).toBe(1);
     expect(await page.locator("script").first().textContent()).toContain("ni-theme");
   });
+});
+
+test.describe("pages that list tools ship no framework JavaScript", () => {
+  // The registry puts names and counts on these pages, and the category pages share their route
+  // module with the tool pages, which do mount an island. Neither may leak JavaScript here
+  // (ADR 0033). zero-js.test.ts checks the same rule in the source; this measures the built site.
+  const listings = ["/", sitePages.tools.href, categoryHref({ slug: "text-tools" })];
+
+  for (const path of listings) {
+    test(`${path} loads no script file and mounts no island`, async ({ page }) => {
+      const responses = collectResponses(page);
+      await page.goto(path, { waitUntil: "networkidle" });
+
+      const scripts = responses.filter((response) => response.type === "script");
+      expect(scripts.map((script) => script.url)).toEqual([]);
+      expect(await page.locator("script[src]").count()).toBe(0);
+      expect(await page.locator("astro-island").count()).toBe(0);
+
+      // The theme script is the only inline script any page has.
+      const inline = await page.evaluate(() =>
+        [...document.querySelectorAll("script")].map((script) => script.textContent ?? ""),
+      );
+      expect(inline).toHaveLength(1);
+      expect(inline[0]).toContain("ni-theme");
+    });
+  }
 });
 
 test.describe("layout stability (Chromium)", () => {

@@ -1,5 +1,6 @@
 // @ts-check
 
+import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
@@ -17,7 +18,9 @@ export default defineConfig({
   // One canonical form for every URL: /tools/, never /tools. Dev, build, preview and every link
   // agree, so an internal link never costs a redirect. Cloudflare redirects the slashless form.
   trailingSlash: "always",
-  integrations: [react()],
+  // MDX renders every tool's content/en.mdx (ADR 0033). It is not used anywhere else: the site's
+  // own pages are .astro, so no page gains JavaScript from this.
+  integrations: [react(), mdx()],
   vite: {
     plugins: [tailwindcss()],
   },

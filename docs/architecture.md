@@ -22,16 +22,18 @@ apps/
     src/styles/   design tokens and the one component stylesheet (Signal design system)
     src/components/ui/   Astro components; react/ holds the React versions
     src/components/layout/   site header and footer
+    src/components/tool/     the tool page template
     src/layouts/  Base (head, theme script) and Page (skip link, header, main, footer)
+    src/lib/registry/        finds and validates tools at build time; fixtures/ holds test tools
+    src/pages/[slug].astro   one route for category pages and tool pages
+packages/
+  tool-sdk/       @networksinsights/tool-sdk: the contract as code (Zod only)
+tools/            @networksinsights/tools: one folder per tool, <category-id>/<tool-id>/
 docs/             architecture, tool contract, design system, ADRs
 ```
 
-Planned:
-
-```
-packages/*                        shared tool SDK and UI (workspace packages)
-tools/<category>/<tool-id>/       one folder per tool plugin (planned for Mission 8)
-```
+`tools/` is empty until Mission 13. The contract every folder follows is
+[tool-contract.md](tool-contract.md); the decisions behind it are ADR 0031–0034.
 
 ## Tool runtimes
 
@@ -83,8 +85,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 4 | CI pipeline | Done |
 | 5 | Deploy pipeline | Done |
 | 6 | Design system | Done |
-| 7 | Site shell | In progress |
-| 8 | Tool contract + registry | |
+| 7 | Site shell | Done |
+| 8 | Tool contract + registry | In progress |
 | 9 | Generator + guardrails | |
 | 10 | SEO/GEO engine | |
 | 11 | Search | |

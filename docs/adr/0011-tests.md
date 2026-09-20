@@ -26,6 +26,15 @@ Mission 4 (2026-09-20) made three changes to the Vitest setup:
 - `@types/node` 24.13.5 (the latest 24.x that passed `minimumReleaseAge`) was added to `apps/web`, so the local `ImportMeta.dirname` declaration was removed.
 - `apps/web/vitest.config.ts` excludes `e2e/**`. E2E specs are named `*.spec.ts`, so Vitest cannot pick them up by accident.
 
+Mission 8 (2026-09-20) added two more Vitest projects:
+
+- `packages/tool-sdk` holds the contract rules, tested on plain objects with no Astro and no DOM.
+- `tools` runs every tool's required `logic.test.ts`. It is the one project with
+  `passWithNoTests: true`, because there are no tools until Mission 13; the repo-wide default stays
+  false, and a tool without a `logic.test.ts` fails the build in the registry, not here (ADR 0032).
+- `apps/web` now excludes `src/lib/registry/fixtures/**` from its run. Those folders are fixture
+  tools, down to the required `logic.test.ts`, and they are test data rather than tests.
+
 Playwright was added in Mission 4. The decision is in ADR 0026, and it runs in CI (ADR 0025). Lighthouse CI is not set up yet.
 
 ## Consequences

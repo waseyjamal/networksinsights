@@ -1,60 +1,183 @@
 # Tool contract
 
-Status: DRAFT (finalized in Mission 8)
+Status: FINAL (Mission 8)
 
 Every tool is one folder that follows this contract. The platform builds everything else from it.
+The build fails, naming the folder and the problem, if a folder breaks any rule on this page.
+
+The contract lives in code as well as here: `packages/tool-sdk` (ADR 0031) holds the manifest
+schema, the rules and the required file list, and `apps/web/src/lib/registry` enforces them at
+build time (ADR 0033).
 
 ## Folder anatomy
 
 ```
-tools/<category>/<tool-id>/
-  tool.config.ts    manifest
-  logic.ts          pure functions (no UI or framework imports)
-  worker.ts         optional, for the worker runtime
-  ui.tsx            island
-  content/en.mdx    unique how-to, examples, limits, FAQs
+tools/<category-id>/<tool-id>/
+  tool.config.ts    the manifest: export default defineTool({ ... })
+  logic.ts          pure functions, no UI and no network
+  ui.tsx            the React island
+  island.astro      fixed glue that mounts ui.tsx (see below)
+  content/en.mdx    the page content
   logic.test.ts     required
+  worker.ts         optional, for the worker runtime (wired up in Mission 14)
 ```
 
-## Manifest fields
+The folder name is the tool id, and the parent folder name is the category id. Both must match the
+manifest, because the folder name is the URL.
 
-| Field | Notes |
+Tools live at the repo root, not inside `apps/web`, so a future API Worker can import tool logic
+without moving 500 folders (ADR 0032).
+
+## Manifest
+
+```ts
+import { defineTool } from "@networksinsights/tool-sdk";
+import { z } from "zod";
+
+export default defineTool({
+  id: "word-counter",
+  name: "Word counter",
+  category: "text",
+  summary: "Count the words, characters and lines in any text, as you type.",
+  tags: ["words", "characters"],
+  runtime: "client",
+  status: "beta",
+  input: z.object({ text: z.string() }),
+  related: ["case-converter"],
+  added: "2026-09-20",
+  updated: "2026-09-20",
+});
+```
+
+| Field | Rule |
 |---|---|
-| `id` | Unique. Also the URL slug. |
-| `category` | Used for listings only, never for the URL. |
-| `tags` | |
-| `runtime` | `"client"` \| `"worker"` \| `"server"` |
-| `status` | `"beta"` \| `"stable"` \| `"deprecated"` |
-| input schema | Zod |
-| related tool ids | |
-| `limits` | For a future Pro tier. Unlimited at launch. |
-| added date | |
+| `id` | Kebab-case, unique, the same as the folder name. It is the URL: `/<id>/` (ADR 0014). |
+| `name` | 1–60 characters. The H1 and part of the page title. |
+| `category` | A category id from `apps/web/src/config/categories.ts`, the same as the parent folder. |
+| `summary` | 20–159 characters, unique across all tools. It is the meta description and the line under the H1. Digits are allowed: Base64, SHA-256, MP4, UTF-8 and H.264 are real names. |
+| `tags` | One to eight unique kebab-case tags. |
+| `runtime` | `"client"`, `"worker"` or `"server"` (ADR 0012). It decides the privacy statement. |
+| `status` | `"beta"`, `"stable"` or `"deprecated"`. Beta and deprecated show a badge. |
+| `input` | A Zod schema (ADR 0006). |
+| `related` | Up to six ids of other tools that exist. Never this tool's own id. |
+| `limits` | Optional `{ maxInputBytes, maxFiles, maxRunsPerDay }` for a future Pro tier. Absent means unlimited, which is what every tool ships with today. |
+| `added`, `updated` | Real ISO dates, `YYYY-MM-DD`. `updated` is never earlier than `added`. |
 
-## Generated from the manifest
+`defineTool()` types the manifest and returns it unchanged. It does not validate: validation runs
+once, centrally, where the folder is known and the error can name it.
 
-- Page and URL
-- Category listing
-- Sitemap entry
-- Search index entry
-- Structured data
-- Share image
-- Breadcrumbs
-- Related links
-- New-tools feed
-- `llms.txt` entry
+## logic.ts: what pure means
+
+The same logic runs unchanged in the browser, a Web Worker and a Cloudflare Worker, so it may use
+only what all three have. The lists live in `packages/tool-sdk/src/purity.ts`; the analyzer that
+enforces them is `apps/web/src/lib/registry/purity.ts`, and `purity.test.ts` fails the build.
+
+Allowed:
+
+- ECMAScript built-ins, and the web APIs all three runtimes share: `crypto.getRandomValues`,
+  `crypto.subtle`, `TextEncoder`, `TextDecoder`, `URL`, `URLSearchParams`, `Intl`,
+  `structuredClone`, `atob`, `btoa`, `ArrayBuffer` and the typed arrays, streams, `Blob`.
+- Imports of `zod`, `@networksinsights/tool-sdk`, and relative files inside the tool's own folder.
+
+Refused:
+
+- DOM globals (`window`, `document`, `navigator`, `localStorage`), because the DOM belongs in
+  `ui.tsx`.
+- Node-only globals (`process`, `Buffer`, `require`), because the browser does not have them.
+- `fetch` and every other way to the network: the runtime decides what leaves the device.
+- React, Astro, and any import ending in `.tsx`, `.astro`, `.css` or `.mdx`.
+- Statements at the top level. A module may declare things; importing it must do nothing.
+
+**Adding a library** — a PDF engine, an image codec — is one line in `ALLOWED_IMPORTS` plus an ADR
+stating its license, its size and why it is needed. The allowlist starts at Zod and the SDK so that
+every third-party dependency inside tool logic is a recorded decision.
+
+## island.astro
+
+Every tool's `island.astro` is this file, byte for byte:
+
+```astro
+---
+import Ui from "./ui.tsx";
+---
+
+<Ui client:load />
+```
+
+It exists because Astro writes the hydration path only for a component it saw imported statically,
+so a route cannot mount a `ui.tsx` it looked up by tool id. This file holds that static import, and
+the route imports this file dynamically (ADR 0033). It is glue, not a place for tool code, which is
+why the validator compares it exactly and the Mission 9 generator writes it.
+
+`client:load` is the hydration choice for every tool: the workspace is the reason a visitor opened
+the page, and it is above the fold, so a later directive would only delay the first interaction.
+
+## content/en.mdx
+
+An intro paragraph, then exactly these H2 sections, in this order:
+
+```mdx
+An intro paragraph that says what the tool does and who it is for.
+
+## How to use
+
+## Examples
+
+## Limits
+
+## FAQ
+```
+
+No H1: the page template renders the one H1, the tool name. More depth goes under H3s inside a
+section. Mission 9 adds word minimums and near-duplicate detection on top of these rules.
+
+## The page the contract builds
+
+| Part | Where it comes from |
+|---|---|
+| URL | `/<id>/` |
+| Title | `<name> — Free online tool \| NetworksInsights` |
+| Meta description | `summary` |
+| Breadcrumbs | Home → category → tool |
+| H1 and the line under it | `name` and `summary` |
+| Workspace card | `island.astro`, which mounts `ui.tsx` |
+| Status badge | `status`, for beta and deprecated only |
+| Privacy badge | `runtime`, never written by hand (ADR 0034) |
+| Sections | `content/en.mdx` |
+| Related links | `related` |
+| Category listing and counts | `category` |
+
+The privacy statement is derived, not authored: `client` and `worker` say "Runs in your browser —
+files never leave your device"; `server` says "Runs on our server — your input is sent to us to be
+processed". A tool cannot claim the wrong one, because nobody types the sentence.
 
 ## Build-time gates
 
-The build fails if any of these fail:
+The build fails if any of these fail. Each message names the folder and the exact problem:
 
-- Unique id and URL.
-- No collision with reserved paths.
-- Required content sections present.
-- No near-duplicate content.
-- Tests exist and pass.
-- JavaScript size budget respected.
-- Translations complete for enabled languages.
+- The manifest parses against the schema.
+- Ids are unique, kebab-case, match the folder, and take no reserved path (a category slug or a
+  static page, ADR 0030).
+- The category exists and matches the parent folder.
+- Every `related` id exists and is not the tool itself.
+- Summaries are unique.
+- `updated` is not earlier than `added`.
+- Every required file exists.
+- `island.astro` is the contract source, byte for byte.
+- `content/en.mdx` has an intro and the four H2 sections, in order, with no H1.
+- Every `logic.ts` is pure.
+
+Still to come: no near-duplicate content and a word minimum (Mission 9), a JavaScript size budget
+(Mission 17), and complete translations for enabled languages (ADR 0023).
+
+## Generated from the manifest
+
+Page and URL, category listing, breadcrumbs, related links, and the counts on the home page,
+`/tools/` and the category pages. Sitemap entries, structured data, share images, the search index,
+the new-tools feed and `llms.txt` follow in Missions 10 and 11.
 
 ## URL rule
 
-A tool lives at `/<tool-id>` at the site root, independent of its category. Renames go through a redirects registry so no URL ever returns 404.
+A tool lives at `/<tool-id>/` at the site root, independent of its category (ADR 0014). Moving a
+tool between categories never changes its URL. Renames go through a redirects registry, so no URL
+ever returns 404.

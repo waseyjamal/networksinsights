@@ -129,7 +129,7 @@ Import Astro components from `components/ui/`, React components from `components
 | Dropzone | yes | yes | Visual only for now |
 | ThemeToggle | yes | no | Uses the head script |
 | Icon | yes | yes | Decorative (`aria-hidden`). Put the meaning in text |
-| ToolWorkspace | yes | yes | Glow border, dropzone, actions, result, privacy badge |
+| ToolWorkspace | yes | yes | Glow border, dropzone, actions, result, privacy badge. The actions and result areas render only when something fills them, so a tool page can use the card as a shell around its island. `privacy` and `privacyOnDevice` come from the tool's runtime and are never written by hand (ADR 0034); the default is the on-device statement |
 | CommandBar, Hero, Constellation, BentoGrid, CategoryTile | yes | no | Signature elements. `CommandBar` with `href` is a real link (no JavaScript, no Ctrl+K hint) until search arrives. `CategoryTile` without `count` says "Coming soon" and never shows a number |
 | Wordmark | yes | no | Constellation mark and the site name, from `config/site.ts` |
 | SkipLink | yes | no | First focusable element of a page; its target is `<main id="main" tabindex="-1">` |

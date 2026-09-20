@@ -29,6 +29,20 @@ UI:
 Content:
 - Never invent content: no fake counts, ratings, testimonials or claims.
 
+Tools:
+- One tool is one folder: `tools/<category-id>/<tool-id>/`. The folder name is the tool id and the
+  URL; the parent folder name is the category id. The full contract is `docs/tool-contract.md`.
+- Required files: `tool.config.ts`, `logic.ts`, `ui.tsx`, `island.astro`, `content/en.mdx`,
+  `logic.test.ts`. `worker.ts` is optional.
+- `island.astro` is fixed, byte for byte (`ISLAND_SOURCE` in the SDK). Never edit it per tool.
+- `logic.ts` is pure: no DOM, no Node globals, no network, no React or Astro, and no top-level
+  statements. It may import only `zod`, `@networksinsights/tool-sdk` and files in its own folder.
+  Adding any other library to that allowlist takes an ADR stating license, size and why.
+- The privacy statement on a tool page is derived from `runtime`. Never write it by hand.
+- `content/en.mdx` is an intro paragraph, then H2 "How to use", "Examples", "Limits", "FAQ", in
+  that order, with no H1.
+- Never add a tool to make a page look fuller. The site ships zero tools until Mission 13.
+
 Safety:
 - Never commit secrets or `.env` files.
 - No global installs and no global config changes.
