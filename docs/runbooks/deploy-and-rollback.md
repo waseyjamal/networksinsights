@@ -30,7 +30,7 @@ A rollback creates a new deployment of an earlier version. It does not change gi
 
 ### 1. Find the version ID to go back to
 
-Open the Cloudflare dashboard: Workers & Pages, `networksinsights`, Deployments (or Versions). Pick the last good version and copy its version ID (a UUID). Only the 100 most recent versions can be rolled back to. The `deploy` job log of the last good run also shows the version it deployed.
+Open the Cloudflare dashboard: Workers & Pages, `networksinsights`, Deployments (or Versions). Pick the last good version and copy its version ID (a UUID). Only the 100 most recent versions can be rolled back to. The `deploy` job log of the last good run also shows the version it deployed, on the line `Current Version ID: <id>` at the end of the "Deploy to production" step. Production versions carry the commit SHA as their message. Preview versions carry `PR #<N> <sha>`, so do not pick those.
 
 ### 2. Roll back (preferred: GitHub Actions)
 
@@ -52,7 +52,10 @@ Use this only if GitHub Actions is unavailable. Workers & Pages, `networksinsigh
 ### 4. Check
 
 - `curl -sI https://networksinsights.com/` answers 200.
+- The "Roll back production" step log ends with `Worker Version <id> has been deployed to 100% of traffic` and `Current Version ID: <id>`. That is the proof of the active version. The site itself cannot show it when two versions serve the same content.
 - In the dashboard, Deployments shows a new deployment at 100% for the version you chose.
+
+Verified on 2026-09-20 (Mission 5B): a rollback to version 1 and a roll forward to version 2 both succeeded through this workflow, and the site answered 200 after each. Each run took about 30 seconds.
 
 ### 5. Fix forward (do not skip)
 
@@ -63,4 +66,5 @@ A rollback changes only what is served. The bad commit is still on `main`, and t
 - **Authentication error (code 10000) or a missing permission on `deploy`:** the API token lacks a scope. It needs at least Account, Workers Scripts, Edit, and Zone, Workers Routes, Edit for the Custom Domain. DNS, Edit on the zone may also be needed.
 - **Custom Domain error about an existing DNS record:** delete the existing `networksinsights.com` record in Cloudflare DNS (a Custom Domain cannot be created on a hostname that has a CNAME), then run the deploy again.
 - **`preview` cannot find a preview URL:** open the "Upload preview version" step log. The URL must look like `https://pr-<N>-networksinsights.<account>.workers.dev`.
+- **`curl` on your own machine shows a 404 from Vercel, or an old IP:** your local DNS resolver holds a stale answer from before the domain moved to Cloudflare. It is not a production problem. Check against a public resolver instead, for example `curl --resolve networksinsights.com:443:<IP from https://cloudflare-dns.com/dns-query?name=networksinsights.com&type=A> https://networksinsights.com/`, or flush the local DNS cache (`ipconfig /flushdns`).
 - **Rollback refused because of bindings:** rollbacks are blocked when bindings changed between versions. The Worker has no bindings today.
