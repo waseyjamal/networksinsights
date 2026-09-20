@@ -17,7 +17,7 @@ The site needs a deploy pipeline that a developer's machine cannot bypass, that 
 - Custom Domain `networksinsights.com` (`routes` with `custom_domain: true`). `workers_dev` is `false`, so the site is reachable only on our domain.
 - `preview_urls` is `true`.
 
-**Canonical address.** `https://networksinsights.com`, the apex, no `www`. A Custom Domain does not answer `www`, so a `www` to apex redirect is a separate Cloudflare rule. It is not part of Mission 5 and is tracked as a follow-up.
+**Canonical address.** `https://networksinsights.com`, the apex, no `www`. A Custom Domain does not answer `www`, so a `www` to apex redirect is a separate Cloudflare rule outside `wrangler.jsonc`. Mission 5B found that a redirect already exists (see Verification below). Its rule is not managed by this repository and is tracked as a follow-up.
 
 **Deploys happen only in CI.** Nobody runs `wrangler login` or `wrangler deploy` on a local machine, and there are no local credential files. There is no `deploy` script in `package.json`. The Cloudflare secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` exist only as GitHub Actions secrets and are used only through `${{ secrets.* }}`, on the one step that needs them.
 
@@ -43,9 +43,22 @@ The site needs a deploy pipeline that a developer's machine cannot bypass, that 
 - Previews work only after the first production deploy exists. `wrangler versions upload` fails with "You cannot upload a new version of a Worker that does not yet exist" until `wrangler deploy` has created the Worker. So the `preview` job of the Mission 5 pull request fails once, by design, and previews start working on the first pull request after Mission 5 is merged and deployed.
 - Preview URLs exist only on `workers.dev` and are public. Search engines could index them. Mission 12 (security) should add a `noindex` header for `workers.dev` hosts.
 - Wrangler and its `workerd` binary add a large `node_modules` (about 150 MB on one platform), so every install is slower on developer machines and CI.
-- The API token needs at least Account, Workers Scripts, Edit, and Zone, Workers Routes, Edit for the Custom Domain. The scope cannot be checked from the repository. It is verified by the first production deploy after Mission 5 merges.
+- The API token needs at least Account, Workers Scripts, Edit, and Zone, Workers Routes, Edit for the Custom Domain. The scope cannot be checked from the repository. Mission 5B verified it: production deploy, preview upload and rollback all succeeded with the current token (see Verification below).
 - A rollback changes only what is served. It does not revert code. The next push to `main` deploys forward again, so the bad commit must also be reverted (runbook: `docs/runbooks/deploy-and-rollback.md`).
 - Cloudflare's own git integration (Workers Builds) must stay disconnected. It would deploy a second time, outside this pipeline.
+
+## Verification (Mission 5B, 2026-09-20)
+
+Checked after Mission 5 merged. Everything below was observed, not assumed.
+
+- **Production.** `https://networksinsights.com/` answers 200 with the site heading. The certificate is valid (issuer Google Trust Services, SAN `networksinsights.com` and `*.networksinsights.com`, valid to 2026-12-19). An unknown path answers 404 with "Page not found" and `<meta name="robots" content="noindex">`.
+- **HTTP.** `http://networksinsights.com/` answers 301 to `https://networksinsights.com/`.
+- **`www`.** It resolves to Cloudflare. `https://www.networksinsights.com/` answers 301 to `https://networksinsights.com/`, and `http://www.networksinsights.com/` answers 301 to `https://www.networksinsights.com/`. This was not expected. The rule behind it lives in the Cloudflare dashboard, not in this repository.
+- **Preview.** Pull request 6 got a preview at `https://pr-6-networksinsights.moodforyou123.workers.dev`: home 200, unknown path 404 with the noindex meta. Exactly one preview comment was posted. A second push updated that same comment (same comment ID, new commit SHA) and did not add another.
+- **Deploy.** The merge of pull request 6 ran `quality`, `e2e` and `deploy`, all green. Production version 1 was `0335def1-11e9-4ff4-b1bf-43189c2f50b7` (commit `0596466`) and version 2 was `81e59c2b-19f6-4ec1-9377-ad8ddaad06d9` (commit `b7bccbf`).
+- **Rollback.** The `rollback` workflow, dispatched with `gh workflow run rollback.yml --ref main -f version_id=<id>`, rolled production back to version 1 and then forward to version 2. Both runs succeeded. Each log shows the current deployment before the change, the target version, `Worker Version <id> has been deployed to 100% of traffic` and `Current Version ID: <id>`. The site answered 200 (and 404 for an unknown path) after both. Wrangler asks two questions in the rollback (a message and a confirmation) and uses its non-interactive defaults in CI, so the workflow needs no extra flags.
+- **Token scopes.** The current Cloudflare token is sufficient. Production deploy with the Custom Domain, preview upload and rollback all worked. Nothing is missing.
+- **Limit of the check.** Versions 1 and 2 serve identical content, so a request cannot tell them apart. "Version N is active" comes from the rollback log, not from the site.
 
 ## Revisit when
 
