@@ -1,40 +1,64 @@
 import { expect, test } from "@playwright/test";
+import { categories } from "../src/config/categories";
 
 test.describe("home page", () => {
-  test("responds with status 200", async ({ page }) => {
-    const response = await page.goto("/");
-    expect(response?.status()).toBe(200);
+  test("shows the main heading and the subtitle", async ({ page }) => {
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Free online tools. Private by design." }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Convert, compress, calculate and create right in your browser. No sign-up needed.",
+      ),
+    ).toBeVisible();
   });
 
-  test("shows the main heading", async ({ page }) => {
+  test("no longer says the site is under construction", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("body")).not.toContainText("under construction");
+  });
+
+  test("has a command bar that is a real link to all tools", async ({ page }) => {
+    await page.goto("/");
+    const bar = page.locator("main .ni-commandbar");
+    await expect(bar).toHaveJSProperty("tagName", "A");
+    await expect(bar).toHaveAttribute("href", "/tools/");
+  });
+
+  test("shows every category as a tile that says Coming soon, with no number", async ({ page }) => {
+    await page.goto("/");
+    const tiles = page.locator("main .ni-tile");
+    await expect(tiles).toHaveCount(categories.length);
+    for (const category of categories) {
+      const tile = page.locator(`main .ni-tile[href="/${category.slug}/"]`);
+      await expect(tile).toContainText(category.name);
+      await expect(tile).toContainText("Coming soon");
+    }
+    // No tool count anywhere on the page.
+    await expect(page.locator("main")).not.toContainText(/\d+\s+tools?\b/);
+  });
+
+  test("explains why NetworksInsights, in four points", async ({ page }) => {
+    await page.goto("/");
+    const section = page.getByRole("region", { name: "Why NetworksInsights" });
+    await expect(section.getByRole("heading", { level: 3 })).toHaveText([
+      "Private by design",
+      "Free",
+      "Fast",
+      "No sign-up",
+    ]);
+    await expect(section).toContainText("Pages load quickly, even on slow connections.");
+    await expect(section).toContainText("Every tool is free to use.");
+  });
+
+  test("is complete HTML without JavaScript", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  });
-
-  test("hydrates the React island", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.getByText("Interactive: yes")).toBeVisible();
-  });
-
-  test("logs no console errors", async ({ page }) => {
-    const errors: string[] = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") errors.push(`console: ${message.text()}`);
-    });
-    page.on("pageerror", (error) => {
-      errors.push(`pageerror: ${error.message}`);
-    });
-
-    await page.goto("/");
-    // Wait for hydration so errors thrown while the island starts are captured.
-    await expect(page.getByText("Interactive: yes")).toBeVisible();
-
-    expect(errors).toEqual([]);
-  });
-
-  test("has a title and a meta description", async ({ page }) => {
-    await page.goto("/");
-    await expect(page).toHaveTitle(/\S/);
-    await expect(page.locator('head meta[name="description"]')).toHaveAttribute("content", /\S/);
+    await expect(page.locator("main .ni-tile")).toHaveCount(categories.length);
+    await expect(page.locator("footer")).toBeVisible();
+    await context.close();
   });
 });

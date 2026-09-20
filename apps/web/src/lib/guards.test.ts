@@ -113,6 +113,20 @@ describe("design-system rules", () => {
     expect(utilities.map((file) => file.path)).toEqual([]);
   });
 
+  it("sets text inside a <Hero> in --fg, the only text color guaranteed over the constellation", () => {
+    // tokens.test.ts checks --fg against the strongest constellation node; --fg-muted and
+    // --fg-subtle are not guaranteed there.
+    const offenders: string[] = [];
+    for (const file of files.filter(
+      (f) => f.path.startsWith("pages/") && f.path.endsWith(".astro"),
+    )) {
+      for (const block of file.text.matchAll(/<Hero>([\s\S]*?)<\/Hero>/g)) {
+        if (/text-fg-(?:muted|subtle)/.test(block[1] ?? "")) offenders.push(file.path);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("keeps styles in components.css: the shared components have no <style> blocks", () => {
     const withStyle = files
       .filter((file) => file.path.startsWith("components/ui/") && file.path.endsWith(".astro"))

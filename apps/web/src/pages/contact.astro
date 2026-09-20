@@ -1,0 +1,33 @@
+---
+import Alert from "../components/ui/Alert.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { pageTitle, site } from "../config/site";
+import Page from "../layouts/Page.astro";
+---
+
+<Page
+  title={pageTitle("Contact")}
+  description="How to contact NetworksInsights. Contact details are not published yet."
+>
+  <div class="grid gap-4">
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Contact" }]} />
+    <PageHeader title="Contact" intro={`How to reach the people behind ${site.name}.`}>
+      <Alert tone="warning" title="Draft: owner input needed">
+        This page is a draft. It still needs a public contact email address. It is listed in the
+        launch checklist.
+      </Alert>
+    </PageHeader>
+  </div>
+
+  <div class="ni-prose">
+    <h2>Email</h2>
+    <p>Contact details are not published yet.</p>
+
+    <h2>What to write about</h2>
+    <p>
+      Bug reports, ideas for tools and questions about how a tool works are all welcome once a
+      contact address is published here.
+    </p>
+  </div>
+</Page>

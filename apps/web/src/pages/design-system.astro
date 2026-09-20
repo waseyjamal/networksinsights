@@ -7,19 +7,24 @@ import Section from "../components/design-system/Section.astro";
 import Alert from "../components/ui/Alert.astro";
 import Badge from "../components/ui/Badge.astro";
 import BentoGrid from "../components/ui/BentoGrid.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import Button from "../components/ui/Button.astro";
 import Card from "../components/ui/Card.astro";
 import CategoryTile from "../components/ui/CategoryTile.astro";
 import Checkbox from "../components/ui/Checkbox.astro";
 import CommandBar from "../components/ui/CommandBar.astro";
 import Dropzone from "../components/ui/Dropzone.astro";
+import EmptyState from "../components/ui/EmptyState.astro";
 import Hero from "../components/ui/Hero.astro";
 import Icon from "../components/ui/Icon.astro";
 import Input from "../components/ui/Input.astro";
 import Kbd from "../components/ui/Kbd.astro";
+import LinkList from "../components/ui/LinkList.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
 import Progress from "../components/ui/Progress.astro";
 import Select from "../components/ui/Select.astro";
 import Skeleton from "../components/ui/Skeleton.astro";
+import SkipLink from "../components/ui/SkipLink.astro";
 import Switch from "../components/ui/Switch.astro";
 import TabPanel from "../components/ui/TabPanel.astro";
 import Tabs from "../components/ui/Tabs.astro";
@@ -27,23 +32,10 @@ import Textarea from "../components/ui/Textarea.astro";
 import ThemeToggle from "../components/ui/ThemeToggle.astro";
 import Tooltip from "../components/ui/Tooltip.astro";
 import ToolWorkspace from "../components/ui/ToolWorkspace.astro";
-import { categories } from "../data/categories";
+import Wordmark from "../components/ui/Wordmark.astro";
+import { categories, categoryHref } from "../config/categories";
 import Base from "../layouts/Base.astro";
 
-// Illustrative counts for the bento demo. The tool registry (Mission 8) will supply real ones.
-const sampleCounts: Record<string, number> = {
-  pdf: 58,
-  image: 64,
-  "video-audio": 37,
-  text: 52,
-  calculators: 71,
-  converters: 83,
-  generators: 46,
-  developer: 69,
-  "web-seo": 41,
-  "color-design": 29,
-  "date-time": 34,
-};
 const wideTiles = new Set(["pdf", "converters", "developer", "color-design", "date-time"]);
 
 const nav = [
@@ -51,6 +43,7 @@ const nav = [
   { href: "#foundations", label: "Type and shape" },
   { href: "#components", label: "Components" },
   { href: "#signature", label: "Signature elements" },
+  { href: "#shell", label: "Site shell" },
   { href: "#react", label: "React islands" },
   { href: "#themes", label: "Both themes" },
 ];
@@ -63,28 +56,20 @@ const themes = ["light", "dark"] as const;
   description="Signal, the NetworksInsights design system: tokens, type, components and signature elements."
   noindex
 >
-  <a
-    href="#main"
-    class="sr-only rounded-lg bg-inverse px-4 py-2 text-inverse-fg focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
-  >
-    Skip to content
-  </a>
+  <SkipLink />
 
   <header class="sticky top-0 z-40 border-b border-border bg-glass backdrop-blur-md">
     <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-      <a href="/" class="flex items-center gap-2 font-semibold tracking-tight text-fg no-underline">
-        <span class="ni-icon-tint size-8"><Icon name="search" size="sm" /></span>
-        NetworksInsights
-      </a>
+      <Wordmark href="/" />
       <ThemeToggle id="header" />
     </div>
   </header>
 
-  <main id="main" class="mx-auto max-w-6xl space-y-24 px-4 pb-24 pt-8 sm:px-6">
+  <main id="main" tabindex="-1" class="mx-auto max-w-6xl space-y-24 px-4 pb-24 pt-8 sm:px-6">
     <Hero>
       <Badge tone="brand">Design system</Badge>
       <h1 class="text-display">Signal</h1>
-      <p class="max-w-xl text-lg text-fg-muted">
+      <p class="max-w-xl text-lg text-fg">
         Networks meet insight. A calm, fast, readable system: expressive in a few brand moments,
         quiet wherever tools are used.
       </p>
@@ -344,23 +329,30 @@ const themes = ["light", "dark"] as const;
             <div class="ni-aurora" aria-hidden="true"></div>
             <CommandBar id="ds-command-bar" />
           </div>
+          <p class="max-w-2xl text-fg-muted">
+            With an <code>href</code> it is a real link that looks the same. It works without
+            JavaScript and takes the visitor to all tools, until search arrives.
+          </p>
+          <div class="ni-hero !p-6 sm:!p-10">
+            <div class="ni-aurora" aria-hidden="true"></div>
+            <CommandBar href="/tools/" />
+          </div>
         </div>
 
         <div class="space-y-4">
           <h3 class="text-xl">Category bento grid</h3>
           <p class="max-w-2xl text-fg-muted">
-            Eleven categories, each with an accent that tints only its small icon chip. Counts are
-            sample data.
+            Eleven categories, each with an accent that tints only its small icon chip. A category
+            without tools says "Coming soon" and never shows a number.
           </p>
           <BentoGrid>
             {categories.map((category) => (
   <CategoryTile
     category={category.id}
     icon={category.icon}
-    title={category.label}
+    title={category.name}
     description={category.description}
-    count={sampleCounts[category.id] ?? 0}
-    href={`#cat-${category.id}`}
+    href={categoryHref(category)}
     span={wideTiles.has(category.id) ? 2 : 1}
   />
 ))}
@@ -389,6 +381,68 @@ const themes = ["light", "dark"] as const;
               <span class="font-mono text-fg tabular-nums">2.4 MB → 640 KB</span>.
             </p>
           </ToolWorkspace>
+        </div>
+      </div>
+    </Section>
+
+    <Section
+      id="shell"
+      title="Site shell"
+      lead="The parts every page is built from: the header and footer, and the small components inside them and on inner pages."
+    >
+      <div class="space-y-14">
+        <div class="space-y-4">
+          <h3 class="text-xl">Wordmark</h3>
+          <p class="max-w-2xl text-fg-muted">
+            The constellation mark and the name. The mark is decorative; the name is the link.
+          </p>
+          <Wordmark href="/" />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Header and footer</h3>
+          <p class="max-w-2xl text-fg-muted">
+            The header on this page is the real one on every other page, minus the menu: wordmark,
+            command-bar link, All tools and the theme toggle. Below 48rem it becomes the wordmark
+            and a Menu disclosure (a native <code>details</code> element, so it needs no
+            JavaScript). The footer lists every category and the site pages.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Breadcrumbs, page header and link list</h3>
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Image tools" }]} />
+          <PageHeader
+            level={2}
+            title="Page title"
+            intro="One H1 and a short introduction, at the top of every inner page."
+          />
+          <LinkList
+            label="Example links"
+            items={categories.slice(0, 4).map((category) => ({
+  label: category.name,
+  href: categoryHref(category),
+}))}
+          />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Empty state</h3>
+          <p class="max-w-2xl text-fg-muted">
+            The honest answer when a page has nothing to list yet. It never shows a count.
+          </p>
+          <EmptyState title="No tools here yet">
+            <p>Tools appear here as they are added.</p>
+            <Fragment slot="actions">
+              <LinkList
+                label="Categories"
+                items={categories.slice(0, 3).map((category) => ({
+  label: category.name,
+  href: categoryHref(category),
+}))}
+              />
+            </Fragment>
+          </EmptyState>
         </div>
       </div>
     </Section>

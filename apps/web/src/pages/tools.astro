@@ -1,0 +1,33 @@
+---
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import EmptyState from "../components/ui/EmptyState.astro";
+import LinkList from "../components/ui/LinkList.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { categories, categoryHref } from "../config/categories";
+import { pageTitle } from "../config/site";
+import Page from "../layouts/Page.astro";
+
+const categoryLinks = categories.map((category) => ({
+  label: category.name,
+  href: categoryHref(category),
+}));
+---
+
+<Page
+  title={pageTitle("All tools")}
+  description="Every tool on NetworksInsights, in one list. No tools are live yet; new tools appear here as they are added."
+>
+  <div class="grid gap-4">
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "All tools" }]} />
+    <PageHeader
+      title="All tools"
+      intro="Every tool on NetworksInsights is listed here, grouped by category."
+    />
+  </div>
+  <EmptyState title="No tools are live yet">
+    <p>Tools appear here as they are added. Browse the categories to see what each one is for.</p>
+    <Fragment slot="actions">
+      <LinkList label="Categories" items={categoryLinks} />
+    </Fragment>
+  </EmptyState>
+</Page>

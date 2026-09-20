@@ -90,6 +90,10 @@ Axe marks 16 `color-contrast` checks "incomplete" (it cannot compute a backgroun
 
 Observed and not resolved: Playwright's WebKit build reports a different number of font requests from run to run. In 4 runs it reported 3 requests (the preloaded Geist file twice, 81,928 B), 3 requests, 2 requests (52,528 B) and 1 request (29,400 B). Chromium always reports 2 requests and Firefox 1 or 2, never a duplicate. So a WebKit double download of the preloaded file happens sometimes and is not reproducible on demand. It is not confirmed in real Safari, so the preload stays; `budgets.spec.ts` counts unique files for the byte budget and skips the once-per-file check on WebKit.
 
+## Amendments
+
+- **Constellation strength (Mission 7).** Measuring the pixels behind the hero text showed that a constellation node could drop muted text to about 3:1 (light) and 3.3:1 (dark), and the aurora test did not cover nodes. Nodes and links are now capped by a token, `--constellation-alpha: 0.25`, which `.ni-constellation` uses as its opacity (links are drawn at 60% of it, so they stay visible). `tokens.test.ts` checks the worst case, a node at that alpha over the page with all three aurora glows, against `--fg` in both themes, and hero text is set in `--fg` (the hero subtitle is `text-fg`); `guards.test.ts` keeps `--fg-muted` and `--fg-subtle` out of `<Hero>`. The glass test now covers every page surface and glass on glass (the site header's command bar).
+
 ## Consequences
 
 - One CSS file styles every component, so a visual change happens in one place, and the tests stop light and dark, Astro and React, or the rules from drifting.

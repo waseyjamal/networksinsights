@@ -22,6 +22,13 @@ Use Playwright (`@playwright/test` 1.63.0, Apache-2.0, exact version, an `apps/w
 - Browsers download into Playwright's standard cache (`%LOCALAPPDATA%\ms-playwright` on Windows), outside the repo. One-time setup: `pnpm --filter web exec playwright install`. All three engines installed and passed on Windows 10.
 - `playwright-report/` and `test-results/` are git-ignored.
 
+## Amendments
+
+- **Local workers (Mission 7).** Locally Playwright runs with at most 2 workers (`...(process.env.CI ? {} : { workers: 2 })` in `playwright.config.ts`). A full run starts three browser engines, and at the default worker count it used enough memory that the operating system stopped the run. CI keeps Playwright's default. If 2 workers is still too many on a machine, lower it there and do not raise it in the repo.
+- **Scope has grown since this ADR.** The suite is no longer smoke tests on the home page only. Missions 6 and 7 added specs for the design system, budgets, every page in light and dark (status, one H1, console errors, axe, noindex, title), keyboard use, and a link and metadata check over the built site. Those specs are listed in `docs/design-system.md`. The React island of the smoke scope no longer exists on the home page.
+- **Trailing slashes.** URLs end in a slash (`trailingSlash: "always"`, ADR 0030), so specs use the canonical form (`/tools/`, `/unknown/`), because `astro preview` serves the 404 page for the canonical form only.
+- **WebKit and the Tab key.** Safari does not put links in the Tab order by default, and Playwright's WebKit matches it. The Tab-order check of the header runs in chromium and firefox; in WebKit the same controls are focused directly and the rest of the keyboard behavior (Enter, Space, arrow keys) is still tested.
+
 ## Consequences
 
 - Each of the three engines runs 5 smoke tests, so 15 tests in total. A run takes about 30 seconds after the build.

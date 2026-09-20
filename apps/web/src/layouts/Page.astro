@@ -1,0 +1,25 @@
+---
+import SiteFooter from "../components/layout/SiteFooter.astro";
+import SiteHeader from "../components/layout/SiteHeader.astro";
+import SkipLink from "../components/ui/SkipLink.astro";
+import Base from "./Base.astro";
+
+// The page frame of every public page: skip link, header, <main id="main"> and footer.
+// The page content goes in the default slot and must contain the one <h1>.
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+---
+
+<Base title={title} description={description} noindex={noindex}>
+  <SkipLink />
+  <SiteHeader />
+  <main id="main" tabindex="-1" class="ni-main">
+    <slot />
+  </main>
+  <SiteFooter />
+</Base>

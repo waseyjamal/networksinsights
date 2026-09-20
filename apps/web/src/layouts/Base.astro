@@ -1,6 +1,8 @@
 ---
 import { Font } from "astro:assets";
+import { site } from "../config/site";
 import { toHex } from "../lib/color";
+import { robotsContent } from "../lib/robots";
 import { parseTokens, themeColors } from "../lib/tokens";
 import "../styles/global.css";
 import tokensCss from "../styles/tokens.css?raw";
@@ -8,10 +10,14 @@ import tokensCss from "../styles/tokens.css?raw";
 interface Props {
   title: string;
   description: string;
+  /** The page opts out of indexing even after launch (404, design system). */
   noindex?: boolean;
 }
 
 const { title, description, noindex = false } = Astro.props;
+
+// Until launch every page is noindex, nofollow, whatever the page asks for (ADR 0029).
+const robots = robotsContent({ launched: site.launched, pageNoindex: noindex });
 
 // Browser-chrome colors come from the same tokens the page uses (--bg in each theme).
 const tokens = parseTokens(tokensCss);
@@ -52,7 +58,7 @@ const themeColorDark = chrome("dark");
       data-theme-color="dark"
     />
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {robots && <meta name="robots" content={robots} />}
     <title>{title}</title>
     <script is:inline>
     (() => {

@@ -26,7 +26,10 @@ Signal is networks (connected nodes) plus insights (clarity, light). It is premi
 | React components (for islands) | `apps/web/src/components/ui/react/*.tsx` |
 | Markup contract shared by both | `apps/web/src/components/ui/attrs.ts` |
 | Icon paths | `apps/web/src/components/ui/icons.ts` |
-| Category list | `apps/web/src/data/categories.ts` |
+| Category list | `apps/web/src/config/categories.ts` ([ADR 0030](adr/0030-category-config-and-flat-category-urls.md)) |
+| Site name, tagline, launch flag | `apps/web/src/config/site.ts` |
+| Site header and footer | `apps/web/src/components/layout/` |
+| Page frame (skip link, header, main, footer) | `apps/web/src/layouts/Page.astro` |
 | Style guide page | `apps/web/src/pages/design-system.astro` |
 
 Styles live in **one** place, `components.css`. The Astro and React versions of a component only emit markup: the same class names, `data-*` attributes and ARIA. A test renders both and fails if they differ.
@@ -74,9 +77,10 @@ Do not use Tailwind's `dark:` variant. Tokens already switch with the theme.
 2. **Category accents are small icon tints only.** Set `data-cat="pdf"` on a container and use the `.ni-icon-tint` chip. Never use an accent for text, backgrounds of large areas, borders or buttons.
 3. **The brand gradient is for brand moments only** (hero glow, gradient borders). Never behind body text. Today only `.ni-workspace` uses it.
 4. **Palette variables (`--color-*`) are for brand moments only** (aurora, constellation). Everything else goes through the semantic tokens.
-5. **Every text/background pair meets WCAG 2.2 AA**: 4.5:1 for body text, 3:1 for large text and UI parts. `src/lib/contrast-pairs.ts` lists the pairs; `tokens.test.ts` checks them in both themes; the style guide prints the measured ratios.
+5. **Text over the constellation is `--fg`.** The constellation sits behind hero text and can put a node under a letter, so its strength is capped by `--constellation-alpha`, and only `--fg` is guaranteed to stay at 4.5:1 there (`tokens.test.ts`). Do not set text inside a `<Hero>` in `--fg-muted` or `--fg-subtle` (`guards.test.ts`).
+6. **Every text/background pair meets WCAG 2.2 AA**: 4.5:1 for body text, 3:1 for large text and UI parts. `src/lib/contrast-pairs.ts` lists the pairs; `tokens.test.ts` checks them in both themes; the style guide prints the measured ratios.
 
-`guards.test.ts` enforces rules 1 to 4.
+`guards.test.ts` enforces rules 1 to 5.
 
 ### Adding or changing a token
 
@@ -126,7 +130,20 @@ Import Astro components from `components/ui/`, React components from `components
 | ThemeToggle | yes | no | Uses the head script |
 | Icon | yes | yes | Decorative (`aria-hidden`). Put the meaning in text |
 | ToolWorkspace | yes | yes | Glow border, dropzone, actions, result, privacy badge |
-| CommandBar, Hero, Constellation, BentoGrid, CategoryTile | yes | no | Signature elements |
+| CommandBar, Hero, Constellation, BentoGrid, CategoryTile | yes | no | Signature elements. `CommandBar` with `href` is a real link (no JavaScript, no Ctrl+K hint) until search arrives. `CategoryTile` without `count` says "Coming soon" and never shows a number |
+| Wordmark | yes | no | Constellation mark and the site name, from `config/site.ts` |
+| SkipLink | yes | no | First focusable element of a page; its target is `<main id="main" tabindex="-1">` |
+| Breadcrumbs | yes | no | `items`: the last one is the current page and not a link |
+| PageHeader | yes | no | The page's one H1 and an intro; `level={2}` only when shown as an example inside another page |
+| EmptyState | yes | no | The honest "nothing here yet" box; `actions` slot for links |
+| LinkList | yes | no | Wrapping pill links, for example the category links in an empty state |
+| SiteHeader, SiteFooter | yes | no | Live in `components/layout/`, built from the configs. Use them only through `layouts/Page.astro` |
+
+Long-form text (About, Privacy, Terms) sits in a `<div class="ni-prose">`. The mobile menu is a native `<details>`, so it needs no JavaScript and works on Safari 16.4; it closes through its summary only.
+
+### Content rule
+
+Never invent content. No fake counts, ratings, testimonials or claims, in components, demos or copy ([AGENTS.md](../AGENTS.md)). With no data a component says so honestly (a tile says "Coming soon", a list shows an empty state).
 
 The privacy badge text is fixed: "Runs in your browser — files never leave your device".
 
@@ -151,9 +168,13 @@ Every component must have: a visible focus ring (from `base.css`, do not remove 
 | `tokens.test.ts` | Light and dark parity, gamut, WCAG contrast of every pair |
 | `guards.test.ts` | No raw colors, gradient and accent rules, one style source |
 | `parity.test.ts` | Astro and React emit the same markup |
-| `Base.test.ts` | Theme script, `color-scheme` meta, `theme-color` metas |
+| `Base.test.ts` | Theme script, `color-scheme` meta, `theme-color` metas, robots meta |
+| `config/*.test.ts`, `components/shell.test.ts` | Site and category configs are valid and collide with no page; header, footer, tile and command bar rules |
 | `e2e/design-system.spec.ts` | No console errors, axe zero violations in light and dark, reduced motion, toggle persistence, theme before first paint |
-| `e2e/budgets.spec.ts` | CSS size, font preloads, home page JavaScript, CLS, LCP |
+| `e2e/budgets.spec.ts` | CSS size, font preloads, no JavaScript on the home page except the theme script, CLS, LCP |
+| `e2e/site.spec.ts` | Every page in light and dark: status, one H1, no console errors, axe zero violations, noindex, title |
+| `e2e/keyboard.spec.ts` | Skip link, header keyboard use, mobile menu without JavaScript |
+| `e2e/links.spec.ts` | Every internal link returns 200 directly; titles and descriptions are unique |
 
 ## Budgets
 
@@ -161,7 +182,7 @@ Every component must have: a visible focus ring (from `base.css`, do not remove 
 |---|---|
 | Design CSS on `/design-system` | 30 KB compressed |
 | Preloaded font files | 2 (today: 1) |
-| Home page JavaScript | no new JavaScript except the theme script |
+| Home page JavaScript | none: no script files, only the inline theme script |
 | CLS on `/design-system` | at most 0.1 (Core Web Vitals "good") |
 
 ## Browser support

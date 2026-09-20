@@ -114,8 +114,9 @@ describe("tokens.css: WCAG 2.2 AA contrast", () => {
         expect(failures).toEqual([]);
       });
 
-      it("keeps hero text readable where all three aurora glows overlap", () => {
-        // Mirrors .ni-aurora in components.css: indigo 30%, violet 24%, cyan 22% over the page.
+      // The page with all three aurora glows overlapping. Mirrors .ni-aurora in components.css:
+      // indigo 30%, violet 24%, cyan 22% over the page.
+      const auroraBackdrop = (): Rgb => {
         const glows: Array<[string, number]> = [
           ["indigo-500", 0.3],
           ["violet-500", 0.24],
@@ -127,21 +128,73 @@ describe("tokens.css: WCAG 2.2 AA contrast", () => {
           if (!value) throw new Error(`Missing palette token ${name}`);
           backdrop = composite({ ...oklchToSrgb(value), a: alpha }, backdrop);
         }
+        return backdrop;
+      };
+
+      it("keeps hero text readable where all three aurora glows overlap", () => {
+        const backdrop = auroraBackdrop();
         for (const fg of ["fg", "fg-muted"]) {
           expect(contrastRatio(get(fg), backdrop)).toBeGreaterThanOrEqual(TEXT);
         }
       });
 
-      it("keeps text readable on the glass surface, over the page and over the brand color", () => {
+      it("keeps hero text readable where a constellation node sits behind it", () => {
+        // The constellation sits behind the hero text and can put a node under a letter. Nodes are
+        // brand-ui, violet-400 or cyan-400 (.ni-constellation__node), never stronger than
+        // --constellation-alpha (.ni-constellation sets it as its opacity; the twinkle only
+        // dims a node, and the mask only fades it). Worst case: a node at that alpha over the
+        // aurora backdrop. Links are drawn at 30% of the same alpha, so nodes are the worst case.
+        const alpha = Number.parseFloat(tokens.staticTokens.get("--constellation-alpha") ?? "");
+        expect(alpha).toBeGreaterThan(0);
+        expect(alpha).toBeLessThanOrEqual(1);
+        const palette = (name: string): Rgb => {
+          const value = tokens.staticTokens.get(`--color-${name}`);
+          if (!value) throw new Error(`Missing palette token ${name}`);
+          return oklchToSrgb(value);
+        };
+        const nodes: Array<[string, Rgb]> = [
+          ["brand-ui", get("brand-ui")],
+          ["violet-400", palette("violet-400")],
+          ["cyan-400", palette("cyan-400")],
+        ];
         const failures: string[] = [];
-        // Worst cases behind the command bar: the page itself and a strong brand-colored aurora.
-        const backdrops = [get("bg"), get("brand")];
-        for (const [i, backdrop] of backdrops.entries()) {
-          const glass = composite(get("glass"), backdrop);
+        for (const [name, color] of nodes) {
+          const seen = composite({ ...color, a: alpha }, auroraBackdrop());
+          // Only --fg: text over the constellation is set in the strongest text color (the
+          // hero subtitle is text-fg, not text-fg-muted). --fg-muted cannot be guaranteed here
+          // without making the constellation too faint to see.
+          const ratio = contrastRatio(get("fg"), seen);
+          if (ratio < TEXT) failures.push(`fg on ${name} node: ${ratio.toFixed(2)}`);
+        }
+        expect(failures).toEqual([]);
+      });
+
+      it("keeps text readable on the glass surface, over every surface and over the brand color", () => {
+        const failures: string[] = [];
+        // Glass is used by the command bar, the site header and the menu panel's command bar.
+        // Worst cases behind it: each page surface, and a strong brand-colored aurora.
+        const backdrops: Array<[string, Rgb]> = [
+          ...["bg", "surface", "surface-raised", "surface-sunken"].map((name): [string, Rgb] => [
+            name,
+            get(name),
+          ]),
+          ["brand", get("brand")],
+        ];
+        // The header's command bar is glass on top of the header's glass: two layers.
+        const cases: Array<[string, Rgb]> = [
+          ...backdrops.map(([name, backdrop]): [string, Rgb] => [
+            `glass over ${name}`,
+            composite(get("glass"), backdrop),
+          ]),
+          ...backdrops.map(([name, backdrop]): [string, Rgb] => [
+            `glass over glass over ${name}`,
+            composite(get("glass"), composite(get("glass"), backdrop)),
+          ]),
+        ];
+        for (const [label, seen] of cases) {
           for (const fg of ["fg", "fg-muted", "fg-subtle"]) {
-            const ratio = contrastRatio(get(fg), glass);
-            if (ratio < TEXT)
-              failures.push(`${fg} on glass over ${i === 0 ? "bg" : "brand"}: ${ratio.toFixed(2)}`);
+            const ratio = contrastRatio(get(fg), seen);
+            if (ratio < TEXT) failures.push(`${fg} on ${label}: ${ratio.toFixed(2)}`);
           }
         }
         expect(failures).toEqual([]);

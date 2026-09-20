@@ -1,0 +1,61 @@
+---
+import { categories, categoryHref } from "../../config/categories";
+import { sitePages } from "../../config/site";
+import CommandBar from "../ui/CommandBar.astro";
+import Icon from "../ui/Icon.astro";
+import ThemeToggle from "../ui/ThemeToggle.astro";
+import Wordmark from "../ui/Wordmark.astro";
+
+// The site header. Two layouts, one visible at a time (the other is display:none, so it is
+// out of the accessibility tree and the tab order):
+//   - from 48rem: wordmark, command-bar link, "All tools", theme toggle
+//   - below 48rem: wordmark and a Menu disclosure. The panel holds the command bar, every
+//     category, the site pages and the theme toggle.
+// The disclosure is a native <details>: no JavaScript, and it works in Safari 16.4. Without
+// JavaScript it closes only through its summary (Esc and outside clicks would need a script).
+---
+
+<header class="ni-header">
+  <div class="ni-header__inner">
+    <Wordmark href="/" />
+
+    <nav class="ni-header__nav" aria-label="Main">
+      <CommandBar href={sitePages.tools.href} size="sm" />
+      <a class="ni-header__link" href={sitePages.tools.href}>{sitePages.tools.label}</a>
+    </nav>
+
+    <div class="ni-header__theme">
+      <ThemeToggle id="header" />
+    </div>
+
+    <details class="ni-menu">
+      <summary class="ni-menu__summary">
+        <Icon name="menu" class="ni-menu__icon-open" />
+        <Icon name="close" class="ni-menu__icon-close" />
+        <span>Menu</span>
+      </summary>
+      <div class="ni-menu__panel">
+        <CommandBar href={sitePages.tools.href} />
+        <nav aria-label="Menu">
+          <p class="ni-menu__heading">Categories</p>
+          <ul class="ni-menu__list">
+            {categories.map((category) => (
+  <li>
+    <a href={categoryHref(category)}>{category.name}</a>
+  </li>
+))}
+          </ul>
+          <p class="ni-menu__heading">Site</p>
+          <ul class="ni-menu__list">
+            <li><a href={sitePages.tools.href}>{sitePages.tools.label}</a></li>
+            <li><a href={sitePages.about.href}>{sitePages.about.label}</a></li>
+          </ul>
+        </nav>
+        <div class="ni-menu__theme">
+          <span class="ni-menu__heading">Theme</span>
+          <ThemeToggle id="menu" />
+        </div>
+      </div>
+    </details>
+  </div>
+</header>
