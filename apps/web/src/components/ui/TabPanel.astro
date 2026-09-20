@@ -1,0 +1,18 @@
+---
+import { tabPanelAttrs } from "./attrs";
+
+interface Props {
+  /** The `id` of the parent <Tabs>. */
+  tabs: string;
+  /** The id of the tab this panel belongs to. */
+  id: string;
+  selected?: boolean;
+}
+
+const { tabs, id, selected = false } = Astro.props;
+const { tabIndex, ...attrs } = tabPanelAttrs(tabs, id);
+---
+
+<div class="ni-tabpanel" tabindex={tabIndex} {...attrs} hidden={!selected}>
+  <slot />
+</div>

@@ -10,6 +10,8 @@ export default getViteConfig(
       environment: "node",
       include: ["src/**/*.test.ts"],
       exclude: ["e2e/**", "node_modules/**"],
+      // Return the real text of tokens.css for `?raw` imports (Vitest stubs other CSS as empty).
+      css: { include: [/tokens.css/] },
     },
   },
   { root: import.meta.dirname },

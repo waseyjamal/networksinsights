@@ -1,0 +1,335 @@
+/*
+ * Signal design tokens. The single source of truth for color, type, shape, depth and motion.
+ * See docs/design-system.md and ADR 0028.
+ *
+ * Layout of this file:
+ *   1. @theme static      Static tokens: palette, radius, type scale, motion, gradient.
+ *   2. @theme inline      Bridge: makes the theme-switching tokens usable as Tailwind utilities.
+ *   3. Light values       Runtime variables on :root and [data-theme="light"].
+ *   4. Dark values        Written once as `theme-dark`, applied to [data-theme="dark"] and to
+ *                         [data-theme="system"] when the system prefers dark.
+ *
+ * Every theme-switching token must exist in the bridge, the light block and the dark block.
+ * tokens.test.ts fails if one of them is missing, so the sets cannot drift apart.
+ *
+ * Raw color values are allowed in this file only. Components use var(--token).
+ */
+
+/* 1. Static tokens ------------------------------------------------------------------------ */
+
+@theme static {
+  /* Only Signal colors exist. Tailwind's default palette is removed on purpose. */
+  --color-*: initial;
+
+  --color-white: oklch(1 0 0);
+  --color-black: oklch(0 0 0);
+
+  /* Electric indigo: the brand color. */
+  --color-indigo-50: oklch(0.965 0.016 278);
+  --color-indigo-100: oklch(0.93 0.033 278);
+  --color-indigo-200: oklch(0.87 0.064 278);
+  --color-indigo-300: oklch(0.79 0.107 278);
+  --color-indigo-400: oklch(0.7 0.158 277);
+  --color-indigo-500: oklch(0.575 0.226 277);
+  --color-indigo-600: oklch(0.51 0.24 277);
+  --color-indigo-700: oklch(0.44 0.21 277);
+  --color-indigo-800: oklch(0.37 0.17 277);
+  --color-indigo-900: oklch(0.3 0.12 277);
+  --color-indigo-950: oklch(0.23 0.08 277);
+
+  /* Violet and cyan complete the brand gradient. */
+  --color-violet-400: oklch(0.72 0.17 300);
+  --color-violet-500: oklch(0.61 0.23 300);
+  --color-violet-600: oklch(0.54 0.24 300);
+  --color-cyan-300: oklch(0.87 0.1 205);
+  --color-cyan-400: oklch(0.82 0.12 210);
+  --color-cyan-500: oklch(0.72 0.12 215);
+  --color-cyan-600: oklch(0.6 0.109 220);
+
+  /* Cool slate. The dark end is a deep navy-black, never pure black. */
+  --color-slate-50: oklch(0.984 0.004 250);
+  --color-slate-100: oklch(0.966 0.008 252);
+  --color-slate-200: oklch(0.925 0.014 254);
+  --color-slate-300: oklch(0.86 0.022 256);
+  --color-slate-400: oklch(0.72 0.036 258);
+  --color-slate-500: oklch(0.56 0.046 260);
+  --color-slate-600: oklch(0.45 0.045 262);
+  --color-slate-700: oklch(0.37 0.045 264);
+  --color-slate-800: oklch(0.29 0.042 266);
+  --color-slate-850: oklch(0.235 0.038 267);
+  --color-slate-900: oklch(0.19 0.036 268);
+  --color-slate-950: oklch(0.15 0.034 268);
+  --color-slate-975: oklch(0.125 0.032 268);
+
+  /* Shape */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+  --radius-full: 9999px;
+
+  /* Fluid type scale. rem + vw, so text still scales with browser zoom and font settings. */
+  --text-xs: clamp(0.75rem, 0.73rem + 0.1vw, 0.8125rem);
+  --text-xs--line-height: 1.45;
+  --text-sm: clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
+  --text-sm--line-height: 1.5;
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --text-base--line-height: 1.6;
+  --text-lg: clamp(1.125rem, 1.06rem + 0.32vw, 1.3125rem);
+  --text-lg--line-height: 1.5;
+  --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.625rem);
+  --text-xl--line-height: 1.35;
+  --text-xl--letter-spacing: -0.01em;
+  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2.125rem);
+  --text-2xl--line-height: 1.25;
+  --text-2xl--letter-spacing: -0.02em;
+  --text-3xl: clamp(1.875rem, 1.5rem + 1.9vw, 3rem);
+  --text-3xl--line-height: 1.15;
+  --text-3xl--letter-spacing: -0.025em;
+  --text-4xl: clamp(2.25rem, 1.6rem + 3.2vw, 4rem);
+  --text-4xl--line-height: 1.08;
+  --text-4xl--letter-spacing: -0.03em;
+  --text-display: clamp(2.75rem, 1.7rem + 5.2vw, 5.75rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.04em;
+  --text-display--font-weight: 700;
+
+  /* Motion: 120 to 250 ms. Everything is switched off under prefers-reduced-motion. */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 250ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /*
+   * The brand gradient. Brand moments only: hero glow and gradient borders.
+   * Never behind body text.
+   */
+  --gradient-brand: linear-gradient(
+    135deg in oklab,
+    var(--color-indigo-500),
+    var(--color-violet-500) 50%,
+    var(--color-cyan-400)
+  );
+}
+
+/* Fonts come from Astro's Fonts API (astro.config.mjs), which sets these two variables. */
+@theme inline {
+  --font-sans: var(--font-geist);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* 2. Bridge: theme-switching tokens as Tailwind utilities (bg-surface, text-fg, ...) ------ */
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-inverse: var(--inverse);
+  --color-inverse-fg: var(--inverse-fg);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-active: var(--brand-active);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-ui: var(--brand-ui);
+  --color-brand-ui-fg: var(--brand-ui-fg);
+  --color-brand-text: var(--brand-text);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-fg: var(--brand-soft-fg);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-text: var(--success-text);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-text: var(--warning-text);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-text: var(--danger-text);
+  --color-danger-solid: var(--danger-solid);
+  --color-danger-solid-hover: var(--danger-solid-hover);
+  --color-on-danger: var(--on-danger);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-text: var(--info-text);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
+  --color-cat-pdf: var(--cat-pdf);
+  --color-cat-image: var(--cat-image);
+  --color-cat-video-audio: var(--cat-video-audio);
+  --color-cat-text: var(--cat-text);
+  --color-cat-calculators: var(--cat-calculators);
+  --color-cat-converters: var(--cat-converters);
+  --color-cat-generators: var(--cat-generators);
+  --color-cat-developer: var(--cat-developer);
+  --color-cat-web-seo: var(--cat-web-seo);
+  --color-cat-color-design: var(--cat-color-design);
+  --color-cat-date-time: var(--cat-date-time);
+}
+
+/* 3. Light values ------------------------------------------------------------------------- */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: var(--color-slate-50);
+  --surface: var(--color-white);
+  --surface-raised: var(--color-white);
+  --surface-sunken: var(--color-slate-100);
+  --border: var(--color-slate-200);
+  --border-strong: var(--color-slate-500);
+
+  --fg: var(--color-slate-950);
+  --fg-muted: var(--color-slate-700);
+  --fg-subtle: var(--color-slate-600);
+  --inverse: var(--color-slate-900);
+  --inverse-fg: var(--color-slate-50);
+
+  --brand: var(--color-indigo-600);
+  --brand-hover: var(--color-indigo-700);
+  --brand-active: var(--color-indigo-800);
+  --brand-fg: var(--color-white);
+  --brand-ui: var(--color-indigo-600);
+  --brand-ui-fg: var(--color-white);
+  --brand-text: var(--color-indigo-700);
+  --brand-soft: var(--color-indigo-50);
+  --brand-soft-fg: var(--color-indigo-800);
+  --ring: var(--color-indigo-600);
+
+  --success: oklch(0.52 0.143 150);
+  --success-soft: oklch(0.96 0.04 150);
+  --success-text: oklch(0.4 0.11 150);
+  --warning: oklch(0.55 0.119 70);
+  --warning-soft: oklch(0.97 0.031 85);
+  --warning-text: oklch(0.42 0.09 65);
+  --danger: oklch(0.54 0.21 27);
+  --danger-soft: oklch(0.96 0.019 20);
+  --danger-text: oklch(0.45 0.18 27);
+  --danger-solid: oklch(0.52 0.21 27);
+  --danger-solid-hover: oklch(0.46 0.187 27);
+  --on-danger: var(--color-white);
+  --info: oklch(0.52 0.119 240);
+  --info-soft: oklch(0.96 0.021 240);
+  --info-text: oklch(0.42 0.105 245);
+
+  --glass: oklch(1 0 0 / 0.72);
+  --glass-border: oklch(0.25 0.04 268 / 0.12);
+
+  /* Category accents: small icon tints only. One hue per category, roughly 30 degrees apart. */
+  --cat-pdf: oklch(0.52 0.19 25);
+  --cat-converters: oklch(0.52 0.128 55);
+  --cat-date-time: oklch(0.5 0.1 90);
+  --cat-generators: oklch(0.5 0.13 140);
+  --cat-image: oklch(0.5 0.105 165);
+  --cat-calculators: oklch(0.5 0.085 195);
+  --cat-web-seo: oklch(0.5 0.094 225);
+  --cat-text: oklch(0.5 0.1 250);
+  --cat-developer: oklch(0.5 0.19 280);
+  --cat-video-audio: oklch(0.5 0.2 310);
+  --cat-color-design: oklch(0.52 0.19 345);
+
+  /* Depth in light mode: subtle layered shadows. */
+  --shadow-xs: 0 1px 2px oklch(0.25 0.04 268 / 0.06);
+  --shadow-sm: 0 1px 2px oklch(0.25 0.04 268 / 0.06), 0 1px 3px oklch(0.25 0.04 268 / 0.08);
+  --shadow-md:
+    0 1px 2px oklch(0.25 0.04 268 / 0.05), 0 4px 8px -2px oklch(0.25 0.04 268 / 0.08),
+    0 12px 24px -6px oklch(0.25 0.04 268 / 0.08);
+  --shadow-lg:
+    0 2px 4px oklch(0.25 0.04 268 / 0.05), 0 12px 24px -4px oklch(0.25 0.04 268 / 0.1),
+    0 32px 64px -12px oklch(0.25 0.04 268 / 0.14);
+  --shadow-inset: inset 0 1px 2px oklch(0.25 0.04 268 / 0.06);
+  --glow: oklch(0.575 0.226 277 / 0.3);
+}
+
+/* 4. Dark values -------------------------------------------------------------------------- */
+
+@utility theme-dark {
+  color-scheme: dark;
+
+  --bg: var(--color-slate-950);
+  --surface: var(--color-slate-900);
+  --surface-raised: var(--color-slate-850);
+  --surface-sunken: var(--color-slate-975);
+  --border: var(--color-slate-800);
+  --border-strong: var(--color-slate-500);
+
+  --fg: var(--color-slate-50);
+  --fg-muted: var(--color-slate-300);
+  --fg-subtle: var(--color-slate-400);
+  --inverse: var(--color-slate-100);
+  --inverse-fg: var(--color-slate-900);
+
+  --brand: var(--color-indigo-500);
+  --brand-hover: var(--color-indigo-600);
+  --brand-active: var(--color-indigo-700);
+  --brand-fg: var(--color-white);
+  --brand-ui: var(--color-indigo-400);
+  --brand-ui-fg: var(--color-slate-950);
+  --brand-text: var(--color-indigo-300);
+  --brand-soft: var(--color-indigo-950);
+  --brand-soft-fg: var(--color-indigo-200);
+  --ring: var(--color-indigo-400);
+
+  --success: oklch(0.75 0.16 150);
+  --success-soft: oklch(0.26 0.06 150);
+  --success-text: oklch(0.85 0.13 150);
+  --warning: oklch(0.8 0.14 80);
+  --warning-soft: oklch(0.28 0.05 75);
+  --warning-text: oklch(0.88 0.12 85);
+  --danger: oklch(0.72 0.17 25);
+  --danger-soft: oklch(0.27 0.07 25);
+  --danger-text: oklch(0.83 0.094 25);
+  --danger-solid: oklch(0.55 0.21 27);
+  --danger-solid-hover: oklch(0.5 0.2 27);
+  --on-danger: var(--color-white);
+  --info: oklch(0.75 0.13 240);
+  --info-soft: oklch(0.27 0.06 240);
+  --info-text: oklch(0.85 0.083 240);
+
+  --glass: oklch(0.19 0.036 268 / 0.62);
+  --glass-border: oklch(1 0 0 / 0.12);
+
+  --cat-pdf: oklch(0.75 0.15 25);
+  --cat-converters: oklch(0.78 0.14 55);
+  --cat-date-time: oklch(0.8 0.12 90);
+  --cat-generators: oklch(0.78 0.15 140);
+  --cat-image: oklch(0.78 0.12 165);
+  --cat-calculators: oklch(0.78 0.11 195);
+  --cat-web-seo: oklch(0.78 0.11 225);
+  --cat-text: oklch(0.78 0.09 250);
+  --cat-developer: oklch(0.75 0.131 280);
+  --cat-video-audio: oklch(0.75 0.15 310);
+  --cat-color-design: oklch(0.76 0.15 345);
+
+  /* Depth in dark mode: a subtle border and an inner glow instead of drop shadows. */
+  --shadow-xs: 0 0 0 1px oklch(1 0 0 / 0.06);
+  --shadow-sm: 0 0 0 1px oklch(1 0 0 / 0.07), inset 0 1px 0 oklch(1 0 0 / 0.05);
+  --shadow-md:
+    0 0 0 1px oklch(1 0 0 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.06),
+    0 8px 24px -8px oklch(0 0 0 / 0.5);
+  --shadow-lg:
+    0 0 0 1px oklch(1 0 0 / 0.09), inset 0 1px 0 oklch(1 0 0 / 0.08),
+    inset 0 0 32px oklch(0.575 0.226 277 / 0.06), 0 24px 48px -12px oklch(0 0 0 / 0.6);
+  --shadow-inset: inset 0 1px 2px oklch(0 0 0 / 0.4);
+  --glow: oklch(0.575 0.226 277 / 0.45);
+}
+
+[data-theme="dark"] {
+  @apply theme-dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    @apply theme-dark;
+  }
+}

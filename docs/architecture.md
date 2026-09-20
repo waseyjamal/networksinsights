@@ -18,7 +18,9 @@ Now:
 ```
 apps/
   web/            Astro site (Astro, React islands, Tailwind)
-docs/             architecture, tool contract, ADRs
+    src/styles/   design tokens and the one component stylesheet (Signal design system)
+    src/components/ui/   Astro components; react/ holds the React versions
+docs/             architecture, tool contract, design system, ADRs
 ```
 
 Planned:
@@ -73,7 +75,7 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 3 | Quality gates | Done |
 | 4 | CI pipeline | Done |
 | 5 | Deploy pipeline | Done |
-| 6 | Design system | |
+| 6 | Design system | In progress |
 | 7 | Site shell | |
 | 8 | Tool contract + registry | |
 | 9 | Generator + guardrails | |

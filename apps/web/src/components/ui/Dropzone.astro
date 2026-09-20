@@ -1,0 +1,37 @@
+---
+import { type DropzoneState, dropzoneAttrs } from "./attrs";
+import Icon from "./Icon.astro";
+
+// Visual only. Dropping, validation and reading files come with the first tool.
+// The real <input type="file"> keeps it keyboard accessible: the label opens the picker.
+interface Props {
+  state?: DropzoneState;
+  disabled?: boolean;
+  multiple?: boolean;
+  accept?: string;
+  title?: string;
+  hint?: string;
+}
+
+const {
+  state,
+  disabled = false,
+  multiple = true,
+  accept,
+  title = "Drop files here",
+  hint = "or click to browse",
+} = Astro.props;
+---
+
+<label class="ni-dropzone" {...dropzoneAttrs({ state, disabled })}>
+  <input
+    class="sr-only"
+    type="file"
+    multiple={multiple ? "" : undefined}
+    accept={accept}
+    disabled={disabled}
+  />
+  <span class="ni-dropzone__icon"><Icon name="upload" size="lg" /></span>
+  <span class="ni-dropzone__title">{title}</span>
+  <span class="ni-dropzone__hint">{hint}</span>
+</label>

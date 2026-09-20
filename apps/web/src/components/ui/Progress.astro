@@ -1,0 +1,22 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { progressAttrs, progressPercent } from "./attrs";
+
+interface Props extends Omit<HTMLAttributes<"div">, "role"> {
+  /** 0 to 100. Leave it out for an indeterminate bar. */
+  value?: number;
+  /** Accessible name. Required: a progress bar without a name tells nobody what is loading. */
+  label: string;
+}
+
+const { value, label, class: className, ...rest } = Astro.props;
+---
+
+<div
+  class:list={["ni-progress", className]}
+  style={`--ni-value: ${progressPercent(value)}`}
+  {...progressAttrs({ value, label })}
+  {...rest}
+>
+  <div class="ni-progress__bar"></div>
+</div>

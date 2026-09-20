@@ -1,0 +1,21 @@
+---
+import { type IconName, type IconSize, iconPaths } from "./icons";
+
+interface Props {
+  name: IconName;
+  size?: IconSize;
+  class?: string;
+}
+
+const { name, size = "md", class: className } = Astro.props;
+---
+
+<svg
+  class:list={["ni-icon", className]}
+  data-size={size}
+  viewBox="0 0 24 24"
+  aria-hidden="true"
+  focusable="false"
+>
+  {iconPaths[name].map((d) => <path d={d} />)}
+</svg>

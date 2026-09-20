@@ -1,0 +1,70 @@
+---
+import { contrastRatio } from "../../lib/color";
+import { pairs } from "../../lib/contrast-pairs";
+import { parseTokens, themeColors } from "../../lib/tokens";
+import tokensCss from "../../styles/tokens.css?raw";
+
+// The same pairs tokens.test.ts enforces, with their measured ratios.
+const tokens = parseTokens(tokensCss);
+const light = themeColors(tokens, "light");
+const dark = themeColors(tokens, "dark");
+
+const ratio = (colors: typeof light, fg: string, bg: string) => {
+  const a = colors.get(fg);
+  const b = colors.get(bg);
+  if (!a || !b) throw new Error(`Unknown token in pair ${fg} on ${bg}`);
+  return contrastRatio(a, b);
+};
+
+const rows = pairs().map((pair) => {
+  const l = ratio(light, pair.fg, pair.bg);
+  const d = ratio(dark, pair.fg, pair.bg);
+  return { ...pair, light: l, dark: d, pass: l >= pair.min && d >= pair.min };
+});
+const failing = rows.filter((row) => !row.pass).length;
+---
+
+<div class="space-y-4">
+  <p class="max-w-2xl">
+    <strong
+      >{rows.length}
+      pairs checked in both themes, {failing === 0 ? "all pass" : `${failing} fail`}.</strong
+    >
+    <span class="text-fg-muted">
+      Body text needs 4.5:1. Large text and UI parts need 3:1 (WCAG 2.2 AA).</span
+    >
+  </p>
+  <details class="rounded-2xl border border-border bg-surface p-4">
+    <summary class="cursor-pointer font-semibold">Show all {rows.length} pairs</summary>
+    {/* biome-ignore lint/a11y/noNoninteractiveTabindex lint/a11y/useSemanticElements: a scrollable region must be reachable by keyboard (WCAG 2.1.1, axe scrollable-region-focusable) */}
+    <div class="mt-4 overflow-x-auto" role="region" aria-label="Contrast pairs" tabindex="0">
+      <table class="w-full min-w-[40rem] text-left text-sm">
+        <caption class="sr-only">
+          Contrast ratio of every text and UI pair, in light and dark
+        </caption>
+        <thead>
+          <tr class="border-b border-border">
+            <th scope="col" class="py-2 pr-4 font-semibold">Foreground</th>
+            <th scope="col" class="py-2 pr-4 font-semibold">Background</th>
+            <th scope="col" class="py-2 pr-4 font-semibold">Used for</th>
+            <th scope="col" class="py-2 pr-4 text-right font-semibold">Min</th>
+            <th scope="col" class="py-2 pr-4 text-right font-semibold">Light</th>
+            <th scope="col" class="py-2 text-right font-semibold">Dark</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+  <tr class="border-b border-border">
+    <td class="py-1.5 pr-4 font-mono text-xs">{row.fg}</td>
+    <td class="py-1.5 pr-4 font-mono text-xs">{row.bg}</td>
+    <td class="py-1.5 pr-4 text-fg-muted">{row.note}</td>
+    <td class="py-1.5 pr-4 text-right font-mono tabular-nums">{row.min}</td>
+    <td class="py-1.5 pr-4 text-right font-mono tabular-nums">{row.light.toFixed(2)}</td>
+    <td class="py-1.5 text-right font-mono tabular-nums">{row.dark.toFixed(2)}</td>
+  </tr>
+))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</div>

@@ -1,0 +1,12 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { type BadgeTone, badgeAttrs } from "./attrs";
+
+interface Props extends HTMLAttributes<"span"> {
+  tone?: BadgeTone;
+}
+
+const { tone, class: className, ...rest } = Astro.props;
+---
+
+<span class:list={["ni-badge", className]} {...badgeAttrs({ tone })} {...rest}><slot /></span>

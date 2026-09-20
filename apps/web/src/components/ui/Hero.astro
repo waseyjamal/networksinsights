@@ -1,0 +1,14 @@
+---
+import Constellation from "./Constellation.astro";
+
+// Brand moment: aurora glow and the network constellation behind the heading. Both are
+// decorative and sit behind the content, which is plain text on the page background.
+---
+
+<section class="ni-hero">
+  <div class="ni-aurora" aria-hidden="true"></div>
+  <Constellation />
+  <div class="ni-hero__content">
+    <slot />
+  </div>
+</section>

@@ -1,0 +1,20 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { type AlertTone, alertAttrs, alertIcon } from "./attrs";
+import Icon from "./Icon.astro";
+
+interface Props extends HTMLAttributes<"div"> {
+  tone?: AlertTone;
+  title?: string;
+}
+
+const { tone = "info", title, class: className, ...rest } = Astro.props;
+---
+
+<div class:list={["ni-alert", className]} {...alertAttrs({ tone })} {...rest}>
+  <Icon name={alertIcon[tone]} />
+  <div>
+    {title && <p class="ni-alert__title">{title}</p>}
+    <div class="ni-alert__body"><slot /></div>
+  </div>
+</div>

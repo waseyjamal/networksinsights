@@ -1,0 +1,29 @@
+---
+import Icon from "./Icon.astro";
+import type { IconName } from "./icons";
+
+// One tile of the bento grid. The category accent tints only the small icon chip.
+interface Props {
+  /** Category id, one of the eleven accents (pdf, image, video-audio, ...). */
+  category: string;
+  icon: IconName;
+  title: string;
+  description: string;
+  /** Number of tools, shown in Geist Mono. */
+  count: number;
+  href: string;
+  /** 2 makes the tile span two columns in the bento grid. */
+  span?: 1 | 2;
+}
+
+const { category, icon, title, description, count, href, span = 1 } = Astro.props;
+---
+
+<a class="ni-tile" href={href} data-cat={category} data-span={span}>
+  <span class="ni-icon-tint"><Icon name={icon} /></span>
+  <span>
+    <span class="ni-tile__title">{title}</span>
+    <span class="ni-tile__text">{description}</span>
+  </span>
+  <span class="ni-tile__meta">{count} tools</span>
+</a>
