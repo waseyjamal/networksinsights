@@ -40,6 +40,7 @@ The site needs a deploy pipeline that a developer's machine cannot bypass, that 
 
 - No local machine can deploy. A deploy needs a merge to `main`, with both checks green.
 - A pull request gets a preview at `https://pr-<N>-networksinsights.<account>.workers.dev`, where `<account>` is the account's workers.dev subdomain. The same alias moves to the newest version of the pull request.
+- Previews work only after the first production deploy exists. `wrangler versions upload` fails with "You cannot upload a new version of a Worker that does not yet exist" until `wrangler deploy` has created the Worker. So the `preview` job of the Mission 5 pull request fails once, by design, and previews start working on the first pull request after Mission 5 is merged and deployed.
 - Preview URLs exist only on `workers.dev` and are public. Search engines could index them. Mission 12 (security) should add a `noindex` header for `workers.dev` hosts.
 - Wrangler and its `workerd` binary add a large `node_modules` (about 150 MB on one platform), so every install is slower on developer machines and CI.
 - The API token needs at least Account, Workers Scripts, Edit, and Zone, Workers Routes, Edit for the Custom Domain. The scope cannot be checked from the repository. It is verified by the first production deploy after Mission 5 merges.
