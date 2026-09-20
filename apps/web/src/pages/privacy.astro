@@ -1,0 +1,78 @@
+---
+import Alert from "../components/ui/Alert.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { pageTitle, site } from "../config/site";
+import Page from "../layouts/Page.astro";
+---
+
+<Page
+  title={pageTitle("Privacy")}
+  description="What NetworksInsights does with your data today: no accounts, no cookies, no analytics, and one theme preference stored on your device."
+>
+  <div class="grid gap-4">
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Privacy" }]} />
+    <PageHeader
+      title="Privacy"
+      intro={`This page describes what ${site.name} does with your data today. It is short because the site does very little.`}
+    >
+      <Alert tone="warning" title="Draft: owner input needed">
+        This page is a draft and has not been reviewed. Before launch the owner must provide the
+        name of the party responsible for the site, a contact email and the legal jurisdiction, and
+        confirm the hosting paragraph. All of this is listed in the launch checklist.
+      </Alert>
+    </PageHeader>
+  </div>
+
+  <div class="ni-prose">
+    <h2>In short</h2>
+    <ul>
+      <li>There are no accounts and no sign-up.</li>
+      <li>The site sets no cookies.</li>
+      <li>The site has no analytics and no advertising trackers today.</li>
+      <li>Your theme choice is stored on your own device and never sent to us.</li>
+    </ul>
+
+    <h2>What the site does</h2>
+    <p>
+      {site.name}{" "}
+      is a set of static pages. Loading a page does not ask you for information, and the site has no
+      forms that send data to us. The fonts are served from the site itself, so your browser does
+      not contact a font service either.
+    </p>
+
+    <h2>Cookies and local storage</h2>
+    <p>
+      The site sets no cookies. It stores one item in your browser's local storage, under the key
+      <code>ni-theme</code>: your choice of light, dark or system theme, if you make one. It stays
+      on your device, and the site does not read it for any other purpose.
+    </p>
+
+    <h2>Analytics</h2>
+    <p>
+      There are no analytics today. If that changes, this page will be updated before analytics go
+      live.
+    </p>
+
+    <h2>Tools and your files</h2>
+    <p>
+      No tools are live yet, so no files are processed today. Where a tool runs in your browser,
+      your files stay on your device. This page will say where each tool does its processing once
+      tools launch.
+    </p>
+
+    <h2>Hosting</h2>
+    <p>
+      The site is hosted on Cloudflare. To deliver a page, Cloudflare necessarily receives technical
+      request data, such as your IP address and the page you asked for. See
+      <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>
+      for how it handles that data.
+    </p>
+
+    <h2>Who is responsible</h2>
+    <p>[The name of the responsible party and a contact email: to be provided.]</p>
+
+    <h2>Governing law</h2>
+    <p>[The legal jurisdiction: to be provided.]</p>
+  </div>
+</Page>

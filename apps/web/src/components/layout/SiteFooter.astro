@@ -1,0 +1,47 @@
+---
+import { categories, categoryHref } from "../../config/categories";
+import { site, sitePages } from "../../config/site";
+import Wordmark from "../ui/Wordmark.astro";
+
+// The year is fixed when the site is built, which is when the page is generated.
+const year = new Date().getFullYear();
+const pages = [
+  sitePages.tools,
+  sitePages.about,
+  sitePages.contact,
+  sitePages.privacy,
+  sitePages.terms,
+];
+---
+
+<footer class="ni-footer">
+  <div class="ni-footer__inner">
+    <div class="ni-footer__brand">
+      <Wordmark href="/" />
+      <p class="ni-footer__tagline">{site.tagline}</p>
+    </div>
+    <nav class="ni-footer__nav" aria-label="Footer">
+      <div>
+        <h2 class="ni-footer__heading">Categories</h2>
+        <ul class="ni-footer__list">
+          {categories.map((category) => (
+  <li>
+    <a href={categoryHref(category)}>{category.name}</a>
+  </li>
+))}
+        </ul>
+      </div>
+      <div>
+        <h2 class="ni-footer__heading">{site.name}</h2>
+        <ul class="ni-footer__list">
+          {pages.map((page) => (
+  <li>
+    <a href={page.href}>{page.label}</a>
+  </li>
+))}
+        </ul>
+      </div>
+    </nav>
+    <p class="ni-footer__legal">© {year} {site.name}. {site.tagline}.</p>
+  </div>
+</footer>

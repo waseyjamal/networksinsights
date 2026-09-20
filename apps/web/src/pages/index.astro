@@ -1,9 +1,80 @@
 ---
-import IslandCheck from "../components/IslandCheck";
-import Base from "../layouts/Base.astro";
+import BentoGrid from "../components/ui/BentoGrid.astro";
+import Card from "../components/ui/Card.astro";
+import CategoryTile from "../components/ui/CategoryTile.astro";
+import CommandBar from "../components/ui/CommandBar.astro";
+import Hero from "../components/ui/Hero.astro";
+import Icon from "../components/ui/Icon.astro";
+import type { IconName } from "../components/ui/icons";
+import { categories, categoryHref } from "../config/categories";
+import { homeTitle, sitePages } from "../config/site";
+import Page from "../layouts/Page.astro";
+
+// The wide tiles make the four-column bento grid come out even: 5 wide + 6 narrow = 16 cells.
+const wideTiles = new Set(["pdf", "converters", "developer", "color-design", "date-time"]);
+
+// Every point here must stay true of the live site (AGENTS.md: never invent content).
+const reasons: Array<{ icon: IconName; title: string; text: string }> = [
+  {
+    icon: "lock",
+    title: "Private by design",
+    text: "Where the browser can do the job, your files are processed on your device and are never uploaded.",
+  },
+  { icon: "check-circle", title: "Free", text: "Every tool is free to use." },
+  { icon: "bolt", title: "Fast", text: "Pages load quickly, even on slow connections." },
+  {
+    icon: "user",
+    title: "No sign-up",
+    text: "There are no accounts. Open a tool and start using it.",
+  },
+];
 ---
 
-<Base title="NetworksInsights" description="NetworksInsights — under construction">
-  <h1>NetworksInsights — under construction</h1>
-  <IslandCheck client:load />
-</Base>
+<Page
+  title={homeTitle}
+  description="Convert, compress, calculate and create right in your browser. Free online tools with no sign-up, private by design."
+>
+  <Hero>
+    <h1 class="text-display">Free online tools. Private by design.</h1>
+    <p class="max-w-xl text-lg text-fg">
+      Convert, compress, calculate and create right in your browser. No sign-up needed.
+    </p>
+    <CommandBar href={sitePages.tools.href} />
+  </Hero>
+
+  <section class="space-y-6" aria-labelledby="categories-heading">
+    <div class="space-y-2">
+      <h2 id="categories-heading" class="text-3xl">Browse by category</h2>
+      <p class="max-w-2xl text-fg-muted">Tools appear in these categories as they are added.</p>
+    </div>
+    <BentoGrid>
+      {categories.map((category) => (
+  <CategoryTile
+    category={category.id}
+    icon={category.icon}
+    title={category.name}
+    description={category.description}
+    href={categoryHref(category)}
+    span={wideTiles.has(category.id) ? 2 : 1}
+  />
+))}
+    </BentoGrid>
+  </section>
+
+  <section class="space-y-6" aria-labelledby="why-heading">
+    <h2 id="why-heading" class="text-3xl">Why NetworksInsights</h2>
+    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {reasons.map((reason) => (
+  <li class="contents">
+    <Card padding="lg" class="space-y-3">
+      <span class="ni-icon-tint">
+        <Icon name={reason.icon} />
+      </span>
+      <h3 class="text-xl">{reason.title}</h3>
+      <p class="text-fg-muted">{reason.text}</p>
+    </Card>
+  </li>
+))}
+    </ul>
+  </section>
+</Page>

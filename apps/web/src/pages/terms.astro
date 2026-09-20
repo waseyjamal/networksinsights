@@ -1,0 +1,54 @@
+---
+import Alert from "../components/ui/Alert.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { pageTitle, site } from "../config/site";
+import Page from "../layouts/Page.astro";
+---
+
+<Page
+  title={pageTitle("Terms")}
+  description="The terms for using NetworksInsights. This page is a draft and still needs owner input before launch."
+>
+  <div class="grid gap-4">
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Terms" }]} />
+    <PageHeader title="Terms" intro={`The terms for using ${site.name}.`}>
+      <Alert tone="warning" title="Draft: owner input needed">
+        This page is a draft and a structure only. It has not had a legal review. It still needs the
+        owner's public name and the legal jurisdiction, and every section needs the owner's
+        approval. All of this is listed in the launch checklist.
+      </Alert>
+    </PageHeader>
+  </div>
+
+  <div class="ni-prose">
+    <h2>Using the site</h2>
+    <p>
+      {site.name}{" "}
+      offers free online tools. By using the site you agree to these terms. If you do not agree,
+      please do not use it.
+    </p>
+
+    <h2>The tools</h2>
+    <p>
+      The tools are provided free of charge and as they are. Results are meant to be helpful, and
+      you are responsible for checking that they are right for what you need before you rely on
+      them.
+    </p>
+
+    <h2>Your files and content</h2>
+    <p>
+      You keep all rights to the files and content you work with. Do not use the site with material
+      you have no right to use.
+    </p>
+
+    <h2>Changes</h2>
+    <p>The site and these terms can change. The current version is always the one on this page.</p>
+
+    <h2>Who is responsible</h2>
+    <p>[The name of the responsible party: to be provided.]</p>
+
+    <h2>Governing law</h2>
+    <p>[The legal jurisdiction: to be provided.]</p>
+  </div>
+</Page>

@@ -105,6 +105,12 @@
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
 
   /*
+   * The strongest a constellation node or link may be. The constellation sits behind hero text,
+   * so this caps how much it can lower text contrast (tokens.test.ts checks the worst case).
+   */
+  --constellation-alpha: 0.25;
+
+  /*
    * The brand gradient. Brand moments only: hero glow and gradient borders.
    * Never behind body text.
    */

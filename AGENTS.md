@@ -26,6 +26,9 @@ Dependencies:
 UI:
 - UI must use design tokens and existing components; new components go into the design system first.
 
+Content:
+- Never invent content: no fake counts, ratings, testimonials or claims.
+
 Safety:
 - Never commit secrets or `.env` files.
 - No global installs and no global config changes.
@@ -69,6 +72,7 @@ Deploy (see ADR 0027): after `quality` and `e2e` pass, `ci.yml` job `preview` up
 - `docs/tool-contract.md` — the contract every tool follows (draft until Mission 8)
 - `docs/design-system.md` — the Signal design system: how to use tokens and components
 - `docs/adr/` — one file per architecture decision
+- `docs/launch-checklist.md` — every owner input and step needed before launch
 - `docs/runbooks/` — step-by-step procedures (deploy and rollback)
 
 ## Changing a decision

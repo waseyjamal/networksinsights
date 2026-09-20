@@ -1,0 +1,58 @@
+---
+import Alert from "../components/ui/Alert.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { pageTitle, site } from "../config/site";
+import Page from "../layouts/Page.astro";
+---
+
+<Page
+  title={pageTitle("About")}
+  description="About NetworksInsights: a free online tools platform that works in your browser, with no accounts and no sign-up."
+>
+  <div class="grid gap-4">
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "About" }]} />
+    <PageHeader
+      title="About"
+      intro={`${site.name} is a free online tools platform: ${site.tagline.toLowerCase()} for everyday jobs, in your browser.`}
+    >
+      <Alert tone="warning" title="Draft: owner input needed">
+        This page is a draft. It still needs the public name of the person or organization that runs
+        the site. It is listed in the launch checklist.
+      </Alert>
+    </PageHeader>
+  </div>
+
+  <div class="ni-prose">
+    <h2>What this site is</h2>
+    <p>
+      {site.name}{" "}
+      collects small, single-purpose tools in one place: converting, compressing, calculating and
+      creating things without installing anything. The tools are grouped into categories, and the
+      collection grows over time.
+    </p>
+
+    <h2>How it works</h2>
+    <ul>
+      <li>
+        <strong>Private by design.</strong>
+        Where the browser can do the job, files are processed on your device and are not uploaded.
+      </li>
+      <li><strong>Free.</strong> Every tool is free to use.</li>
+      <li><strong>No sign-up.</strong> There are no accounts.</li>
+      <li>
+        <strong>Fast.</strong>
+        Pages are plain, static and light, so they load quickly even on a slow connection.
+      </li>
+    </ul>
+
+    <h2>Where things stand</h2>
+    <p>
+      The site is under construction. No tools are live yet, so the category pages are empty for
+      now.
+    </p>
+
+    <h2>Who runs it</h2>
+    <p>[The public name of the person or organization behind {site.name}: to be provided.]</p>
+  </div>
+</Page>

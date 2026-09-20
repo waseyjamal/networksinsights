@@ -1,0 +1,19 @@
+---
+// The top of an inner page: the one H1 and a short introduction. Extra content (a draft
+// note, badges) goes in the default slot, below the introduction. A page has one H1: pass
+// `level={2}` when this header is shown as an example inside another page (the style guide).
+interface Props {
+  title: string;
+  intro?: string;
+  level?: 1 | 2;
+}
+
+const { title, intro, level = 1 } = Astro.props;
+const Heading = level === 1 ? "h1" : "h2";
+---
+
+<header class="ni-page-header">
+  <Heading>{title}</Heading>
+  {intro && <p class="ni-page-header__intro">{intro}</p>}
+  <slot />
+</header>

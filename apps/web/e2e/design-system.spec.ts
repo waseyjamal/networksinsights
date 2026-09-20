@@ -15,7 +15,7 @@ test.describe("/design-system", () => {
   test("is a noindex page with one h1 and the standard landmarks", async ({ page }) => {
     const response = await page.goto(path);
     expect(response?.status()).toBe(200);
-    await expect(page.locator('head meta[name="robots"]')).toHaveAttribute("content", "noindex");
+    await expect(page.locator('head meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     await expect(page.getByRole("main")).toHaveCount(1);
     await expect(page.getByRole("banner")).toHaveCount(1);

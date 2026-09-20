@@ -78,42 +78,64 @@ test.describe("budgets", () => {
   });
 });
 
-test.describe("home page JavaScript", () => {
-  // Gzipped size of the home page's JavaScript on main before Mission 6 (commit 234b9b6):
-  // client 65,559 B + react 3,040 B + IslandCheck 392 B. It is React and its island, nothing else.
-  // If the React or Astro version changes, update this number in the same pull request.
-  const BASELINE_GZIP = 68_991;
-  const TOLERANCE = 1 * KB;
-
-  test("ships no new JavaScript except the theme script", async ({ page }, testInfo) => {
+test.describe("home page weight", () => {
+  test("ships no framework JavaScript: no script files, only the inline theme script", async ({
+    page,
+  }, testInfo) => {
     const responses = collectResponses(page);
     await page.goto("/", { waitUntil: "networkidle" });
-    let total = 0;
-    const urls: string[] = [];
-    for (const item of responses.filter((r) => r.type === "script")) {
-      total += compressed.gzip(await item.body());
-      urls.push(new URL(item.url).pathname);
-    }
-    console.log(
-      `home JS (${testInfo.project.name}): ${total} B gzip in ${urls.length} files (baseline ${BASELINE_GZIP})`,
-    );
-    expect(total).toBeLessThanOrEqual(BASELINE_GZIP + TOLERANCE);
-    // Nothing from the design system leaks into the home page.
-    expect(urls.filter((url) => /Tabs|ReactShowcase|Tooltip/.test(url))).toEqual([]);
 
-    // Inline scripts: Astro's own island bootstrap (present before this mission, because the home
-    // page has a React island) plus exactly one script of ours, the theme script.
+    // No JavaScript file is requested at all: no React, no Astro island bootstrap.
+    const scripts = responses.filter((r) => r.type === "script").map((r) => r.url);
+    expect(scripts).toEqual([]);
+    expect(await page.locator("script[src]").count()).toBe(0);
+    expect(await page.locator("astro-island").count()).toBe(0);
+
+    // Exactly one inline script on the page: the theme script.
     const inline = await page.evaluate(() =>
-      [...document.querySelectorAll("script:not([src])")].map((s) => s.textContent ?? ""),
+      [...document.querySelectorAll("script")].map((s) => s.textContent ?? ""),
     );
-    const ours = inline.filter(
-      (code) => !code.includes("astro-island") && !code.includes("Astro||"),
-    );
-    expect(ours).toHaveLength(1);
-    expect(ours[0]).toContain("ni-theme");
+    expect(inline).toHaveLength(1);
+    expect(inline[0]).toContain("ni-theme");
     console.log(
-      `theme script (${testInfo.project.name}): ${ours[0]?.length} B raw, ${compressed.gzip(ours[0] ?? "")} B gzip`,
+      `theme script (${testInfo.project.name}): ${inline[0]?.length} B raw, ${compressed.gzip(inline[0] ?? "")} B gzip`,
     );
+  });
+
+  test("reports the bytes of JS, CSS and fonts, and stays within budget", async ({
+    page,
+  }, testInfo) => {
+    const responses = collectResponses(page);
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    const size = async (type: string) => {
+      const items = responses.filter((r) => r.type === type);
+      const files = new Map<string, Buffer>();
+      for (const item of items) files.set(item.url, await item.body());
+      return { files: [...files.values()], urls: [...files.keys()] };
+    };
+
+    const css = await size("stylesheet");
+    const inlineCss = await page.evaluate(() =>
+      [...document.querySelectorAll("style")].map((s) => s.textContent ?? "").join("\n"),
+    );
+    const cssAll = Buffer.concat([...css.files, Buffer.from(inlineCss)]);
+    const fonts = await size("font");
+    const fontBytes = fonts.files.reduce((sum, file) => sum + file.length, 0);
+    const scripts = await size("script");
+    const scriptBytes = scripts.files.reduce((sum, file) => sum + file.length, 0);
+    const inlineJs = await page.evaluate(() =>
+      [...document.querySelectorAll("script")].map((s) => s.textContent ?? "").join(""),
+    );
+
+    console.log(
+      `home weight (${testInfo.project.name}): JS ${scriptBytes} B in ${scripts.urls.length} files + ${inlineJs.length} B inline; CSS ${cssAll.length} B raw, ${compressed.gzip(cssAll)} B gzip, ${compressed.brotli(cssAll)} B brotli; fonts ${fontBytes} B in ${new Set(fonts.urls).size} files`,
+    );
+
+    expect(scriptBytes).toBe(0);
+    expect(compressed.gzip(cssAll)).toBeLessThanOrEqual(30 * KB);
+    expect(compressed.brotli(cssAll)).toBeLessThanOrEqual(30 * KB);
+    expect(new Set(fonts.urls).size).toBeLessThanOrEqual(2);
   });
 
   test("has no other script on the 404 page than the theme script", async ({ page }) => {

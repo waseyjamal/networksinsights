@@ -14,6 +14,9 @@ const local = fontProviders.local();
 
 // https://astro.build/config
 export default defineConfig({
+  // One canonical form for every URL: /tools/, never /tools. Dev, build, preview and every link
+  // agree, so an internal link never costs a redirect. Cloudflare redirects the slashless form.
+  trailingSlash: "always",
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],

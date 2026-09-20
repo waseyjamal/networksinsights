@@ -9,6 +9,9 @@ export default defineConfig({
   testDir: "./e2e",
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
+  // Locally at most 2 workers: three browser engines at Playwright's default worker count can
+  // exhaust the memory of a developer machine (ADR 0026). CI keeps Playwright's default.
+  ...(process.env.CI ? {} : { workers: 2 }),
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL,

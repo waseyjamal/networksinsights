@@ -1,5 +1,6 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
+import { site } from "../config/site";
 import Base from "./Base.astro";
 
 const title = "Test Title | NetworksInsights";
@@ -42,17 +43,20 @@ describe("Base layout SEO basics", () => {
     expect(metaContent(html, "description")).toBe(description);
   });
 
-  it("has no robots meta by default", () => {
-    expect(metaContent(html, "robots")).toBeUndefined();
-  });
-
-  it("renders a noindex robots meta when noindex is set", async () => {
+  // Launch day flips site.launched (ADR 0029) and this test stops applying; robots.test.ts covers
+  // both values of the flag. Until then it must hold for every page, even one that does not ask.
+  it.runIf(!site.launched)("renders noindex, nofollow on every page before launch", async () => {
+    expect(metaContent(html, "robots")).toBe("noindex, nofollow");
     const container = await AstroContainer.create();
     const noindexHtml = await container.renderToString(Base, {
       props: { title, description, noindex: true },
       slots: { default: "<main>content</main>" },
     });
-    expect(metaContent(noindexHtml, "robots")).toBe("noindex");
+    expect(metaContent(noindexHtml, "robots")).toBe("noindex, nofollow");
+  });
+
+  it("renders exactly one robots meta", () => {
+    expect(html.match(/<meta[^>]*name="robots"/g)).toHaveLength(1);
   });
 });
 

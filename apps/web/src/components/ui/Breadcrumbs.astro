@@ -1,0 +1,29 @@
+---
+// Breadcrumb trail for inner pages. The last item is the current page and is not a link.
+// Landmark: <nav aria-label="Breadcrumb">, an ordered list, aria-current="page" on the last item.
+interface Crumb {
+  label: string;
+  /** Omit on the last item. */
+  href?: string;
+}
+
+interface Props {
+  items: readonly Crumb[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav class="ni-breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    {items.map((item, index) => (
+  <li>
+    {index < items.length - 1 && item.href ? (
+      <a href={item.href}>{item.label}</a>
+    ) : (
+      <span aria-current="page">{item.label}</span>
+    )}
+  </li>
+))}
+  </ol>
+</nav>

@@ -18,8 +18,11 @@ Now:
 ```
 apps/
   web/            Astro site (Astro, React islands, Tailwind)
+    src/config/   site.ts (name, domain, tagline, launch flag) and categories.ts (the 11 categories)
     src/styles/   design tokens and the one component stylesheet (Signal design system)
     src/components/ui/   Astro components; react/ holds the React versions
+    src/components/layout/   site header and footer
+    src/layouts/  Base (head, theme script) and Page (skip link, header, main, footer)
 docs/             architecture, tool contract, design system, ADRs
 ```
 
@@ -62,6 +65,10 @@ Core Web Vitals at the 75th percentile:
 
 Internal target: LCP under 1.5 s on a mid-range Android phone over slow 4G.
 
+## Pre-launch protection
+
+`launched` in `apps/web/src/config/site.ts` is `false` until launch day. While it is false every page renders `noindex, nofollow` ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)). Everything the owner must do before flipping it is in [launch-checklist.md](launch-checklist.md).
+
 ## Hosting
 
 Cloudflare Workers with static assets, served on https://networksinsights.com. Deploys run only from CI ([ADR 0027](adr/0027-deployment.md), [runbook](runbooks/deploy-and-rollback.md)).
@@ -75,8 +82,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 3 | Quality gates | Done |
 | 4 | CI pipeline | Done |
 | 5 | Deploy pipeline | Done |
-| 6 | Design system | In progress |
-| 7 | Site shell | |
+| 6 | Design system | Done |
+| 7 | Site shell | In progress |
 | 8 | Tool contract + registry | |
 | 9 | Generator + guardrails | |
 | 10 | SEO/GEO engine | |

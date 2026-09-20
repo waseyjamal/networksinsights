@@ -1,0 +1,23 @@
+---
+// A wrapping row of pill links, for "go somewhere else" actions such as the category links in an
+// empty state. Use `label` to name the list for screen readers when the text around it does not.
+interface Item {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  items: readonly Item[];
+  label?: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<ul class="ni-linklist" aria-label={label}>
+  {items.map((item) => (
+  <li>
+    <a href={item.href}>{item.label}</a>
+  </li>
+))}
+</ul>

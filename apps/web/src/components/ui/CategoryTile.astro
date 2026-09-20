@@ -9,14 +9,18 @@ interface Props {
   icon: IconName;
   title: string;
   description: string;
-  /** Number of tools, shown in Geist Mono. */
-  count: number;
+  /**
+   * Number of tools, shown in Geist Mono. Leave it out while the category has no tools: the tile
+   * then says "Coming soon". Never pass a number that is not a real count.
+   */
+  count?: number;
   href: string;
   /** 2 makes the tile span two columns in the bento grid. */
   span?: 1 | 2;
 }
 
 const { category, icon, title, description, count, href, span = 1 } = Astro.props;
+const hasTools = typeof count === "number" && count > 0;
 ---
 
 <a class="ni-tile" href={href} data-cat={category} data-span={span}>
@@ -25,5 +29,13 @@ const { category, icon, title, description, count, href, span = 1 } = Astro.prop
     <span class="ni-tile__title">{title}</span>
     <span class="ni-tile__text">{description}</span>
   </span>
-  <span class="ni-tile__meta">{count} tools</span>
+  {hasTools ? (
+  <span class="ni-tile__meta">
+    {count} {count === 1 ? "tool" : "tools"}
+  </span>
+) : (
+  <span class="ni-tile__meta" data-state="soon">
+    Coming soon
+  </span>
+)}
 </a>

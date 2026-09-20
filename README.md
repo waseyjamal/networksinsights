@@ -28,4 +28,5 @@ Run from the repo root:
 - [docs/architecture.md](docs/architecture.md) — goals, layout, runtimes, mission table
 - [docs/tool-contract.md](docs/tool-contract.md) — the contract every tool follows (draft)
 - [docs/adr/](docs/adr/) — architecture decision records
+- [docs/launch-checklist.md](docs/launch-checklist.md) — every owner input and step needed before launch
 - [docs/runbooks/deploy-and-rollback.md](docs/runbooks/deploy-and-rollback.md) — how deploys work and how to roll back

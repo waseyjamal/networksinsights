@@ -1,0 +1,11 @@
+---
+// First focusable element of every page. Visible only while focused. Its target is the
+// <main id="main" tabindex="-1"> of the page layout.
+interface Props {
+  href?: string;
+}
+
+const { href = "#main" } = Astro.props;
+---
+
+<a class="ni-skip" href={href}>Skip to content</a>

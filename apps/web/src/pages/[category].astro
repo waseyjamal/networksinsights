@@ -1,0 +1,40 @@
+---
+import type { GetStaticPaths } from "astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import EmptyState from "../components/ui/EmptyState.astro";
+import LinkList from "../components/ui/LinkList.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { categories, categoryHref } from "../config/categories";
+import { pageTitle, sitePages } from "../config/site";
+import Page from "../layouts/Page.astro";
+
+// One page per category, generated from the config (ADR 0030). Mission 8 merges this route
+// with the tool route, because two dynamic routes at the same level cannot coexist.
+export const getStaticPaths = (() =>
+  categories.map((category) => ({
+    params: { category: category.slug },
+    props: { category },
+  }))) satisfies GetStaticPaths;
+
+const { category } = Astro.props;
+
+const otherLinks = [
+  ...categories
+    .filter((other) => other.id !== category.id)
+    .map((other) => ({ label: other.name, href: categoryHref(other) })),
+  { label: sitePages.tools.label, href: sitePages.tools.href },
+];
+---
+
+<Page title={pageTitle(category.name)} description={category.metaDescription}>
+  <div class="grid gap-4">
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.name }]} />
+    <PageHeader title={category.name} intro={category.intro} />
+  </div>
+  <EmptyState title="No tools in this category yet" icon={category.icon}>
+    <p>Tools appear here as they are added. In the meantime, browse the other categories.</p>
+    <Fragment slot="actions">
+      <LinkList label="Other categories" items={otherLinks} />
+    </Fragment>
+  </EmptyState>
+</Page>
