@@ -3,6 +3,8 @@
 Status: Accepted
 Date: 2026-09-20
 
+Amended by [0027](0027-deployment.md): concurrency no longer cancels runs on `main`, and the deploy jobs use secrets.
+
 ## Context
 
 Git hooks (ADR 0024) can be skipped with `--no-verify`, so they are not the last line of defence. Every change to `main` needs an automated gate that cannot be skipped from a developer's machine.

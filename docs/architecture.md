@@ -62,7 +62,7 @@ Internal target: LCP under 1.5 s on a mid-range Android phone over slow 4G.
 
 ## Hosting
 
-Cloudflare Workers with static assets (Mission 5).
+Cloudflare Workers with static assets, served on https://networksinsights.com. Deploys run only from CI ([ADR 0027](adr/0027-deployment.md), [runbook](runbooks/deploy-and-rollback.md)).
 
 ## Phase 1 missions
 
@@ -71,8 +71,8 @@ Cloudflare Workers with static assets (Mission 5).
 | 1 | Project skeleton | Done |
 | 2 | Project brain | Done |
 | 3 | Quality gates | Done |
-| 4 | CI pipeline | In progress |
-| 5 | Deploy pipeline | |
+| 4 | CI pipeline | Done |
+| 5 | Deploy pipeline | In progress |
 | 6 | Design system | |
 | 7 | Site shell | |
 | 8 | Tool contract + registry | |

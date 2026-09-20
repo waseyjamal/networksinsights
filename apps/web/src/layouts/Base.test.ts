@@ -41,4 +41,17 @@ describe("Base layout SEO basics", () => {
   it("renders the description prop in the description meta", () => {
     expect(metaContent(html, "description")).toBe(description);
   });
+
+  it("has no robots meta by default", () => {
+    expect(metaContent(html, "robots")).toBeUndefined();
+  });
+
+  it("renders a noindex robots meta when noindex is set", async () => {
+    const container = await AstroContainer.create();
+    const noindexHtml = await container.renderToString(Base, {
+      props: { title, description, noindex: true },
+      slots: { default: "<main>content</main>" },
+    });
+    expect(metaContent(noindexHtml, "robots")).toBe("noindex");
+  });
 });

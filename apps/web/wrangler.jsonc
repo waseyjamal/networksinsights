@@ -1,0 +1,22 @@
+// Worker for the web app: static assets only, no Worker script yet (ADR 0027).
+// Deploys run only from GitHub Actions. Never run `wrangler deploy` locally.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "networksinsights",
+  // Matches the workerd release bundled with the pinned Wrangler. Not in the future.
+  "compatibility_date": "2026-09-16",
+  "assets": {
+    // Astro build output, relative to this file.
+    "directory": "./dist",
+    // Unknown paths get the nearest 404.html with status 404.
+    "not_found_handling": "404-page",
+    // Files serve without a trailing slash, folder indexes with one. Matches Astro's
+    // default directory output (dist/foo/index.html).
+    "html_handling": "auto-trailing-slash"
+  },
+  // The site is reachable only on the canonical apex domain (no www).
+  "workers_dev": false,
+  // Preview URLs stay on for per-PR previews. They live on workers.dev only.
+  "preview_urls": true,
+  "routes": [{ "pattern": "networksinsights.com", "custom_domain": true }]
+}
