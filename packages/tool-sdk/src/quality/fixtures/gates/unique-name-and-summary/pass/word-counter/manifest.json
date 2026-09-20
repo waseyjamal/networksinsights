@@ -1,0 +1,13 @@
+{
+  "id": "word-counter",
+  "name": "Word counter",
+  "category": "text",
+  "summary": "Count the words in any text as you type, with nothing sent anywhere.",
+  "tags": ["fixture"],
+  "runtime": "client",
+  "status": "beta",
+  "related": [],
+  "added": "2026-09-20",
+  "updated": "2026-09-20",
+  "contentFrom": "pages/word-counter.mdx"
+}

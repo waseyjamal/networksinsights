@@ -104,6 +104,19 @@ describe("the tool page", () => {
   });
 });
 
+describe("a raised JavaScript budget is bookkeeping, not page content", () => {
+  it("never shows the budget or the reason a tool gave for it (ADR 0037)", async () => {
+    const reason = "Loads a WebAssembly PDF renderer after the visitor chooses a file.";
+    const html = await render(toolOf({ budget: { maxOnDemandJsKb: 3000, reason } }));
+    expect(html).not.toContain(reason);
+    expect(html).not.toContain("WebAssembly");
+    expect(html).not.toContain("3000");
+    expect(html).not.toContain("budget");
+    // The page is otherwise the page it would have been.
+    expect(html).toContain("<h1>Word counter</h1>");
+  });
+});
+
 describe("the status badge", () => {
   /** The badge in the workspace header, as tone and label. */
   const statusBadge = (html: string) =>

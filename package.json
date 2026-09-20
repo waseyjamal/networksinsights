@@ -12,15 +12,19 @@
     "preview": "pnpm --filter web preview",
     "lint": "biome check .",
     "fix": "biome check --write .",
-    "typecheck": "pnpm --filter @networksinsights/tool-sdk check && pnpm --filter web check",
+    "typecheck": "pnpm --filter @networksinsights/tool-sdk check && pnpm --filter @networksinsights/scripts check && pnpm --filter @networksinsights/tools check && pnpm --filter web check",
     "test": "vitest run",
     "test:e2e": "pnpm build && pnpm --filter web test:e2e",
-    "check": "pnpm typecheck && pnpm lint && pnpm test",
-    "prepare": "husky"
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm check:tools",
+    "prepare": "husky",
+    "new:tool": "tsx scripts/new-tool.ts",
+    "check:tools": "tsx scripts/check-tools.ts",
+    "check:budgets": "tsx scripts/check-budgets.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "husky": "9.1.7",
+    "tsx": "4.23.13",
     "vitest": "4.1.11"
   }
 }

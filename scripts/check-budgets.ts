@@ -1,0 +1,86 @@
+// pnpm check:budgets [--tool <id>] [--report] [--json] [--dist <folder>]
+//
+// Measures the JavaScript of every tool page in the real build output (apps/web/dist) against its
+// budget (ADR 0037): the initial island code, and the code fetched on demand, separately. Run it
+// after `pnpm build`. CI runs it on every pull request. Exit code 0 means every page is within
+// budget; 1 means a page is over; 2 means the command was used wrongly.
+
+import { join } from "node:path";
+import { parseArgs } from "node:util";
+import { toolManifestSchema } from "@networksinsights/tool-sdk";
+import {
+  budgetReportToJson,
+  checkBudgets,
+  formatBudgetReport,
+  formatPageWeight,
+  measurePageWeight,
+} from "./lib/budgets";
+import { defaultToolsRoot, loadTools, repoRoot } from "./lib/tools";
+
+const HELP = `Usage: pnpm check:budgets [--tool <id>] [--report] [--json] [--dist <folder>]
+
+Measures each tool page's JavaScript in the build output, so run \`pnpm build\` first.
+
+  --tool <id>     measure one tool
+  --report        also print the total page weight of each measured page
+  --json          print the result as JSON
+  --dist <path>   the build output; defaults to apps/web/dist
+  --help          show this text`;
+
+async function main(): Promise<number> {
+  let values: {
+    tool?: string | undefined;
+    report?: boolean | undefined;
+    json?: boolean | undefined;
+    dist?: string | undefined;
+    help?: boolean | undefined;
+  };
+  try {
+    ({ values } = parseArgs({
+      options: {
+        tool: { type: "string" },
+        report: { type: "boolean" },
+        json: { type: "boolean" },
+        dist: { type: "string" },
+        help: { type: "boolean" },
+      },
+      strict: true,
+    }));
+  } catch (error) {
+    console.error(`${(error as Error).message}\n\n${HELP}`);
+    return 2;
+  }
+  if (values.help) {
+    console.log(HELP);
+    return 0;
+  }
+
+  const distDir = values.dist ?? join(repoRoot, "apps", "web", "dist");
+  const loaded = await loadTools(defaultToolsRoot);
+  const targets = loaded.flatMap((tool) => {
+    const parsed = toolManifestSchema.safeParse(tool.entry.manifest);
+    // A manifest that does not parse is check:tools's to report, not a budget question.
+    if (!parsed.success) return [];
+    return [{ id: parsed.data.id, dir: tool.entry.dir, budget: parsed.data.budget }];
+  });
+
+  const chosen = values.tool === undefined ? targets : targets.filter((t) => t.id === values.tool);
+  if (values.tool !== undefined && chosen.length === 0) {
+    console.error(
+      `There is no tool with the id "${values.tool}" in tools/. A tool's id is the name of its folder.`,
+    );
+    return 2;
+  }
+
+  const report = checkBudgets(distDir, chosen);
+  console.log(values.json ? budgetReportToJson(report) : formatBudgetReport(report));
+  if (values.report && !values.json) {
+    for (const target of chosen) {
+      const weight = measurePageWeight(distDir, target.id);
+      if (weight) console.log(`\n${formatPageWeight(target.id, weight)}`);
+    }
+  }
+  return report.ok ? 0 : 1;
+}
+
+process.exitCode = await main();

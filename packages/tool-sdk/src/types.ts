@@ -22,6 +22,20 @@ export interface ToolLimits {
   maxRunsPerDay?: number;
 }
 
+/**
+ * Raises the JavaScript budget of a tool that is genuinely heavy (ADR 0037). Absent means the
+ * defaults. `reason` is required, is never shown on the tool page, and says in plain words why
+ * this tool needs more.
+ */
+export interface ToolBudget {
+  /** Gzip KB of island code loaded on page load, above the default. */
+  maxInitialJsKb?: number | undefined;
+  /** Gzip KB of code fetched only after a user action, above the default. */
+  maxOnDemandJsKb?: number | undefined;
+  /** Why the default is not enough. At least 20 characters. */
+  reason: string;
+}
+
 /** An ISO calendar date, `YYYY-MM-DD`. */
 export type IsoDate = string;
 
@@ -45,6 +59,8 @@ export interface ToolManifest<TInput extends ZodType = ZodType> {
   related: readonly string[];
   /** Absent means unlimited. */
   limits?: ToolLimits;
+  /** Absent means the default JavaScript budgets (ADR 0037). */
+  budget?: ToolBudget;
   /** The date the tool went live. */
   added: IsoDate;
   /** The date it last changed. Never earlier than `added`. */

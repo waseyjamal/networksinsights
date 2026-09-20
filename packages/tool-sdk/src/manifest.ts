@@ -6,6 +6,13 @@
 // (ADR 0033). A schema error thrown from inside a tool.config.ts would not know that.
 
 import { z } from "zod";
+import {
+  BUDGET_REASON_MIN_LENGTH,
+  DEFAULT_INITIAL_JS_KB,
+  DEFAULT_ON_DEMAND_JS_KB,
+  INITIAL_JS_CEILING_KB,
+  ON_DEMAND_JS_CEILING_KB,
+} from "./budget";
 import type { ToolManifest } from "./types";
 
 /** Lowercase words joined by single hyphens. Digits are allowed: `base64-encoder`, `sha-256`. */
@@ -39,6 +46,49 @@ export const toolLimitsSchema = z.strictObject({
   maxFiles: positiveInt("limits.maxFiles").optional(),
   maxRunsPerDay: positiveInt("limits.maxRunsPerDay").optional(),
 });
+
+/**
+ * A raised JavaScript budget (ADR 0037). It must raise something, stay under the ceiling, and say
+ * why. The reason lives here and nowhere else: the tool page never displays it.
+ */
+export const toolBudgetSchema = z
+  .strictObject({
+    maxInitialJsKb: z
+      .int()
+      .min(
+        DEFAULT_INITIAL_JS_KB + 1,
+        `budget.maxInitialJsKb must be above the default of ${DEFAULT_INITIAL_JS_KB} KB; remove it if the default is enough`,
+      )
+      .max(
+        INITIAL_JS_CEILING_KB,
+        `budget.maxInitialJsKb must be at most ${INITIAL_JS_CEILING_KB} KB, the ceiling; more needs an ADR (ADR 0037). Move the heavy code behind a dynamic import() instead`,
+      )
+      .optional(),
+    maxOnDemandJsKb: z
+      .int()
+      .min(
+        DEFAULT_ON_DEMAND_JS_KB + 1,
+        `budget.maxOnDemandJsKb must be above the default of ${DEFAULT_ON_DEMAND_JS_KB} KB; remove it if the default is enough`,
+      )
+      .max(
+        ON_DEMAND_JS_CEILING_KB,
+        `budget.maxOnDemandJsKb must be at most ${ON_DEMAND_JS_CEILING_KB} KB, the ceiling; more needs an ADR (ADR 0037)`,
+      )
+      .optional(),
+    reason: z
+      .string({
+        error: "budget.reason is required: say in plain words why this tool needs more JavaScript",
+      })
+      .trim()
+      .min(
+        BUDGET_REASON_MIN_LENGTH,
+        `budget.reason must say why this tool needs more, in at least ${BUDGET_REASON_MIN_LENGTH} characters`,
+      ),
+  })
+  .refine(
+    (budget) => budget.maxInitialJsKb !== undefined || budget.maxOnDemandJsKb !== undefined,
+    "budget must raise maxInitialJsKb or maxOnDemandJsKb, otherwise remove it",
+  );
 
 /**
  * The manifest schema. `input` is checked for being a Zod schema, not for its shape: what a tool
@@ -75,6 +125,7 @@ export const toolManifestSchema = z.strictObject({
     .max(6, "related must have at most six tool ids")
     .refine((ids) => new Set(ids).size === ids.length, "related must not repeat a tool id"),
   limits: toolLimitsSchema.optional(),
+  budget: toolBudgetSchema.optional(),
   added: isoDate("added"),
   updated: isoDate("updated"),
 });

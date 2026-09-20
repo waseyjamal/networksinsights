@@ -40,7 +40,7 @@ describe("the registry a listing page imports", () => {
     for (const file of ["./build.ts", "./entries.ts"]) {
       expect(globCalls(source(file)), file).toHaveLength(0);
     }
-    expect(globCalls(source("./index.ts"))).toHaveLength(4);
+    expect(globCalls(source("./index.ts"))).toHaveLength(5);
   });
 
   it("reads every tool file as text, so none of them can become an island", () => {

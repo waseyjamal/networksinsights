@@ -114,7 +114,10 @@ Do not use Tailwind's `dark:` variant. Tokens already switch with the theme.
 
 ## Components
 
-Import Astro components from `components/ui/`, React components from `components/ui/react`.
+Import Astro components from `components/ui/`, React components from `components/ui/react`. A tool's
+`ui.tsx` imports the React components as `@ui` (`import { Button, Textarea } from "@ui"`), an alias for
+`components/ui/react/index.ts` set in `astro.config.mjs` and `tools/tsconfig.json`. Tool code uses
+these components and the design tokens, and never styles a one-off (docs/adding-a-tool.md).
 
 | Component | Astro | React | Notes |
 |---|---|---|---|

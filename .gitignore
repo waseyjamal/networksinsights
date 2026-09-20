@@ -20,3 +20,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# scratch output of tests and calibration scripts
+scripts/.tmp/
+.new-tool-staging/
+tools/.staging-*/

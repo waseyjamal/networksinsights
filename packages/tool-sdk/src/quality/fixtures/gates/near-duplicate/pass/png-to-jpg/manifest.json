@@ -1,0 +1,13 @@
+{
+  "id": "png-to-jpg",
+  "name": "PNG to JPG converter",
+  "category": "image",
+  "summary": "Shrink a PNG picture into a lighter JPG file, right in your browser.",
+  "tags": ["fixture"],
+  "runtime": "client",
+  "status": "beta",
+  "related": [],
+  "added": "2026-09-20",
+  "updated": "2026-09-20",
+  "contentFrom": "pages/png-to-jpg.mdx"
+}

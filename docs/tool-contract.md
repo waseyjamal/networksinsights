@@ -1,6 +1,6 @@
 # Tool contract
 
-Status: FINAL (Mission 8)
+Status: FINAL (Mission 8), extended by Mission 9 (generator, content gates, JavaScript budgets)
 
 Every tool is one folder that follows this contract. The platform builds everything else from it.
 The build fails, naming the folder and the problem, if a folder breaks any rule on this page.
@@ -8,6 +8,9 @@ The build fails, naming the folder and the problem, if a folder breaks any rule 
 The contract lives in code as well as here: `packages/tool-sdk` (ADR 0031) holds the manifest
 schema, the rules and the required file list, and `apps/web/src/lib/registry` enforces them at
 build time (ADR 0033).
+
+**Nobody writes a tool folder by hand.** `pnpm new:tool` writes it (ADR 0035), and
+[adding-a-tool.md](adding-a-tool.md) is the step-by-step, with the prompt to give an AI agent.
 
 ## Folder anatomy
 
@@ -24,6 +27,10 @@ tools/<category-id>/<tool-id>/
 
 The folder name is the tool id, and the parent folder name is the category id. Both must match the
 manifest, because the folder name is the URL.
+
+`ui.tsx` imports the design system's React components as `@ui`: `import { Button } from "@ui"`.
+The alias is set in `apps/web/astro.config.mjs` and `tools/tsconfig.json`. Every `ui.tsx` is
+type-checked by `pnpm typecheck`.
 
 Tools live at the repo root, not inside `apps/web`, so a future API Worker can import tool logic
 without moving 500 folders (ADR 0032).
@@ -46,6 +53,8 @@ export default defineTool({
   related: ["case-converter"],
   added: "2026-09-20",
   updated: "2026-09-20",
+  // Only for a genuinely heavy tool (ADR 0037):
+  // budget: { maxOnDemandJsKb: 3000, reason: "Loads a WebAssembly PDF renderer after a file is chosen." },
 });
 ```
 
@@ -61,6 +70,7 @@ export default defineTool({
 | `input` | A Zod schema (ADR 0006). |
 | `related` | Up to six ids of other tools that exist. Never this tool's own id. |
 | `limits` | Optional `{ maxInputBytes, maxFiles, maxRunsPerDay }` for a future Pro tier. Absent means unlimited, which is what every tool ships with today. |
+| `budget` | Optional. Raises the JavaScript budget of a heavy tool: `maxInitialJsKb` (above 40, up to 250) and/or `maxOnDemandJsKb` (above 1,024, up to 8,192), and a `reason` of at least 20 characters. Never displayed on the page (ADR 0037). |
 | `added`, `updated` | Real ISO dates, `YYYY-MM-DD`. `updated` is never earlier than `added`. |
 
 `defineTool()` types the manifest and returns it unchanged. It does not validate: validation runs
@@ -70,7 +80,8 @@ once, centrally, where the folder is known and the error can name it.
 
 The same logic runs unchanged in the browser, a Web Worker and a Cloudflare Worker, so it may use
 only what all three have. The lists live in `packages/tool-sdk/src/purity.ts`; the analyzer that
-enforces them is `apps/web/src/lib/registry/purity.ts`, and `purity.test.ts` fails the build.
+enforces them is `apps/web/src/lib/registry/purity.ts`. `purity.test.ts` fails the tests and
+`pnpm check:tools` reports it, naming the file and the fix.
 
 Allowed:
 
@@ -107,7 +118,7 @@ import Ui from "./ui.tsx";
 It exists because Astro writes the hydration path only for a component it saw imported statically,
 so a route cannot mount a `ui.tsx` it looked up by tool id. This file holds that static import, and
 the route imports this file dynamically (ADR 0033). It is glue, not a place for tool code, which is
-why the validator compares it exactly and the Mission 9 generator writes it.
+why the validator compares it exactly and `pnpm new:tool` writes it.
 
 `client:load` is the hydration choice for every tool: the workspace is the reason a visitor opened
 the page, and it is above the fold, so a later directive would only delay the first interaction.
@@ -129,7 +140,9 @@ An intro paragraph that says what the tool does and who it is for.
 ```
 
 No H1: the page template renders the one H1, the tool name. More depth goes under H3s inside a
-section. Mission 9 adds word minimums and near-duplicate detection on top of these rules.
+section. The FAQ is `###` questions ending in `?`, each followed by its answer. The content quality
+gates (ADR 0036) add word minimums, no placeholders and no near-duplicates on top of these rules;
+see "Content quality gates" below.
 
 ## The page the contract builds
 
@@ -166,9 +179,44 @@ The build fails if any of these fail. Each message names the folder and the exac
 - `island.astro` is the contract source, byte for byte.
 - `content/en.mdx` has an intro and the four H2 sections, in order, with no H1.
 - Every `logic.ts` is pure.
+- A `budget` field, when present, raises something, stays under the ceiling and gives a reason.
 
-Still to come: no near-duplicate content and a word minimum (Mission 9), a JavaScript size budget
-(Mission 17), and complete translations for enabled languages (ADR 0023).
+### Content quality gates
+
+Run by the production build, `pnpm check:tools` and CI (ADR 0036). Each problem names the tool,
+the file, what is wrong and how to fix it.
+
+| Gate | Rule |
+|---|---|
+| `min-words` | Prose words (code blocks excluded): intro 40, How to use 50, Examples 40, Limits 30, FAQ 60. |
+| `placeholders` | No `TODO`, `TBD`, `FIXME`, "lorem ipsum", "coming soon", "to be written", `[insert …]`, and no empty section. Also in the name, summary and budget reason. |
+| `unfinished-code` | No `TODO(new-tool)` marker left in `logic.ts`, `ui.tsx`, `logic.test.ts` or `worker.ts`. |
+| `faq-structure` | At least two `###` question-and-answer pairs; each question ends in `?`, each answer has at least five words. |
+| `faq-repeats` | No FAQ sentence of five words or more that is also in the intro or another section. |
+| `unique-name-and-summary` | No two names the same (case, punctuation and word order ignored), no two summaries at 0.60 similarity or more. Titles are built from names. |
+| `near-duplicate` | No two pages at a similarity of 0.30 or more (Jaccard score of word 4-shingles). |
+
+**In `astro dev` the quality gates only warn**, so a tool that is being written keeps rendering. The
+contract and purity are hard failures everywhere, because they break rendering.
+
+### JavaScript budget
+
+After the build, `pnpm check:budgets` measures each tool page's own JavaScript in the build output,
+in two numbers (ADR 0037): **initial**, loaded with the page (40 KB gzip by default), and **on
+demand**, fetched after a user action (1,024 KB by default). Moving heavy code behind a dynamic
+`import()` moves it from the first to the second. CI runs it after `pnpm build`.
+
+Still to come: complete translations for enabled languages (ADR 0023).
+
+## Checking a tool
+
+| Command | What it does |
+|---|---|
+| `pnpm new:tool` | Creates a tool folder (ADR 0035). |
+| `pnpm check:tools` | Runs the contract, purity and the content quality gates on every tool and prints a summary. |
+| `pnpm check:tools --tool <id>` | The same for one tool, fast with hundreds of tools. `--json` prints JSON. |
+| `pnpm check:budgets` | The JavaScript budget of every tool page, after `pnpm build`. |
+| `pnpm check` | Type-checks tools too, lints, tests, and runs `check:tools`. |
 
 ## Generated from the manifest
 

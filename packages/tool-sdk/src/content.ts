@@ -13,6 +13,12 @@ const FENCE = /^(?:```|~~~)/;
 /** Leading frontmatter, which the section rules ignore. */
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 
+/** One H2 section: its heading and everything under it, code blocks included. */
+export interface ContentSection {
+  name: string;
+  body: string;
+}
+
 interface ContentOutline {
   /** The text before the first H2, with frontmatter removed. */
   intro: string;
@@ -22,34 +28,50 @@ interface ContentOutline {
   hasH1: boolean;
 }
 
-/** Reads the parts of an MDX file the contract cares about. */
-export function outlineContent(mdx: string): ContentOutline {
+/** The parts of an MDX file the contract and the quality gates read. */
+export interface ContentParts extends ContentOutline {
+  /** Each H2 section with its body, in the order they appear. */
+  parts: ContentSection[];
+}
+
+/** Reads the parts of an MDX file, including the text of every section. */
+export function readContent(mdx: string): ContentParts {
   const body = normalizeSource(mdx).replace(FRONTMATTER, "");
-  const sections: string[] = [];
+  const parts: Array<{ name: string; lines: string[] }> = [];
   const introLines: string[] = [];
   let hasH1 = false;
   let inFence = false;
-  let seenSection = false;
 
   for (const line of body.split("\n")) {
+    const current = parts.at(-1);
     if (FENCE.test(line.trim())) {
       inFence = !inFence;
-      if (!seenSection) introLines.push(line);
+      (current?.lines ?? introLines).push(line);
       continue;
     }
     if (!inFence) {
       const heading = /^(#{1,2})\s+(.+?)\s*$/.exec(line);
       if (heading?.[1] === "#") hasH1 = true;
       if (heading?.[1] === "##") {
-        sections.push(heading[2] ?? "");
-        seenSection = true;
+        parts.push({ name: heading[2] ?? "", lines: [] });
         continue;
       }
     }
-    if (!seenSection) introLines.push(line);
+    (current?.lines ?? introLines).push(line);
   }
 
-  return { intro: introLines.join("\n").trim(), sections, hasH1 };
+  return {
+    intro: introLines.join("\n").trim(),
+    sections: parts.map((part) => part.name),
+    hasH1,
+    parts: parts.map((part) => ({ name: part.name, body: part.lines.join("\n").trim() })),
+  };
+}
+
+/** Reads the parts of an MDX file the contract cares about. */
+export function outlineContent(mdx: string): ContentOutline {
+  const { intro, sections, hasH1 } = readContent(mdx);
+  return { intro, sections, hasH1 };
 }
 
 /**

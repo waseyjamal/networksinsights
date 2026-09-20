@@ -5,6 +5,6 @@ import { defineConfig } from "vitest/config";
 // fails. The "tools" project overrides it while there are no tools (ADR 0032).
 export default defineConfig({
   test: {
-    projects: ["apps/*", "packages/*", "tools"],
+    projects: ["apps/*", "packages/*", "tools", "scripts"],
   },
 });
