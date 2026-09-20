@@ -12,7 +12,7 @@ Why it works this way: [ADR 0027](../adr/0027-deployment.md). Deploys happen onl
 
 - `deploy` needs both `quality` and `e2e` green in the same run. On the GitHub Free plan this is our substitute for branch protection.
 - A production deploy is never cancelled midway. A newer push waits for the running deploy, and a waiting deploy is replaced by the newest one. Deploys and rollbacks share the concurrency group `deploy-production`.
-- Previews work only after the first production deploy exists. Until `wrangler deploy` has created the Worker, `preview` fails with "You cannot upload a new version of a Worker that does not yet exist". This is expected on the Mission 5 pull request only.
+- Previews work only after the first production deploy exists. Until `wrangler deploy` has created the Worker, `preview` fails with "You cannot upload a new version of a Worker that does not yet exist". This happened only on the Mission 5 pull request, which was merged before any production deploy existed.
 - Forks and Dependabot pull requests get no preview, because they do not receive the secrets.
 - The secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` live only in GitHub (Settings, Secrets and variables, Actions). To rotate the token, create a new one in Cloudflare and replace the GitHub secret.
 - Do not connect Cloudflare's own git integration (Workers Builds) to this repository. It would deploy a second time, outside this pipeline.

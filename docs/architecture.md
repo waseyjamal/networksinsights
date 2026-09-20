@@ -72,7 +72,7 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 2 | Project brain | Done |
 | 3 | Quality gates | Done |
 | 4 | CI pipeline | Done |
-| 5 | Deploy pipeline | In progress |
+| 5 | Deploy pipeline | Done |
 | 6 | Design system | |
 | 7 | Site shell | |
 | 8 | Tool contract + registry | |
