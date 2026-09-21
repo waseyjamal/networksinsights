@@ -153,7 +153,9 @@ describe("what it writes", () => {
     ).toEqual([]);
   });
 
-  it("type-checks, strictly, with the same options as `pnpm typecheck` gives every tool", async () => {
+  it("type-checks, strictly, with the same options as `pnpm typecheck` gives every tool", {
+    tags: ["slow"],
+  }, async () => {
     const { tools } = fresh();
     await generateTool(inputFor("word-counter"), options(tools));
     await generateTool(inputFor("image-resizer", { runtime: "worker" }), options(tools));

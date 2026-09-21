@@ -39,6 +39,10 @@ Repository settings (set with `gh api` in Mission 4): squash merge only, merge c
 - The repository stays private. Making it public only to get branch protection was rejected.
 - The E2E job installs three browsers on every run and does not cache them. That costs about a minute and keeps the job simple.
 
+## Amendment (Mission 10)
+
+The `quality` job also runs `pnpm test:slow` ([ADR 0043](0043-test-tiers-and-agent-safe-e2e.md)) and `pnpm check:seo` ([ADR 0038](0038-canonical-and-meta.md)), and a `verify-production` job follows a production deploy ([ADR 0027](0027-deployment.md) amendment).
+
 ## Revisit when
 
 The account moves to GitHub Pro or higher, or the repository becomes public. Then create the ruleset described above. Also revisit if CI time makes pull requests slow, for example to cache browsers or run engines in parallel jobs.

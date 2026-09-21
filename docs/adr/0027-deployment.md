@@ -47,6 +47,10 @@ The site needs a deploy pipeline that a developer's machine cannot bypass, that 
 - A rollback changes only what is served. It does not revert code. The next push to `main` deploys forward again, so the bad commit must also be reverted (runbook: `docs/runbooks/deploy-and-rollback.md`).
 - Cloudflare's own git integration (Workers Builds) must stay disconnected. It would deploy a second time, outside this pipeline.
 
+## Amendment (Mission 10, ADR 0038)
+
+The trailing-slash redirect that Workers static assets sends (`/tools` to `/tools/`) is a **307**, in every `html_handling` mode (Cloudflare's documentation). Search engines treat a 307 as temporary, so a permanent redirect needs a Redirect Rule in the Cloudflare dashboard, which costs no Worker request. The rule is in `docs/runbooks/seo-redirects.md`, and the `verify-production` job of `ci.yml` checks it after every deploy.
+
 ## Verification (Mission 5B, 2026-09-20)
 
 Checked after Mission 5 merged. Everything below was observed, not assumed.

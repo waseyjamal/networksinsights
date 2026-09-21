@@ -21,6 +21,10 @@ Use husky 9.1.7 (root devDependency, exact version). It is installed by the root
 - Hooks are local and can be skipped with `--no-verify`, so they are not the last line of defence. CI (Mission 4) must run `pnpm check` too.
 - Where hooks are not wanted, such as CI installs, husky is turned off with `HUSKY=0`.
 
+## Amendment (Mission 10)
+
+The pre-push hook runs `pnpm check`, which now leaves the slow tests to CI: see [ADR 0043](0043-test-tiers-and-agent-safe-e2e.md).
+
 ## Revisit when
 
 Hooks become too slow, or CI makes the pre-push check redundant.

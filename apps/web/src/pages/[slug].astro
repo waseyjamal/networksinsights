@@ -12,6 +12,9 @@ import { getTool, tools, toolsInCategory } from "../lib/registry";
 import type { Tool } from "../lib/registry/build";
 import { loadContent } from "../lib/registry/content";
 import { loadIsland } from "../lib/registry/islands";
+import { collectionNode } from "../lib/seo/jsonld";
+import { categoryCard } from "../lib/seo/og";
+import { isCategoryIndexable } from "../lib/seo/sitemap";
 
 // One route for both flat URL kinds: /pdf-tools/ is a category page, /word-counter/ is a tool page
 // (ADR 0014, ADR 0030). Astro allows only one dynamic route at this level, so the two share this
@@ -46,14 +49,31 @@ async function viewOf(tool: Tool) {
 const { category, tool } = Astro.props;
 const view = tool ? await viewOf(tool) : undefined;
 const inCategory = category ? toolsInCategory(category.id) : [];
+
+// The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
+const breadcrumbs = category ? [{ label: "Home", href: "/" }, { label: category.name }] : [];
 ---
 
 {view && <ToolPage {...view} />}
 
 {category && (
-  <Page title={pageTitle(category.name)} description={category.metaDescription}>
+  <Page
+    title={pageTitle(category.name)}
+    description={category.metaDescription}
+    breadcrumbs={breadcrumbs}
+    share={categoryCard(category)}
+    noindex={!isCategoryIndexable(inCategory.length)}
+    nodes={[
+      collectionNode({
+        path: categoryHref(category),
+        name: category.name,
+        description: category.intro,
+        items: inCategory.map((item) => ({ name: item.manifest.name, href: item.href })),
+      }),
+    ]}
+  >
     <div class="grid gap-4">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.name }]} />
+      <Breadcrumbs items={breadcrumbs} />
       <PageHeader title={category.name} intro={category.intro} />
     </div>
     {inCategory.length > 0 ? (

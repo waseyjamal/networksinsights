@@ -4,14 +4,18 @@ import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { pageTitle, site } from "../config/site";
 import Page from "../layouts/Page.astro";
+
+// The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
+const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Contact" }];
 ---
 
 <Page
+  breadcrumbs={breadcrumbs}
   title={pageTitle("Contact")}
   description="How to contact NetworksInsights. Contact details are not published yet."
 >
   <div class="grid gap-4">
-    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Contact" }]} />
+    <Breadcrumbs items={breadcrumbs} />
     <PageHeader title="Contact" intro={`How to reach the people behind ${site.name}.`}>
       <Alert tone="warning" title="Draft: owner input needed">
         This page is a draft. It still needs a public contact email address. It is listed in the

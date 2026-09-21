@@ -38,7 +38,9 @@ const flags = [
 ];
 
 describe("with flags, and no terminal (what an AI agent does)", () => {
-  it("creates the tool, then prints the next steps and the exact commands to check it", () => {
+  it("creates the tool, then prints the next steps and the exact commands to check it", {
+    tags: ["slow"],
+  }, () => {
     const scratch = scratchRoot();
     roots.push(scratch);
     const result = run(flags, scratch.tools);
@@ -57,7 +59,9 @@ describe("with flags, and no terminal (what an AI agent does)", () => {
     }
   });
 
-  it("with --json, prints one JSON document with the files and the next steps", () => {
+  it("with --json, prints one JSON document with the files and the next steps", {
+    tags: ["slow"],
+  }, () => {
     const scratch = scratchRoot();
     roots.push(scratch);
     const result = run([...flags, "--json"], scratch.tools);
@@ -69,7 +73,7 @@ describe("with flags, and no terminal (what an AI agent does)", () => {
     expect(json.nextSteps.join("\n")).toContain("pnpm check:tools --tool word-counter");
   });
 
-  it("with --dry-run, checks everything and writes nothing", () => {
+  it("with --dry-run, checks everything and writes nothing", { tags: ["slow"] }, () => {
     const scratch = scratchRoot();
     roots.push(scratch);
     const result = run([...flags, "--dry-run"], scratch.tools);
@@ -78,7 +82,9 @@ describe("with flags, and no terminal (what an AI agent does)", () => {
     expect(existsSync(scratch.tools)).toBe(false);
   });
 
-  it("refuses a bad input with every problem, an example for each, and exit code 1", () => {
+  it("refuses a bad input with every problem, an example for each, and exit code 1", {
+    tags: ["slow"],
+  }, () => {
     const scratch = scratchRoot();
     roots.push(scratch);
     const result = run(
@@ -107,7 +113,9 @@ describe("with flags, and no terminal (what an AI agent does)", () => {
     expect(existsSync(scratch.tools)).toBe(false);
   });
 
-  it("refuses to overwrite: the second run with the same id fails and changes nothing", () => {
+  it("refuses to overwrite: the second run with the same id fails and changes nothing", {
+    tags: ["slow"],
+  }, () => {
     const scratch = scratchRoot();
     roots.push(scratch);
     expect(run(flags, scratch.tools).status).toBe(0);
@@ -116,20 +124,22 @@ describe("with flags, and no terminal (what an AI agent does)", () => {
     expect(second.stderr).toContain('a tool with the id "word-counter" already exists');
   });
 
-  it("never waits for an answer: with an input missing and no terminal, it says how to fix it", () => {
+  it("never waits for an answer: with an input missing and no terminal, it says how to fix it", {
+    tags: ["slow"],
+  }, () => {
     const result = run(["--id", "word-counter"]);
     expect(result.status).toBe(2);
     expect(result.stderr).toContain("Missing --name, --category, --summary, --runtime, --tags");
     expect(result.stderr).toContain('Example: pnpm new:tool --name "Word counter" --category text');
   });
 
-  it("with --json and a missing input, says so as JSON", () => {
+  it("with --json and a missing input, says so as JSON", { tags: ["slow"] }, () => {
     const result = run(["--json"]);
     expect(result.status).toBe(2);
     expect(JSON.parse(result.stderr).ok).toBe(false);
   });
 
-  it("shows help with every flag, and rejects a flag it does not know", () => {
+  it("shows help with every flag, and rejects a flag it does not know", { tags: ["slow"] }, () => {
     const help = run(["--help"]);
     expect(help.status).toBe(0);
     for (const flag of [

@@ -1,8 +1,11 @@
 export {
   checkQuality,
+  checkQualityWarnings,
   FAQ_MIN_ANSWER_WORDS,
   FAQ_MIN_PAIRS,
+  FIRST_SENTENCE_MAX_WORDS,
   findPlaceholder,
+  firstSentence,
   type GateResult,
   MIN_WORDS,
   pageWords,

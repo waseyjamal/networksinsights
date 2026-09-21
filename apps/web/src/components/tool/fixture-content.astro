@@ -1,6 +1,9 @@
 ---
-// Stands in for the Content component of a tool's content/en.mdx in tool-page.test.ts, with the
-// four sections the contract requires.
+// Stands in for the Content component of a tool's content/en.mdx in tool-page.test.ts and in the
+// SEO page tests, with the four sections the contract requires. Its FAQ is the HTML that
+// FIXTURE_MDX in fixture-mdx.ts renders to, so the tests can check that the structured data of a
+// page says the same as the page. Keep each paragraph on one line: the formatter would otherwise
+// wrap it, and the compiler drops the space at the wrap.
 ---
 
 <p>An intro paragraph.</p>
@@ -11,4 +14,7 @@
 <h2>Limits</h2>
 <p>Words.</p>
 <h2>FAQ</h2>
-<p>Words.</p>
+<h3>Is my text uploaded?</h3>
+<p>No. It runs in your <strong>browser</strong>, so <a href="/privacy/">nothing is uploaded</a>.</p>
+<h3>Does it count characters?</h3>
+<p>Yes. It counts <code>characters</code> with and without spaces, and it also counts lines.</p>

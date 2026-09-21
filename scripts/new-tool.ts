@@ -10,7 +10,13 @@
 // Exit codes: 0 created (or dry run passed), 1 refused or failed, 2 the command was used wrongly.
 
 import { parseArgs } from "node:util";
-import { type GenerateResult, GeneratorError, generateTool, stagingDirFor } from "./lib/generate";
+import {
+  type GenerateResult,
+  GeneratorError,
+  generateTool,
+  parseFormats,
+  stagingDirFor,
+} from "./lib/generate";
 import { type Answers, askForMissing, exampleCommand, FIELDS, toInput } from "./lib/prompt";
 import { defaultToolsRoot, siteConfig } from "./lib/tools";
 
@@ -26,6 +32,8 @@ Options:
   --summary <text>     20 to 159 characters; the meta description, unique across tools
   --runtime <runtime>  client, worker or server (decides the privacy statement)
   --tags <a,b,c>       one to eight kebab-case tags, separated by commas
+  --accepts <a,b>      optional: the file formats the tool takes in, e.g. PDF,PNG (Quick facts)
+  --produces <a,b>     optional: the file formats the tool gives back, e.g. PDF
   --dry-run            check everything and print what would be written; write nothing
   --json               print the result as JSON, for an agent or a script
   --tools-root <path>  create the tool under another folder than tools/ (used by the tests)
@@ -69,6 +77,8 @@ function nextSteps(result: GenerateResult, id: string): string[] {
 
 async function main(): Promise<number> {
   let flags: Answers & {
+    accepts?: string | undefined;
+    produces?: string | undefined;
     "dry-run"?: boolean | undefined;
     json?: boolean | undefined;
     help?: boolean | undefined;
@@ -83,6 +93,8 @@ async function main(): Promise<number> {
         summary: { type: "string" },
         runtime: { type: "string" },
         tags: { type: "string" },
+        accepts: { type: "string" },
+        produces: { type: "string" },
         "dry-run": { type: "boolean" },
         json: { type: "boolean" },
         "tools-root": { type: "string" },
@@ -119,7 +131,11 @@ async function main(): Promise<number> {
     }
   }
 
-  const input = toInput(answers);
+  const input = {
+    ...toInput(answers),
+    ...(flags.accepts === undefined ? {} : { accepts: parseFormats(flags.accepts) }),
+    ...(flags.produces === undefined ? {} : { produces: parseFormats(flags.produces) }),
+  };
   const toolsRoot = flags["tools-root"] ?? defaultToolsRoot;
 
   let cleanup = () => {};

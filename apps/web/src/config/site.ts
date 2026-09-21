@@ -6,11 +6,20 @@ export const site = {
   domain: "networksinsights.com",
   url: "https://networksinsights.com",
   tagline: "Free online tools",
+  /** What the site is, in one sentence: the home page's meta description and the llms.txt summary. */
+  description:
+    "Convert, compress, calculate and create right in your browser. Free online tools with no sign-up, private by design.",
   /**
    * False until launch day. While false, every page renders `noindex, nofollow`. Flipping it to
    * true is the launch step in docs/launch-checklist.md (Mission 18): do not change it before.
    */
   launched: false,
+} as const;
+
+/** The words at the top of the home page. The home page and its share image both use them. */
+export const homeHero = {
+  headline: "Free online tools. Private by design.",
+  lead: "Convert, compress, calculate and create right in your browser. No sign-up needed.",
 } as const;
 
 /** "<Page> | NetworksInsights": the title of every page except the home page. */
@@ -40,6 +49,27 @@ export const staticPagePaths = [
   "terms",
   "tools",
 ] as const;
+
+/**
+ * The date each page without a tool behind it last changed in a way a reader or a search engine
+ * would notice (its wording, its structured data or its links), as `YYYY-MM-DD`. It is the
+ * `lastmod` of the page in the sitemap (ADR 0040). Google only trusts a `lastmod` that is
+ * accurate, and it ignores cosmetic changes, so this is kept by hand and never read from git,
+ * where a shallow CI checkout would date every file the same and a layout change would date every
+ * page as modified. When you change what one of these pages says, change its date here:
+ * `sitemap.test.ts` fails on a full clone if the page's file changed in git after its date.
+ *
+ * `home` and `tools` are the newest of this date and the `updated` date of every tool, and a
+ * category page is the newest of `categoriesUpdated` and the `updated` date of its tools.
+ */
+export const pageUpdated = {
+  home: "2026-09-21",
+  tools: "2026-09-21",
+  about: "2026-09-21",
+  contact: "2026-09-21",
+  privacy: "2026-09-21",
+  terms: "2026-09-21",
+} as const;
 
 /** The site-level pages linked from the header menu and the footer. Paths end in a slash. */
 export const sitePages = {

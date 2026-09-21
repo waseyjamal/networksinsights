@@ -4,14 +4,18 @@ import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { pageTitle, site } from "../config/site";
 import Page from "../layouts/Page.astro";
+
+// The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
+const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
 ---
 
 <Page
+  breadcrumbs={breadcrumbs}
   title={pageTitle("About")}
   description="About NetworksInsights: a free online tools platform that works in your browser, with no accounts and no sign-up."
 >
   <div class="grid gap-4">
-    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "About" }]} />
+    <Breadcrumbs items={breadcrumbs} />
     <PageHeader
       title="About"
       intro={`${site.name} is a free online tools platform: ${site.tagline.toLowerCase()} for everyday jobs, in your browser.`}

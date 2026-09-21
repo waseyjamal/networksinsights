@@ -20,7 +20,7 @@ const STRING_PROPERTY =
   /^ {2}(id|name|category|summary|runtime|status|added|updated):\s*("(?:[^"\\\n]|\\.)*"),?$/gm;
 
 /** `  tags: ["a", "b"],`, on one line or many. */
-const LIST_PROPERTY = /^ {2}(tags|related): \[([^\]]*)\],?$/gm;
+const LIST_PROPERTY = /^ {2}(tags|related|accepts|produces): \[([^\]]*)\],?$/gm;
 
 const STRING_IN_LIST = /"((?:[^"\\\n]|\\.)*)"/g;
 

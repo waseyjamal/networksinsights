@@ -9,7 +9,7 @@
 import type { ContractViolation } from "@networksinsights/tool-sdk";
 import { buildRegistry, type Registry, type Tool } from "./build";
 import { toEntries } from "./entries";
-import { enforceQuality, qualityMode } from "./quality";
+import { adviseQuality, enforceQuality, qualityMode } from "./quality";
 
 // Paths are relative to this file: five levels up is the repo root, where tools/ lives.
 // ?raw on island.astro and content/en.mdx is deliberate: it is excluded from the Astro and MDX
@@ -63,6 +63,9 @@ export const qualityProblems: readonly ContractViolation[] = enforceQuality(
   entries,
   qualityMode(import.meta.env.DEV),
 );
+
+/** Advice from the gates that only warn (ADR 0044). Printed once, never a failure. */
+export const qualityAdvice: readonly ContractViolation[] = adviseQuality(entries);
 
 /** Every tool, by name. */
 export const tools: readonly Tool[] = registry.all;

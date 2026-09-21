@@ -1605,6 +1605,40 @@
     }
   }
 
+  /* Facts: a definition list in a grid of cells, the "Quick facts" of a tool page. */
+
+  .ni-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .ni-facts__row {
+    display: grid;
+    align-content: start;
+    gap: 0.125rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+  }
+
+  .ni-facts dt {
+    color: var(--fg-muted);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+  }
+
+  .ni-facts dd {
+    margin: 0;
+    color: var(--fg);
+    font-weight: 600;
+  }
+
   /* Long-form text: the About, Contact, Privacy and Terms pages. */
 
   .ni-prose {

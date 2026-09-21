@@ -36,9 +36,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      # The slow tests (1,000-tool benchmarks, the generated-tree typecheck, spawned CLIs) stay out of
+      # `pnpm check` and the pre-push hook, and run here (ADR 0043).
+      - run: pnpm test:slow
       - run: pnpm build
       # The JavaScript budget of every tool page, measured on the build output just made (ADR 0037).
       - run: pnpm check:budgets
+      # What search engines and share previews will read, on the build just made (ADR 0038 to 0041).
+      - run: pnpm check:seo
 
   e2e:
     name: e2e
@@ -153,10 +158,49 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # INDEXNOW_KEY is a repository variable, not a secret: the key is published at /<key>.txt by
+      # design. The build writes that file only after launch (ADR 0042).
       - run: pnpm build
+        env:
+          INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
+      # The sitemaps that are live now, saved before they are replaced. After the deploy they are
+      # compared with the new ones to find the URLs that changed (ADR 0042).
+      - name: Save the live sitemaps
+        continue-on-error: true
+        run: pnpm indexnow snapshot --out "$RUNNER_TEMP/sitemaps-before"
       - name: Deploy to production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           COMMIT_SHA: ${{ github.sha }}
         run: pnpm --filter web exec wrangler deploy --message "${COMMIT_SHA}"
+      # Tell search engines which URLs changed. It does nothing before launch or without a key, and
+      # a failure here never fails a deploy that has already happened.
+      - name: Announce changed URLs to IndexNow
+        continue-on-error: true
+        env:
+          INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
+        run: pnpm indexnow submit --previous "$RUNNER_TEMP/sitemaps-before"
+
+  # Requests the live site after a deploy. It fails until the redirect rule of
+  # docs/runbooks/seo-redirects.md exists in the Cloudflare dashboard, and nothing depends on it.
+  verify-production:
+    name: verify-production
+    needs: deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Six tries, ten seconds apart, while the new version reaches every edge.
+      - run: pnpm check:production --attempts 6

@@ -14,6 +14,9 @@ export interface ToolValues {
   summary: string;
   runtime: "client" | "worker" | "server";
   tags: readonly string[];
+  /** Optional file formats, written into the manifest only when given. */
+  accepts?: readonly string[] | undefined;
+  produces?: readonly string[] | undefined;
   /** ISO date, YYYY-MM-DD. */
   today: string;
 }
@@ -35,6 +38,11 @@ function arrayProperty(key: string, values: readonly string[], indent = "  "): s
   return `${indent}${key}: [\n${items.join("\n")}\n${indent}],`;
 }
 
+/** `arrayProperty` plus its line break, or nothing when the manifest has no such list. */
+function optionalArray(key: string, values: readonly string[] | undefined): string {
+  return values === undefined || values.length === 0 ? "" : `${arrayProperty(key, values)}\n`;
+}
+
 export function toolConfig(values: ToolValues): string {
   return `import { defineTool } from "@networksinsights/tool-sdk";
 import { z } from "zod";
@@ -45,7 +53,7 @@ ${stringProperty("name", values.name)}
 ${stringProperty("category", values.category)}
 ${stringProperty("summary", values.summary)}
 ${arrayProperty("tags", values.tags)}
-${stringProperty("runtime", values.runtime)}
+${optionalArray("accepts", values.accepts)}${optionalArray("produces", values.produces)}${stringProperty("runtime", values.runtime)}
   status: "beta",
   input: z.object({ text: z.string() }),
   related: [],
@@ -117,7 +125,7 @@ export function toolIsland(): string {
 }
 
 export function toolContent(values: ToolValues): string {
-  return `${UNFINISHED_MARKER}: write the intro of ${values.name}. Say what the tool does, who it is for and what makes it worth opening, in at least 40 words. Everything on this page must be true of this tool alone.
+  return `${UNFINISHED_MARKER}: write the intro of ${values.name}. Answer first: the first sentence says what the tool does, names ${values.name} and has at most 30 words. Then say who it is for and what makes it worth opening, in at least 40 words in all. Everything on this page must be true of this tool alone.
 
 ## How to use
 

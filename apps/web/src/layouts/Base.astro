@@ -3,6 +3,9 @@ import { Font } from "astro:assets";
 import { site } from "../config/site";
 import { toHex } from "../lib/color";
 import { robotsContent } from "../lib/robots";
+import { buildHead } from "../lib/seo/head";
+import { type JsonLdDocument, serializeJsonLd } from "../lib/seo/jsonld";
+import { homeCard, type ShareCard, shareImageOf } from "../lib/seo/og";
 import { parseTokens, themeColors } from "../lib/tokens";
 import "../styles/global.css";
 import tokensCss from "../styles/tokens.css?raw";
@@ -10,14 +13,28 @@ import tokensCss from "../styles/tokens.css?raw";
 interface Props {
   title: string;
   description: string;
-  /** The page opts out of indexing even after launch (404, design system). */
+  /** The page opts out of indexing even after launch (404, design system, an empty category). */
   noindex?: boolean;
+  /** The share card the page uses (Open Graph and X). Pages without their own use the home card. */
+  share?: ShareCard | undefined;
+  /** The page's structured data. It is written only on a page that is indexable (ADR 0039). */
+  jsonLd?: JsonLdDocument | undefined;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, share = homeCard, jsonLd } = Astro.props;
 
 // Until launch every page is noindex, nofollow, whatever the page asks for (ADR 0029).
 const robots = robotsContent({ launched: site.launched, pageNoindex: noindex });
+
+// The canonical link and the share tags. The path comes from the route, never from the host, so a
+// preview deployment still names the production address (ADR 0038).
+const head = buildHead({
+  title,
+  description,
+  path: noindex ? undefined : Astro.url.pathname,
+  noindex,
+  image: shareImageOf(share),
+});
 
 // Browser-chrome colors come from the same tokens the page uses (--bg in each theme).
 const tokens = parseTokens(tokensCss);
@@ -59,7 +76,13 @@ const themeColorDark = chrome("dark");
     />
     <meta name="description" content={description} />
     {robots && <meta name="robots" content={robots} />}
+    {head.canonical && <link rel="canonical" href={head.canonical} />}
+    {head.openGraph.map((tag) => <meta property={tag.property} content={tag.content} />)}
+    {head.twitter.map((tag) => <meta name={tag.name} content={tag.content} />)}
     <title>{title}</title>
+    {jsonLd && !noindex && (
+  <script is:inline type="application/ld+json" set:html={serializeJsonLd(jsonLd)} />
+)}
     <script is:inline>
     (() => {
       const root = document.documentElement;

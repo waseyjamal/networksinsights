@@ -30,6 +30,10 @@ export interface NewToolInput {
   summary: string;
   runtime: string;
   tags: readonly string[];
+  /** Optional file formats the tool takes in (`--accepts PDF,PNG`), shown in Quick facts. */
+  accepts?: readonly string[];
+  /** Optional file formats the tool gives back (`--produces PDF`). */
+  produces?: readonly string[];
 }
 
 /** The file-system calls the generator makes, so a test can make one of them fail. */
@@ -101,6 +105,14 @@ export function parseTags(text: string): string[] {
     .filter(Boolean);
 }
 
+/** Splits `PDF, PNG` into clean formats. Unlike tags, a format keeps its capitals. */
+export function parseFormats(text: string): string[] {
+  return text
+    .split(",")
+    .map((format) => format.trim())
+    .filter(Boolean);
+}
+
 /** The flag that sets each manifest field, so a message can name what to change. */
 const FLAG: Record<string, string> = {
   id: "--id",
@@ -109,6 +121,8 @@ const FLAG: Record<string, string> = {
   summary: "--summary",
   runtime: "--runtime",
   tags: "--tags",
+  accepts: "--accepts",
+  produces: "--produces",
 };
 
 const EXAMPLES: Record<string, string> = {
@@ -118,6 +132,8 @@ const EXAMPLES: Record<string, string> = {
   summary: '--summary "Count the words, characters and lines in any text, as you type."',
   runtime: "--runtime client",
   tags: "--tags words,characters",
+  accepts: "--accepts PDF,PNG",
+  produces: "--produces PDF",
 };
 
 const describeFlag = (field: string) => FLAG[field] ?? field;
@@ -153,6 +169,8 @@ export function validateInput(input: NewToolInput, only?: readonly string[]): st
   const candidate = {
     ...input,
     tags: [...input.tags],
+    ...(input.accepts === undefined ? {} : { accepts: [...input.accepts] }),
+    ...(input.produces === undefined ? {} : { produces: [...input.produces] }),
     status: "beta",
     input: z.object({ text: z.string() }),
     related: [],
@@ -241,6 +259,8 @@ async function checkCollisions(
       category: values.category,
       summary: values.summary,
       tags: [...values.tags],
+      ...(values.accepts === undefined ? {} : { accepts: [...values.accepts] }),
+      ...(values.produces === undefined ? {} : { produces: [...values.produces] }),
       runtime: values.runtime,
       status: "beta",
       input: z.object({ text: z.string() }),

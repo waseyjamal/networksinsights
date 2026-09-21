@@ -12,14 +12,18 @@
     "preview": "pnpm --filter web preview",
     "lint": "biome check .",
     "fix": "biome check --write .",
-    "typecheck": "pnpm --filter @networksinsights/tool-sdk check && pnpm --filter @networksinsights/scripts check && pnpm --filter @networksinsights/tools check && pnpm --filter web check",
-    "test": "vitest run",
+    "typecheck": "pnpm -r --parallel run check",
+    "test": "vitest run --tags-filter=\"!slow\"",
+    "test:slow": "vitest run --tags-filter=slow",
     "test:e2e": "pnpm build && pnpm --filter web test:e2e",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm check:tools",
     "prepare": "husky",
     "new:tool": "tsx scripts/new-tool.ts",
     "check:tools": "tsx scripts/check-tools.ts",
-    "check:budgets": "tsx scripts/check-budgets.ts"
+    "check:budgets": "tsx scripts/check-budgets.ts",
+    "check:seo": "tsx scripts/check-seo.ts",
+    "check:production": "tsx scripts/check-production.ts",
+    "indexnow": "tsx scripts/indexnow.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

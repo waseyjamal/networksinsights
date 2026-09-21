@@ -31,6 +31,10 @@ A crawler that is blocked by `robots.txt` never fetches the page, so it never se
 - **The flag covers preview deployments (workers.dev) only before launch.** Previews are built from the same code, so they inherit the flag. After launch `launched` is `true` everywhere, and PR previews would become indexable. Before launch, preview deployments must therefore send an `X-Robots-Tag: noindex` header of their own. That is Mission 12 (security and headers), and it is listed as a required item in `docs/launch-checklist.md`.
 - The meta tag does not cover non-HTML files (images, PDFs). There are none yet.
 
+## Amendment (Mission 10, ADR 0040)
+
+A `robots.txt` now exists, generated from the launch flag. It allows crawling before launch, exactly as this ADR requires, and adds the `Sitemap:` line only after launch. The rejection of `Disallow: /` above stands. The sitemaps and `llms.txt` are not built before launch.
+
 ## Revisit when
 
 Non-HTML content is published, or Mission 12 adds response headers (a header could then replace or back up the meta tag).
