@@ -107,13 +107,13 @@ test.describe("header on a desktop viewport", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   });
 
-  test("Enter on the command bar opens the list of all tools", async ({ page }) => {
+  test("Enter on the command bar opens the search dialog", async ({ page }) => {
     await page.goto("/");
     const bar = page.locator(".ni-header").getByRole("link", { name: "Search tools" });
     await bar.focus();
     await page.keyboard.press("Enter");
-    await expect(page).toHaveURL(/\/tools\/$/);
-    await expect(page.getByRole("heading", { level: 1, name: "All tools" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Search tools" })).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test("hides the mobile menu", async ({ page }) => {

@@ -1,0 +1,169 @@
+---
+import { categories, categoryHref } from "../../config/categories";
+import { sitePages } from "../../config/site";
+import { siteSearchIndex } from "../../lib/search/site-index";
+import Icon from "./Icon.astro";
+import Kbd from "./Kbd.astro";
+
+// The instant-search dialog (ADR 0045, ADR 0046). It is on every page and shut: a native <dialog>
+// that is not open has no box and is not in the accessibility tree, so without JavaScript it is
+// simply not there, and the command bar is a link to /tools/.
+//
+// The markup is complete here. The script in search-ui.ts only fills the results and toggles which
+// part shows, so the categories, the messages and every label are ordinary HTML that axe and the
+// Vitest render tests can read.
+//
+// The script at the bottom is the loader: the one script every page ships for search. It listens
+// for a sign of intent (hover, focus or press on the command bar or the /tools/ filter, or a
+// shortcut key) and only then imports search-ui.ts, which brings the engine and fetches the index.
+// It has no static import of either, and it must stay under 2 KB gzip (ADR 0046).
+const toolsHref = sitePages.tools.href;
+---
+
+<dialog
+  class="ni-search"
+  aria-label="Search tools"
+  data-ni-search
+  data-index={siteSearchIndex.href}
+>
+  <div class="ni-search__panel">
+    <div class="ni-search__bar">
+      <Icon name="search" />
+      <input
+        class="ni-search__input"
+        type="text"
+        role="combobox"
+        aria-label="Search tools"
+        aria-autocomplete="list"
+        aria-expanded="false"
+        aria-controls="ni-search-results"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        placeholder="Search tools"
+        data-ni-search-input
+      />
+      <button class="ni-search__close" type="button" aria-label="Close search" data-ni-search-close>
+        <Icon name="close" />
+      </button>
+    </div>
+
+    <div class="ni-search__body">
+      <div
+        class="ni-search__results"
+        id="ni-search-results"
+        role="listbox"
+        aria-label="Search results"
+        data-ni-search-results
+        hidden
+      ></div>
+
+      <div class="ni-search__message" data-ni-search-empty hidden>
+        <p class="ni-search__message-title">No tools yet</p>
+        <p class="ni-search__message-text">
+          Tools appear here as they are added. Browse the categories to see what each one is for.
+        </p>
+      </div>
+      <div class="ni-search__message" data-ni-search-none hidden>
+        <p class="ni-search__message-title">No tools match “<span data-ni-search-query></span>”</p>
+        <p class="ni-search__message-text">
+          Check the spelling, try fewer words, or browse a category.
+        </p>
+      </div>
+      <div class="ni-search__message" data-ni-search-error hidden>
+        <p class="ni-search__message-title">Search could not load</p>
+        <p class="ni-search__message-text">
+          You can still <a href={toolsHref}>see every tool</a> or browse a category.
+        </p>
+      </div>
+
+      <nav class="ni-search__categories" aria-label="Browse by category" data-ni-search-categories>
+        <p class="ni-search__heading">Categories</p>
+        <ul class="ni-search__category-list">
+          {categories.map((category) => (
+  <li>
+    <a class="ni-search__category" href={categoryHref(category)} data-cat={category.id}>
+      <span class="ni-icon-tint">
+        <Icon name={category.icon} />
+      </span>
+      <span class="ni-search__category-name">{category.name}</span>
+    </a>
+  </li>
+))}
+        </ul>
+      </nav>
+    </div>
+
+    <div class="ni-search__footer">
+      <p class="ni-search__count" aria-hidden="true" data-ni-search-count></p>
+      <p class="ni-search__keys" aria-hidden="true">
+        <Kbd>↑</Kbd><Kbd>↓</Kbd>
+        move <Kbd>Enter</Kbd> open <Kbd>Esc</Kbd> close
+      </p>
+      <a class="ni-search__all" href={toolsHref}>All tools</a>
+    </div>
+    <p class="sr-only" role="status" aria-live="polite" data-ni-search-live></p>
+  </div>
+</dialog>
+
+<script>
+import { isPlainClick, isSearchShortcut } from "../../lib/search/intent";
+
+const TRIGGER = "[data-ni-search-trigger]";
+const FILTER = "[data-ni-filter-input]";
+
+let client: Promise<typeof import("../../lib/search/search-ui")> | undefined;
+const load = () => {
+  // A failed import is not kept, so the next sign of intent tries again.
+  client ??= import("../../lib/search/search-ui").catch((error) => {
+    client = undefined;
+    throw error;
+  });
+  return client;
+};
+const near = (event: Event, selector: string) =>
+  event.target instanceof Element ? event.target.closest<HTMLElement>(selector) : null;
+
+// Shows Cmd instead of Ctrl on Apple devices. The hint is hidden until this page has scripts.
+if (/mac|iphone|ipad/i.test(navigator.userAgent)) document.documentElement.dataset.mac = "";
+
+// Intent: the visitor is about to search. Start fetching, and change nothing on the page.
+let started = false;
+const warm = (event: Event) => {
+  if (started || !near(event, `${TRIGGER},${FILTER}`)) return;
+  load().then(
+    (module) => {
+      started = true;
+      module.start();
+    },
+    // The filter promised something it cannot do: take it away, and the full list stays.
+    () => near(event, "[data-ni-filter]")?.setAttribute("hidden", ""),
+  );
+};
+for (const type of ["pointerover", "focusin", "pointerdown"]) {
+  document.addEventListener(type, warm, { capture: true, passive: true });
+}
+
+// A plain click on the command bar opens the dialog. If the module cannot load, the link does
+// what it always did and goes to the list of all tools.
+document.addEventListener("click", (event) => {
+  const trigger = near(event, TRIGGER);
+  if (!(trigger instanceof HTMLAnchorElement) || !isPlainClick(event)) return;
+  event.preventDefault();
+  load().then(
+    (module) => module.open(trigger),
+    () => location.assign(trigger.href),
+  );
+});
+
+document.addEventListener("keydown", (event) => {
+  if (!isSearchShortcut(event)) return;
+  event.preventDefault();
+  const from = document.activeElement;
+  load().then(
+    (module) => module.open(from),
+    () => {},
+  );
+});
+</script>

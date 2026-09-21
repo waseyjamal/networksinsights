@@ -1769,3 +1769,379 @@
     font-size: var(--text-sm);
   }
 }
+
+/* Search (Mission 11): the instant-search dialog, the command-bar hint and the /tools/ filter.
+   The dialog is a native <dialog> (ADR 0045, ADR 0046). ------------------------------------- */
+
+@layer components {
+  /* The Ctrl+K hint is in the markup of the command-bar link and shown only when the page has
+     scripts, so it never promises a shortcut that does not work. */
+  a.ni-commandbar .ni-commandbar__hint {
+    display: none;
+  }
+
+  html[data-theme-js] a.ni-commandbar .ni-commandbar__hint {
+    display: inline-flex;
+  }
+
+  /* Cmd on Apple devices, Ctrl elsewhere. The loader sets data-mac. */
+  .ni-key-mac,
+  html[data-mac] .ni-key-pc {
+    display: none;
+  }
+
+  html[data-mac] .ni-key-mac {
+    display: inline-flex;
+  }
+
+  /* No keyboard shortcut on a touch screen, and the mobile menu has no room for the hint. */
+  @media (hover: none) {
+    html[data-theme-js] a.ni-commandbar .ni-commandbar__hint {
+      display: none;
+    }
+  }
+
+  html[data-theme-js] .ni-menu__panel a.ni-commandbar .ni-commandbar__hint {
+    display: none;
+  }
+
+  /* The dialog. It fills the viewport and is see-through, so a click outside the panel lands on
+     the dialog itself and closes it. The panel sits near the top, where a command bar belongs. */
+  dialog.ni-search {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: clamp(0.75rem, 8vh, 6rem) 1rem 1rem;
+    border: 0;
+    background: transparent;
+    color: var(--fg);
+    overflow: hidden;
+  }
+
+  /* A plain scrim, not a blur: a blur over the whole viewport is repainted on every keystroke and
+     took about 50 ms a frame in a software-rendered browser, against 10 ms without it. */
+  dialog.ni-search::backdrop {
+    background: color-mix(in oklab, var(--bg, var(--inverse)) 62%, transparent);
+  }
+
+  /* The page behind does not scroll while the dialog is open. */
+  html:has(dialog.ni-search[open]) {
+    overflow: hidden;
+  }
+
+  .ni-search__panel {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 42rem);
+    max-height: min(36rem, 100%);
+    margin-inline: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--surface-raised);
+    /* No box-shadow: the scrim and the border set the panel apart. The panel's contents change on
+       every keystroke, and a large shadow was repainted with them: about 60 ms a keystroke in a
+       software-rendered WebKit, 14 ms without it. */
+    overflow: hidden;
+    animation: ni-search-in var(--duration-base) var(--ease-out-soft);
+  }
+
+  @keyframes ni-search-in {
+    from {
+      opacity: 0;
+      transform: translateY(-0.5rem) scale(0.985);
+    }
+  }
+
+  .ni-search__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 0.5rem 0 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ni-search__bar > .ni-icon {
+    color: var(--fg-muted);
+  }
+
+  .ni-search__input {
+    flex: 1;
+    min-width: 0;
+    height: 3.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--fg);
+    font: inherit;
+    font-size: var(--text-lg);
+  }
+
+  .ni-search__input::placeholder {
+    color: var(--fg-subtle);
+    opacity: 1;
+  }
+
+  .ni-search__input:focus-visible {
+    outline: none;
+  }
+
+  /* The input has no ring of its own: the whole bar shows focus, so it is visible in both themes. */
+  .ni-search__bar:focus-within {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+    border-top-left-radius: var(--radius-2xl);
+    border-top-right-radius: var(--radius-2xl);
+  }
+
+  .ni-search__close {
+    display: inline-grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: transparent;
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .ni-search__close:hover {
+      background: var(--surface-sunken);
+      color: var(--fg);
+    }
+  }
+
+  .ni-search__close:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .ni-search__body {
+    flex: 1;
+    min-height: 0;
+    padding: 0.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .ni-search__results {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  .ni-search__result {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-lg);
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .ni-search__result .ni-icon-tint {
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+  }
+
+  /* The active option is the one Enter opens. It has a tint and a ring, so it does not rely on
+     color alone. */
+  .ni-search__result[aria-selected="true"] {
+    background: var(--brand-soft);
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  .ni-search__result-body {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .ni-search__result-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.625rem;
+  }
+
+  .ni-search__result-name {
+    font-weight: 600;
+  }
+
+  .ni-search__result-category {
+    color: var(--fg-muted);
+    font-size: var(--text-xs);
+  }
+
+  .ni-search__result-summary,
+  .ni-search__result-hint {
+    color: var(--fg-muted);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+  }
+
+  .ni-search__result-hint {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  /* The matched text. Weight and an underline, not a background: contrast is that of the text. */
+  .ni-search mark {
+    background: transparent;
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--brand-ui);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+
+  .ni-search__heading {
+    padding: 0.5rem 0.75rem 0.25rem;
+    color: var(--fg-muted);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .ni-search__category-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ni-search__category {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-lg);
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .ni-search__category .ni-icon-tint {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  @media (hover: hover) {
+    .ni-search__result:hover,
+    .ni-search__category:hover {
+      background: var(--brand-soft);
+    }
+  }
+
+  .ni-search__category:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  .ni-search__message {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 0.75rem 0.5rem;
+  }
+
+  .ni-search__message-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  .ni-search__message-text {
+    color: var(--fg-muted);
+  }
+
+  .ni-search__message-text a {
+    color: var(--brand-text);
+  }
+
+  .ni-search__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface-sunken);
+    color: var(--fg-muted);
+    font-size: var(--text-xs);
+  }
+
+  .ni-search__count {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ni-search__keys {
+    display: none;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  @media (hover: hover) and (min-width: 40rem) {
+    .ni-search__keys {
+      display: inline-flex;
+    }
+  }
+
+  .ni-search__all {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    color: var(--brand-text);
+    font-weight: 600;
+  }
+
+  /* The /tools/ filter: hidden until the page has scripts, so without them the list stands alone. */
+  .ni-filter {
+    display: none;
+  }
+
+  html[data-theme-js] .ni-filter {
+    display: grid;
+    gap: 0.5rem;
+    max-width: 28rem;
+  }
+
+  .ni-filter__status {
+    min-height: 1.5rem;
+    color: var(--fg-muted);
+    font-size: var(--text-sm);
+  }
+
+  .ni-filter__none {
+    display: grid;
+    justify-items: start;
+    gap: 0.5rem;
+    color: var(--fg-muted);
+  }
+
+  .ni-filter__clear {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0 0.875rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--fg);
+    font-size: var(--text-sm);
+    font-weight: 550;
+    cursor: pointer;
+  }
+
+  .ni-filter__clear:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}

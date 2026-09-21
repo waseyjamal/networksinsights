@@ -1,0 +1,34 @@
+---
+import Input from "./Input.astro";
+
+// The filter box of /tools/ (ADR 0046). Progressive enhancement: the full list is always in the
+// page, and this box does nothing and is not shown until scripts are on (CSS gates it on
+// html[data-theme-js]). The script in search-ui.ts finds it by the data-ni-filter-* hooks below and
+// the list by [data-ni-filter-list] and [data-ni-filter-group]; a tool's row is matched to the
+// index by the address of its page.
+interface Props {
+  id?: string;
+  label?: string;
+}
+
+const { id = "tool-filter", label = "Filter tools" } = Astro.props;
+---
+
+<div class="ni-filter" data-ni-filter>
+  <Input
+    id={id}
+    label={label}
+    type="search"
+    placeholder="Filter by name, task or file type"
+    autocomplete="off"
+    spellcheck="false"
+    data-ni-filter-input
+  />
+  <p class="ni-filter__status" role="status" aria-live="polite" data-ni-filter-status></p>
+  <div class="ni-filter__none" data-ni-filter-none hidden>
+    <p>
+      No tool matches “<span data-ni-filter-query></span>”. Check the spelling or try fewer words.
+    </p>
+    <button class="ni-filter__clear" type="button" data-ni-filter-clear>Clear filter</button>
+  </div>
+</div>

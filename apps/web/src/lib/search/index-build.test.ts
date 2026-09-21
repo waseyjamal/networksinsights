@@ -89,6 +89,38 @@ describe("reading an index", () => {
         version: 1,
         tools: [{ id: "x", name: "n", summary: "s", category: "c", tags: [1], href: "/x/" }],
       },
+      {
+        version: 1,
+        tools: [
+          {
+            id: "x",
+            name: "n",
+            summary: "s",
+            category: "c",
+            tags: [],
+            href: "https://example.com/",
+          },
+        ],
+      },
+      {
+        version: 1,
+        tools: [
+          { id: "x", name: "n", summary: "s", category: "c", tags: [], href: "//example.com/" },
+        ],
+      },
+      {
+        version: 1,
+        tools: [
+          {
+            id: "x",
+            name: "n",
+            summary: "s",
+            category: "c",
+            tags: [],
+            href: "javascript:alert(1)",
+          },
+        ],
+      },
     ]) {
       expect(parseSearchIndex(value), JSON.stringify(value)).toBeUndefined();
     }

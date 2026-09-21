@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { toBytes } from "../src/lib/color";
 import { parseTokens, type Theme, themeColors } from "../src/lib/tokens";
 
@@ -61,4 +61,63 @@ export function collectResponses(page: Page) {
     }
   });
   return items;
+}
+
+/** The most the one search loader script may weigh, gzip (ADR 0046). */
+export const LOADER_MAX_GZIP_BYTES = 2048;
+
+/** What the one deferred loader script weighs. */
+export interface ScriptAudit {
+  loader: { url: string; raw: number; gzip: number };
+}
+
+/** Every request URL of a page, from the first navigation on. */
+export function collectRequests(page: Page): string[] {
+  const urls: string[] = [];
+  page.on("request", (request) => urls.push(request.url()));
+  return urls;
+}
+
+/** True for a request that belongs to search: the index file or the search module chunk. */
+export const isSearchRequest = (url: string) =>
+  /^\/(?:search-index\.[0-9a-f]+\.json|_astro\/search-ui\.[\w-]+\.js)$/.test(new URL(url).pathname);
+
+/**
+ * Asserts the zero-JavaScript rule as it stands since Mission 11 (ADR 0046): exactly one script
+ * file, the search loader, at most 2 KB gzip; one inline script, the theme script; no island; and
+ * no request for the search module or the index. `responses` and `requests` must have been
+ * collected before the page was loaded.
+ */
+export async function expectOnlySearchLoader(
+  page: Page,
+  responses: ReturnType<typeof collectResponses>,
+  requests: string[],
+): Promise<ScriptAudit> {
+  const scripts = responses.filter((response) => response.type === "script");
+  expect(
+    scripts.map((script) => script.url),
+    "script files requested",
+  ).toHaveLength(1);
+  const [script] = scripts;
+  if (!script) throw new Error("unreachable: the length was just asserted");
+  expect(await page.locator("script[src]").count(), "script elements with a src").toBe(1);
+  await expect(page.locator("script[src]")).toHaveAttribute("type", "module");
+  expect(await page.locator("astro-island").count(), "islands").toBe(0);
+
+  // The theme script is the only inline script: the JSON-LD blocks are data, not code.
+  const inline = await page.evaluate(() =>
+    [...document.querySelectorAll('script:not([src]):not([type="application/ld+json"])')].map(
+      (element) => element.textContent ?? "",
+    ),
+  );
+  expect(inline, "inline scripts").toHaveLength(1);
+  expect(inline[0]).toContain("ni-theme");
+
+  const body = await script.body();
+  const audit = { url: script.url, raw: body.length, gzip: compressed.gzip(body) };
+  expect(audit.gzip, "loader gzip bytes").toBeLessThanOrEqual(LOADER_MAX_GZIP_BYTES);
+
+  // Nothing of search is fetched until intent: not the module, not the index.
+  expect(requests.filter(isSearchRequest), "search requests before intent").toEqual([]);
+  return { loader: audit };
 }

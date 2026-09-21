@@ -21,6 +21,9 @@ export function parseSearchIndex(value: unknown): readonly SearchRecord[] | unde
       !isText(record.summary) ||
       !isText(record.category) ||
       !isText(record.href) ||
+      // A tool's page on this site: `/word-counter/`. Never another origin, never a scheme.
+      !record.href.startsWith("/") ||
+      record.href.startsWith("//") ||
       !Array.isArray(record.tags) ||
       !record.tags.every(isText)
     ) {

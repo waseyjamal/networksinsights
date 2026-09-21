@@ -74,5 +74,10 @@ export function pairs(): Pair[] {
   list.push({ fg: "fg-muted", bg: "brand-soft", min: TEXT, note: "dropzone hint" });
   list.push({ fg: "fg-subtle", bg: "brand-soft", min: TEXT, note: "dropzone hint" });
   list.push({ fg: "brand-ui", bg: "brand-soft", min: UI, note: "dropzone border" });
+  // Search: the active result is drawn on the brand tint; its summary and the footer are muted text.
+  list.push({ fg: "ring", bg: "brand-soft", min: UI, note: "search: active result outline" });
+  list.push({ fg: "fg-muted", bg: "surface-raised", min: TEXT, note: "search: summary" });
+  list.push({ fg: "fg-muted", bg: "surface-sunken", min: TEXT, note: "search: footer text" });
+  list.push({ fg: "brand-text", bg: "surface-sunken", min: TEXT, note: "search: footer link" });
   return list;
 }
