@@ -1,6 +1,6 @@
 # Tool contract
 
-Status: FINAL (Mission 8), extended by Mission 9 (generator, content gates, JavaScript budgets)
+Status: FINAL (Mission 8), extended by Mission 9 (generator, content gates, JavaScript budgets) and Mission 10 (Quick facts, answer-first gate, SEO)
 
 Every tool is one folder that follows this contract. The platform builds everything else from it.
 The build fails, naming the folder and the problem, if a folder breaks any rule on this page.
@@ -51,6 +51,10 @@ export default defineTool({
   status: "beta",
   input: z.object({ text: z.string() }),
   related: ["case-converter"],
+  // Optional file formats, shown in Quick facts (ADR 0044). Leave both out for a tool that works
+  // on text or numbers:
+  // accepts: ["PDF", "PNG"],
+  // produces: ["PDF"],
   added: "2026-09-20",
   updated: "2026-09-20",
   // Only for a genuinely heavy tool (ADR 0037):
@@ -69,6 +73,7 @@ export default defineTool({
 | `status` | `"beta"`, `"stable"` or `"deprecated"`. Beta and deprecated show a badge. |
 | `input` | A Zod schema (ADR 0006). |
 | `related` | Up to six ids of other tools that exist. Never this tool's own id. |
+| `accepts`, `produces` | Optional. One to twelve file formats, named as a reader names them (`PDF`, `JPG`, `H.264`, `Plain text`), no repeats. They appear in the page's Quick facts only when present (ADR 0044). `pnpm new:tool` takes `--accepts` and `--produces`. |
 | `limits` | Optional `{ maxInputBytes, maxFiles, maxRunsPerDay }` for a future Pro tier. Absent means unlimited, which is what every tool ships with today. |
 | `budget` | Optional. Raises the JavaScript budget of a heavy tool: `maxInitialJsKb` (above 40, up to 250) and/or `maxOnDemandJsKb` (above 1,024, up to 8,192), and a `reason` of at least 20 characters. Never displayed on the page (ADR 0037). |
 | `added`, `updated` | Real ISO dates, `YYYY-MM-DD`. `updated` is never earlier than `added`. |
@@ -128,7 +133,7 @@ the page, and it is above the fold, so a later directive would only delay the fi
 An intro paragraph, then exactly these H2 sections, in this order:
 
 ```mdx
-An intro paragraph that says what the tool does and who it is for.
+Word counter counts the words in any text as you type. It is for anyone with a limit to meet.
 
 ## How to use
 
@@ -139,8 +144,9 @@ An intro paragraph that says what the tool does and who it is for.
 ## FAQ
 ```
 
-No H1: the page template renders the one H1, the tool name. More depth goes under H3s inside a
-section. The FAQ is `###` questions ending in `?`, each followed by its answer. The content quality
+The first sentence of the intro answers first: it says what the tool does, in at most 30 words, and
+should name the tool (ADR 0044). No H1: the page template renders the one H1, the tool name. More
+depth goes under H3s inside a section. The FAQ is `###` questions ending in `?`, each followed by its answer. The content quality
 gates (ADR 0036) add word minimums, no placeholders and no near-duplicates on top of these rules;
 see "Content quality gates" below.
 
@@ -156,6 +162,8 @@ see "Content quality gates" below.
 | Workspace card | `island.astro`, which mounts `ui.tsx` |
 | Status badge | `status`, for beta and deprecated only |
 | Privacy badge | `runtime`, never written by hand (ADR 0034) |
+| Quick facts | Price, sign-up, where it runs, files uploaded, limits, accepts, produces and the update date, all from the manifest (ADR 0044) |
+| Canonical, share tags, share image, structured data | The route, the manifest and the content, through `apps/web/src/lib/seo/` (ADR 0038 to 0041) |
 | Sections | `content/en.mdx` |
 | Related links | `related` |
 | Category listing and counts | `category` |
@@ -188,6 +196,8 @@ the file, what is wrong and how to fix it.
 
 | Gate | Rule |
 |---|---|
+| `answer-first` | The first sentence of the intro has at most 30 words (ADR 0044). |
+| `answer-first-name` | **A warning, never a failure.** The first sentence of the intro contains the tool's name. |
 | `min-words` | Prose words (code blocks excluded): intro 40, How to use 50, Examples 40, Limits 30, FAQ 60. |
 | `placeholders` | No `TODO`, `TBD`, `FIXME`, "lorem ipsum", "coming soon", "to be written", `[insert …]`, and no empty section. Also in the name, summary and budget reason. |
 | `unfinished-code` | No `TODO(new-tool)` marker left in `logic.ts`, `ui.tsx`, `logic.test.ts` or `worker.ts`. |
@@ -206,6 +216,9 @@ in two numbers (ADR 0037): **initial**, loaded with the page (40 KB gzip by defa
 demand**, fetched after a user action (1,024 KB by default). Moving heavy code behind a dynamic
 `import()` moves it from the first to the second. CI runs it after `pnpm build`.
 
+A **warning** gate prints its advice with `!` in `pnpm check:tools` and in the build log, and never
+fails either.
+
 Still to come: complete translations for enabled languages (ADR 0023).
 
 ## Checking a tool
@@ -220,9 +233,10 @@ Still to come: complete translations for enabled languages (ADR 0023).
 
 ## Generated from the manifest
 
-Page and URL, category listing, breadcrumbs, related links, and the counts on the home page,
-`/tools/` and the category pages. Sitemap entries, structured data, share images, the search index,
-the new-tools feed and `llms.txt` follow in Missions 10 and 11.
+Page and URL, category listing, breadcrumbs, related links, the counts on the home page, `/tools/`
+and the category pages, the canonical link, the Open Graph and Twitter/X tags, the share image, the
+structured data (`WebApplication`, `FAQPage`, `BreadcrumbList`), the sitemap entry, the `llms.txt`
+line and the Quick facts. The search index and the new-tools feed follow in Mission 11.
 
 ## URL rule
 

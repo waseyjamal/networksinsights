@@ -33,6 +33,9 @@ export const MIN_WORDS = {
 export const FAQ_MIN_PAIRS = 2;
 export const FAQ_MIN_ANSWER_WORDS = 5;
 
+/** The most words the first sentence of the intro may have: the answer comes first (ADR 0044). */
+export const FIRST_SENTENCE_MAX_WORDS = 30;
+
 /** A FAQ sentence must be at least this long to count as repeated. Short ones repeat by chance. */
 const REPEAT_MIN_WORDS = 5;
 
@@ -63,6 +66,11 @@ export interface QualityGate {
   title: string;
   /** The rule, in one sentence, for the summary and the docs. */
   rule: string;
+  /**
+   * "error" (the default) stops the build and fails `pnpm check:tools`. "warning" is printed and
+   * never fails anything: it is advice a page can still ship without.
+   */
+  severity?: "error" | "warning";
   run(context: QualityContext): ContractViolation[];
 }
 
@@ -499,9 +507,72 @@ const nearDuplicate: QualityGate = {
   },
 };
 
+// ---------------------------------------------------------------------------------------------
+// answer-first, answer-first-name (ADR 0044)
+
+/** The first sentence of a page's intro, as prose. Empty when the intro has none. */
+export function firstSentence(intro: string): string {
+  // toProse leaves a space where inline markup was, so "`numbers`." reads "numbers ."
+  return (sentencesOf(toProse(intro))[0] ?? "").replace(/\s+([.,;:!?])/g, "$1");
+}
+
+const answerFirst: QualityGate = {
+  id: "answer-first",
+  title: "The intro answers first, in one short sentence",
+  rule: `The first sentence of the intro has at most ${FIRST_SENTENCE_MAX_WORDS} words, so a reader (or an answer engine) gets the answer before anything else.`,
+  run(context) {
+    const found: ContractViolation[] = [];
+    for (const entry of focused(context)) {
+      if (entry.content === undefined) continue;
+      const sentence = firstSentence(readContent(entry.content).intro);
+      const words = wordsOf(sentence).length;
+      // An empty intro is the placeholders gate's to report, with its own advice.
+      if (words <= FIRST_SENTENCE_MAX_WORDS) continue;
+      found.push({
+        dir: entry.dir,
+        gate: this.id,
+        file: CONTENT_FILE,
+        problem: `the first sentence of the intro has ${words} words; the maximum is ${FIRST_SENTENCE_MAX_WORDS}: ${quote(sentence)}`,
+        fix: `Start the intro with one sentence that says what the tool does, in at most ${FIRST_SENTENCE_MAX_WORDS} words. Move the rest (who it is for, why it is worth opening) into the sentences after it.`,
+        example:
+          "<Tool name> turns <input> into <output>, in your browser. It suits <who>, because <why>.",
+      });
+    }
+    return found;
+  },
+};
+
+const answerFirstName: QualityGate = {
+  id: "answer-first-name",
+  title: "The first sentence of the intro names the tool",
+  rule: "The first sentence of the intro contains the tool's name. A warning, never a failure: some good sentences answer without repeating the name.",
+  severity: "warning",
+  run(context) {
+    const found: ContractViolation[] = [];
+    for (const entry of focused(context)) {
+      if (entry.content === undefined) continue;
+      const sentence = firstSentence(readContent(entry.content).intro);
+      if (sentence === "") continue;
+      const name = normalizeText(entry.manifest.name);
+      if (name === "" || ` ${normalizeText(sentence)} `.includes(` ${name} `)) continue;
+      found.push({
+        dir: entry.dir,
+        gate: this.id,
+        file: CONTENT_FILE,
+        problem: `the first sentence of the intro does not contain the tool's name "${entry.manifest.name}": ${quote(sentence)}`,
+        fix: "Name the tool in the first sentence, so the answer stands on its own when it is quoted away from the page. Ignore this warning if the sentence reads better without the name.",
+        example: `${entry.manifest.name} turns <input> into <output>, in your browser.`,
+      });
+    }
+    return found;
+  },
+};
+
 /** Every quality gate, in the order the summary prints them. */
 export const QUALITY_GATES: readonly QualityGate[] = [
   minWords,
+  answerFirst,
+  answerFirstName,
   placeholders,
   unfinishedCode,
   faqStructure,
@@ -531,12 +602,27 @@ export function runQualityGates(
   }));
 }
 
-/** Every problem the quality gates find, in folder order. Empty means the content is ready. */
+/**
+ * Every problem the quality gates find, in folder order. Empty means the content is ready. Gates
+ * that only warn are left out: see checkQualityWarnings.
+ */
 export function checkQuality(
   entries: readonly ToolEntry[],
   options: { focus?: readonly string[]; gates?: readonly string[] } = {},
 ): ContractViolation[] {
   return runQualityGates(entries, options)
+    .filter((result) => result.gate.severity !== "warning")
+    .flatMap((result) => result.violations)
+    .sort((a, b) => a.dir.localeCompare(b.dir));
+}
+
+/** The advice from the gates that only warn, in folder order. It never fails anything. */
+export function checkQualityWarnings(
+  entries: readonly ToolEntry[],
+  options: { focus?: readonly string[] } = {},
+): ContractViolation[] {
+  return runQualityGates(entries, options)
+    .filter((result) => result.gate.severity === "warning")
     .flatMap((result) => result.violations)
     .sort((a, b) => a.dir.localeCompare(b.dir));
 }

@@ -20,9 +20,21 @@ export {
   REQUIRED_SECTIONS,
   readContent,
 } from "./content";
+export {
+  describeLimits,
+  formatBytes,
+  formatIsoDate,
+  NO_FIXED_LIMIT,
+  type QuickFact,
+  type QuickFactId,
+  type QuickFactsSource,
+  quickFacts,
+} from "./facts";
+export { type FaqEntry, faqPairs, toPlainText } from "./faq";
 export { ISLAND_SOURCE, normalizeSource, OPTIONAL_FILES, REQUIRED_FILES } from "./files";
 export {
   defineTool,
+  FORMAT_NAME,
   ISO_DATE,
   KEBAB_CASE,
   SUMMARY_MAX_LENGTH,

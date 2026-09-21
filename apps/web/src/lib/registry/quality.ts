@@ -13,6 +13,7 @@
 import {
   type ContractViolation,
   checkQuality,
+  checkQualityWarnings,
   formatViolation,
   indentMessage,
   type ToolEntry,
@@ -57,4 +58,22 @@ export function enforceQuality(
     `\n⚠ ${error.message.replace("(ADR 0036)", "(dev: the pages still render; the production build will fail)")}\n`,
   );
   return violations;
+}
+
+/**
+ * Prints the advice of the gates that only warn (ADR 0044), in every mode, and returns it. Advice
+ * never stops anything: a page is allowed to ship with it, and the message says how to act on it.
+ */
+export function adviseQuality(
+  entries: readonly ToolEntry[],
+  warn: (message: string) => void = console.warn,
+): ContractViolation[] {
+  const advice = checkQualityWarnings(entries);
+  if (advice.length === 0) return advice;
+  const lines = advice.map((violation) => indentMessage(formatViolation(violation)));
+  const noun = advice.length === 1 ? "warning" : "warnings";
+  warn(
+    `\n! ${advice.length} content ${noun} (these do not fail the build):\n${lines.join("\n")}\n`,
+  );
+  return advice;
 }

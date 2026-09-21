@@ -140,6 +140,7 @@ these components and the design tokens, and never styles a one-off (docs/adding-
 | PageHeader | yes | no | The page's one H1 and an intro; `level={2}` only when shown as an example inside another page |
 | EmptyState | yes | no | The honest "nothing here yet" box; `actions` slot for links |
 | LinkList | yes | no | Wrapping pill links, for example the category links in an empty state |
+| FactList | yes | no | A definition list in a grid of cells, the "Quick facts" of a tool page. `items` are `{ label, value, datetime? }`; every value comes from data, never from copy typed into a page (ADR 0044) |
 | SiteHeader, SiteFooter | yes | no | Live in `components/layout/`, built from the configs. Use them only through `layouts/Page.astro` |
 
 Long-form text (About, Privacy, Terms) sits in a `<div class="ni-prose">`. The mobile menu is a native `<details>`, so it needs no JavaScript and works on Safari 16.4; it closes through its summary only.
@@ -178,6 +179,7 @@ Every component must have: a visible focus ring (from `base.css`, do not remove 
 | `e2e/site.spec.ts` | Every page in light and dark: status, one H1, no console errors, axe zero violations, noindex, title |
 | `e2e/keyboard.spec.ts` | Skip link, header keyboard use, mobile menu without JavaScript |
 | `e2e/links.spec.ts` | Every internal link returns 200 directly; titles and descriptions are unique |
+| `e2e/seo.spec.ts` | Chromium only: canonical, Open Graph and Twitter/X tags, structured data against the DOM, share images (PNG, 1200 by 630), robots.txt, sitemaps and llms.txt for the current launch flag |
 
 ## Budgets
 

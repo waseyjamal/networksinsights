@@ -6,6 +6,8 @@
 // only the tool page imports. zero-js.test.ts fails if that stops being true.
 
 import {
+  type FaqEntry,
+  faqPairs,
   ToolContractError,
   type ToolEntry,
   type ToolManifest,
@@ -20,6 +22,8 @@ export interface Tool {
   dir: string;
   /** Its page: `/word-counter/` (ADR 0014). */
   href: string;
+  /** The question and answer pairs of its FAQ, read from the same content/en.mdx the page shows. */
+  faq: readonly FaqEntry[];
 }
 
 export interface Registry {
@@ -52,7 +56,12 @@ export function buildRegistry(entries: readonly ToolEntry[]): Registry {
   const all = entries
     .map((entry) => {
       const manifest = entry.manifest as ToolManifest;
-      return { manifest, dir: entry.dir, href: toolHref(manifest.id) };
+      return {
+        manifest,
+        dir: entry.dir,
+        href: toolHref(manifest.id),
+        faq: faqPairs(entry.content ?? ""),
+      };
     })
     .sort((a, b) => a.manifest.name.localeCompare(b.manifest.name));
 

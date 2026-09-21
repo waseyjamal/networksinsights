@@ -39,6 +39,28 @@ const isoDate = (label: string) =>
       return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
     }, `${label} must be a real calendar date`);
 
+/** A file format as a reader names it: `PDF`, `JPG`, `MP4`, `H.264`, `Plain text`. */
+export const FORMAT_NAME = /^[A-Za-z0-9][A-Za-z0-9 .+/#-]*[A-Za-z0-9+#]$|^[A-Za-z0-9]$/;
+
+/** Up to twelve formats, each short and named once (ignoring case). Shown in "Quick facts". */
+const formatList = (label: string) =>
+  z
+    .array(
+      z
+        .string()
+        .max(24, `each ${label} format must be at most 24 characters`)
+        .regex(
+          FORMAT_NAME,
+          `each ${label} format must be a name such as PDF, JPG or Plain text: letters, digits, spaces and . + / # -`,
+        ),
+    )
+    .min(1, `${label} must list at least one format; remove it if the tool has none to name`)
+    .max(12, `${label} must list at most twelve formats`)
+    .refine(
+      (formats) => new Set(formats.map((format) => format.toLowerCase())).size === formats.length,
+      `${label} must not repeat a format`,
+    );
+
 const positiveInt = (label: string) => z.int().positive(`${label} must be a positive whole number`);
 
 export const toolLimitsSchema = z.strictObject({
@@ -124,6 +146,8 @@ export const toolManifestSchema = z.strictObject({
     .array(kebabCase("each related id"))
     .max(6, "related must have at most six tool ids")
     .refine((ids) => new Set(ids).size === ids.length, "related must not repeat a tool id"),
+  accepts: formatList("accepts").optional(),
+  produces: formatList("produces").optional(),
   limits: toolLimitsSchema.optional(),
   budget: toolBudgetSchema.optional(),
   added: isoDate("added"),

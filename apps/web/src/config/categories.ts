@@ -11,6 +11,24 @@
 import type { IconName } from "../components/ui/icons";
 import { staticPagePaths } from "./site";
 
+/**
+ * The values Google's software app documentation accepts for `applicationCategory`. Every
+ * category maps to one, so a tool page's structured data names its category the way Google asks.
+ */
+export type ApplicationCategory =
+  | "BusinessApplication"
+  | "DesignApplication"
+  | "DeveloperApplication"
+  | "MultimediaApplication"
+  | "ReferenceApplication"
+  | "UtilitiesApplication";
+
+/**
+ * The date the wording of the category pages last changed, as `YYYY-MM-DD`: the `lastmod` of a
+ * category page that has no tool yet, and the floor for one that has (see `pageUpdated`, ADR 0040).
+ */
+export const categoriesUpdated = "2026-09-21";
+
 export interface Category {
   id: string;
   /** Display name: tile title, H1 and page title. */
@@ -22,6 +40,8 @@ export interface Category {
   /** Category accent token, without the leading "--": the icon chip tint (--cat-pdf, ...). */
   accent: `cat-${string}`;
   icon: IconName;
+  /** The `applicationCategory` of a tool page's structured data (ADR 0039). */
+  applicationCategory: ApplicationCategory;
   /** Two to three sentences for the category page. Unique per category. */
   intro: string;
   /** Meta description of the category page. Under 160 characters. */
@@ -36,6 +56,7 @@ export const categories = [
     description: "Merge, split, compress and edit PDFs.",
     accent: "cat-pdf",
     icon: "pdf",
+    applicationCategory: "UtilitiesApplication",
     intro:
       "For the small jobs PDFs always need: merging files, splitting out pages, shrinking a large document, rotating or editing. Where the browser can do the work, your file is processed on your device and never uploaded.",
     metaDescription:
@@ -48,6 +69,7 @@ export const categories = [
     description: "Resize, crop, convert and optimize.",
     accent: "cat-image",
     icon: "image",
+    applicationCategory: "MultimediaApplication",
     intro:
       "Resize, crop, convert and compress pictures for the web, email or print. Most of these jobs are one file and a few settings, so they belong in a tab, not an installer. Where possible, images are processed on your device.",
     metaDescription:
@@ -60,6 +82,7 @@ export const categories = [
     description: "Trim, convert and extract.",
     accent: "cat-video-audio",
     icon: "video-audio",
+    applicationCategory: "MultimediaApplication",
     intro:
       "Trim a clip, convert between formats or pull the audio out of a video. Media files are large, so processing them on your own device avoids a slow upload. A tool will say plainly when a file has to leave your device.",
     metaDescription:
@@ -72,6 +95,7 @@ export const categories = [
     description: "Count, compare, clean and transform.",
     accent: "cat-text",
     icon: "text",
+    applicationCategory: "UtilitiesApplication",
     intro:
       "Count words and characters, compare two versions of a text, clean up pasted content or change its case and format. These are quick jobs, so each tool aims to do one thing and show the result immediately.",
     metaDescription:
@@ -84,6 +108,7 @@ export const categories = [
     description: "Quick answers for everyday math.",
     accent: "cat-calculators",
     icon: "calculators",
+    applicationCategory: "UtilitiesApplication",
     intro:
       "Percentages, loans, fuel costs and other everyday arithmetic, worked out as you type. Each calculator should show its inputs and formula so you can check the answer instead of trusting it.",
     metaDescription:
@@ -96,6 +121,7 @@ export const categories = [
     description: "Units, formats and encodings.",
     accent: "cat-converters",
     icon: "converters",
+    applicationCategory: "UtilitiesApplication",
     intro:
       "Convert between units, number bases, encodings and data formats. When a conversion depends on outside data, such as an exchange rate, the tool will say where the numbers come from.",
     metaDescription:
@@ -108,6 +134,7 @@ export const categories = [
     description: "Passwords, QR codes, placeholders and more.",
     accent: "cat-generators",
     icon: "generators",
+    applicationCategory: "UtilitiesApplication",
     intro:
       "Create passwords, QR codes, placeholder text, random numbers and other things you would otherwise write by hand. Where randomness matters, as it does for passwords, tools use the browser's cryptographically secure random source.",
     metaDescription:
@@ -120,6 +147,7 @@ export const categories = [
     description: "Format, validate, test and debug.",
     accent: "cat-developer",
     icon: "developer",
+    applicationCategory: "DeveloperApplication",
     intro:
       "Format and validate JSON, test regular expressions, decode tokens, encode and hash data. Small utilities for the moments when opening an editor or writing a script is more work than the task deserves.",
     metaDescription:
@@ -132,6 +160,7 @@ export const categories = [
     description: "Meta tags, links, headers and audits.",
     accent: "cat-web-seo",
     icon: "web-seo",
+    applicationCategory: "DeveloperApplication",
     intro:
       "Check meta tags, preview how a page might appear in search results, inspect headers and links, and prepare markup for the web. They help you find problems on a page you own before visitors and search engines do.",
     metaDescription:
@@ -144,6 +173,7 @@ export const categories = [
     description: "Palettes, gradients and contrast.",
     accent: "cat-color-design",
     icon: "color-design",
+    applicationCategory: "DesignApplication",
     intro:
       "Build palettes, convert between color formats, create gradients and check contrast ratios against WCAG. The math is small and repetitive, which makes it a good fit for a tool.",
     metaDescription:
@@ -156,6 +186,7 @@ export const categories = [
     description: "Zones, durations and calendars.",
     accent: "cat-date-time",
     icon: "date-time",
+    applicationCategory: "UtilitiesApplication",
     intro:
       "Compare time zones, count the days between two dates, add or subtract durations and find week numbers. Date arithmetic is easy to get wrong by hand, especially across time zones and daylight-saving changes.",
     metaDescription:
@@ -182,4 +213,6 @@ export type CategoryId = (typeof categories)[number]["id"];
 export const reservedPaths: readonly string[] = [
   ...categories.map((category) => category.slug),
   ...staticPagePaths,
+  // The share images live under /og/ (ADR 0041), so no tool may take that path.
+  "og",
 ];

@@ -103,7 +103,7 @@ export function writeSyntheticTool(tools: string, index: number): { id: string; 
   // finishTool wrote a shared page; put this tool's own words back.
   writeFileSync(
     join(dir, "content", "en.mdx"),
-    `${words(60)}.\n\n## How to use\n\n${words(70)}.\n\n## Examples\n\n${words(60)}.\n\n## Limits\n\n${words(50)}.\n\n## FAQ\n\n### ${words(5)}?\n\n${words(40)}.\n\n### ${words(5)}?\n\n${words(40)}.\n`,
+    `${words(10)}. ${words(50)}.\n\n## How to use\n\n${words(70)}.\n\n## Examples\n\n${words(60)}.\n\n## Limits\n\n${words(50)}.\n\n## FAQ\n\n### ${words(5)}?\n\n${words(40)}.\n\n### ${words(5)}?\n\n${words(40)}.\n`,
   );
   return { id, dir };
 }

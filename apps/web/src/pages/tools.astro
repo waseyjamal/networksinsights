@@ -4,9 +4,10 @@ import EmptyState from "../components/ui/EmptyState.astro";
 import LinkList from "../components/ui/LinkList.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { categories, categoryHref } from "../config/categories";
-import { pageTitle } from "../config/site";
+import { pageTitle, sitePages } from "../config/site";
 import Page from "../layouts/Page.astro";
 import { tools, toolsInCategory } from "../lib/registry";
+import { collectionNode } from "../lib/seo/jsonld";
 
 const categoryLinks = categories.map((category) => ({
   label: category.name,
@@ -17,18 +18,31 @@ const categoryLinks = categories.map((category) => ({
 const groups = categories
   .map((category) => ({ category, tools: toolsInCategory(category.id) }))
   .filter((group) => group.tools.length > 0);
+
+// The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
+const breadcrumbs = [{ label: "Home", href: "/" }, { label: "All tools" }];
+const intro = "Every tool on NetworksInsights is listed here, grouped by category.";
 ---
 
 <Page
+  breadcrumbs={breadcrumbs}
+  nodes={[
+  collectionNode({
+    path: sitePages.tools.href,
+    name: "All tools",
+    description: intro,
+    // In the order the page lists them: by category, then by name.
+    items: groups.flatMap((group) =>
+      group.tools.map((tool) => ({ name: tool.manifest.name, href: tool.href })),
+    ),
+  }),
+]}
   title={pageTitle("All tools")}
   description="Every tool on NetworksInsights, in one list. No tools are live yet; new tools appear here as they are added."
 >
   <div class="grid gap-4">
-    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "All tools" }]} />
-    <PageHeader
-      title="All tools"
-      intro="Every tool on NetworksInsights is listed here, grouped by category."
-    />
+    <Breadcrumbs items={breadcrumbs} />
+    <PageHeader title="All tools" intro={intro} />
   </div>
   {tools.length > 0 ? (
   <div class="grid gap-8">

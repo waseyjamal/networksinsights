@@ -9,7 +9,7 @@ The rule that makes this fast: **nobody writes a tool folder by hand.** `pnpm ne
 so the files are right before the first line of the tool is typed. The gates then refuse anything
 that is still a stub, so an unfinished tool cannot ship by accident.
 
-## 1. Decide five things
+## 1. Decide the inputs
 
 | Input | Rule | Example |
 |---|---|---|
@@ -19,6 +19,7 @@ that is still a stub, so an unfinished tool cannot ship by accident.
 | `summary` | 20 to 159 characters. The meta description and the line under the H1. Unique and not close to another. | `Count the words, characters and lines in any text, as you type.` |
 | `runtime` | `client` (browser), `worker` (Web Worker), `server`. It decides the privacy statement, which nobody writes by hand (ADR 0034). | `client` |
 | `tags` | One to eight kebab-case tags. | `words, characters` |
+| `accepts`, `produces` | Optional. The file formats it takes in and gives back, as a reader names them. They appear in the page's Quick facts. Leave them out for a tool that works on text or numbers. | `PDF, PNG` and `PDF` |
 
 ## 2. Create the folder
 
@@ -26,6 +27,7 @@ that is still a stub, so an unfinished tool cannot ship by accident.
 pnpm new:tool --id word-counter --name "Word counter" --category text \
   --summary "Count the words, characters and lines in any text, as you type." \
   --runtime client --tags words,characters
+# for a tool that works on files, add:  --accepts PDF,PNG --produces PDF
 ```
 
 In a terminal, leave a flag out and it asks. Without a terminal (an AI agent, CI) it never waits:
@@ -49,7 +51,8 @@ It writes `tools/<category>/<id>/`:
 | `worker.ts` | Only for `runtime: worker`: a stub, wired up in Mission 14. |
 
 The commands to check the tool are printed at the end. Work on a branch named
-`mission/NN-short-name` (AGENTS.md), never on `main`.
+`tool/<tool-id>` (AGENTS.md), for example `tool/word-counter`, never on `main`. A mission that is not
+one tool keeps `mission/NN-short-name`.
 
 ## 3. Write the logic
 
@@ -85,7 +88,7 @@ See "The JavaScript budget" below.
 
 | Part | Minimum (words of prose) | What it must do |
 |---|---|---|
-| Intro | 40 | Say what the tool does, who it is for and what makes it worth opening. |
+| Intro | 40 | Answer first: the first sentence says what the tool does, in at most 30 words, and names the tool. Then who it is for and what makes it worth opening. |
 | How to use | 50 | Walk through the steps, in order, with the choices a visitor meets. |
 | Examples | 40 | Show a real input and the exact output, and say what to notice. |
 | Limits | 30 | Say honestly what it cannot do: size, formats, accuracy, browsers. |
@@ -103,6 +106,27 @@ build compares every page with every other, and fails a pair that reaches a simi
 Anything that must stay in a page but looks like a placeholder, such as the phrase "Lorem ipsum"
 on a lorem-ipsum generator's page, goes in a code block or an example block. Placeholder text in
 prose fails.
+
+## AEO rules
+
+Assistants that answer questions quote short, self-contained statements, so a page is written to be
+quoted (ADR 0044). The rules are the same as the ones above, and the two gates check the first.
+
+1. **Answer first.** The first sentence of the intro says what the tool does, in at most 30 words,
+   and names the tool: *"Word counter counts the words, characters and lines in any text, as you
+   type."* A quoted first sentence must still make sense with the page gone. Who it is for, and why
+   it is worth opening, come after it. `answer-first` fails a longer sentence; `answer-first-name`
+   warns when the name is missing.
+2. **Write FAQs as real questions.** Phrase each `###` heading the way a person types it into a
+   search box or asks an assistant: *"Is my text uploaded?"*, *"Does it count spaces?"*, not *"Data
+   handling"*. Answer in the first sentence, then add detail.
+3. **Facts only from data.** The page already states the price, sign-up, where the tool runs,
+   whether files are uploaded, the limits and the update date, from the manifest (Quick facts). Do
+   not repeat them by hand in prose where they could go stale or disagree, and never write a number,
+   a limit or a format that the manifest does not hold. Add `accepts` and `produces` to the
+   manifest instead.
+4. **No invented claims.** No "fastest", "most accurate", "trusted by", counts, ratings or
+   testimonials. If you cannot show it, do not say it (AGENTS.md).
 
 ## 6. Check as you go
 
@@ -138,9 +162,11 @@ Quality gate "min-words": tools/text/word-counter — the "Limits" section has 1
 ## 7. The whole check, as CI runs it
 
 ```bash
-pnpm check           # typecheck (tools included), lint, tests, tool gates
+pnpm check           # typecheck (tools included), lint, the fast tests, tool gates: about two minutes
+pnpm test:slow       # the slow tests, which CI runs and the pre-push hook does not
 pnpm build
 pnpm check:budgets   # the JavaScript budget of every tool page, on the build just made
+pnpm check:seo       # canonical, share tags and image, structured data, sitemaps, on the build just made
 ```
 
 `pnpm check:budgets --report` also prints the total page weight of each tool page.
@@ -191,6 +217,8 @@ and how to fix it.
 | contract | The manifest, the required files, `island.astro` or the page outline break [tool-contract.md](tool-contract.md). Also a hard failure in dev. |
 | purity | `logic.ts` touches the DOM, Node, the network, a banned import, or has top-level statements. |
 | min-words | A section has fewer prose words than the minimum above. |
+| answer-first | The first sentence of the intro has more than 30 words. |
+| answer-first-name (warning) | The first sentence of the intro does not contain the tool's name. Printed, never a failure. |
 | placeholders | A section is empty, or holds `TODO`, `TBD`, `FIXME`, "lorem ipsum", "coming soon", "to be written" or `[insert …]`. Also checked in the name, summary and budget reason. |
 | unfinished-code | `logic.ts`, `ui.tsx`, `logic.test.ts` or `worker.ts` still holds the generator's `TODO(new-tool)` marker. |
 | faq-structure | The FAQ has fewer than two pairs, a question without `?`, or an answer under five words. |
@@ -225,22 +253,26 @@ MANIFEST
 
 BEHAVIOUR AND LIMITS
 - <The options it has, the formats it accepts, the size limits, the edge cases.>
+- accepts / produces: <file formats, or "none" for a tool that works on text or numbers>
 - <What it must not do.>
 
 HOW TO WORK
-1. Use the branch <mission/NN-short-name>. Never commit to main. Never merge.
+1. Use the branch tool/<tool-id>. Never commit to main. Never merge.
 2. Create the folder with `pnpm new:tool`, giving every input as a flag. Never write the folder by hand.
 3. Write logic.ts (pure), real tests in logic.test.ts, and the workspace in ui.tsx with components
    imported from "@ui". Heavy code goes behind a dynamic import() so the initial JavaScript stays
    under 40 KB gzip. Add no dependency without telling me why, its size and its license first.
-4. Write content/en.mdx: intro of at least 40 words, then How to use (50), Examples (40), Limits (30)
-   and an FAQ of at least two `###` questions ending in "?" and 60 words. Every sentence must be true
+4. Write content/en.mdx, following the AEO rules in docs/adding-a-tool.md: an intro of at least 40
+   words whose first sentence says what the tool does, names the tool and has at most 30 words; then
+   How to use (50), Examples (40), Limits (30) and an FAQ of at least two `###` questions, phrased
+   as real user questions and ending in "?", with 60 words. Every sentence must be true
    of this tool alone. Do not invent counts, ratings, testimonials or claims. Do not copy another
    tool's page.
 5. Remove every TODO(new-tool) marker.
 
 DONE WHEN
-`pnpm check:tools --tool <tool-id>`, `pnpm check`, `pnpm build` and `pnpm check:budgets` all pass,
+`pnpm check:tools --tool <tool-id>`, `pnpm check`, `pnpm test:slow`, `pnpm build`,
+`pnpm check:budgets` and `pnpm check:seo` all pass,
 and the tool works in `pnpm dev`. Then push, open a pull request titled "<Name>", wait for green
 checks, and do not merge.
 

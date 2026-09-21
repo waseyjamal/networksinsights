@@ -15,6 +15,7 @@ import Checkbox from "../components/ui/Checkbox.astro";
 import CommandBar from "../components/ui/CommandBar.astro";
 import Dropzone from "../components/ui/Dropzone.astro";
 import EmptyState from "../components/ui/EmptyState.astro";
+import FactList from "../components/ui/FactList.astro";
 import Hero from "../components/ui/Hero.astro";
 import Icon from "../components/ui/Icon.astro";
 import Input from "../components/ui/Input.astro";
@@ -423,6 +424,20 @@ const themes = ["light", "dark"] as const;
   label: category.name,
   href: categoryHref(category),
 }))}
+          />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Fact list</h3>
+          <p class="max-w-2xl text-fg-muted">
+            The "Quick facts" of a tool page. Every value is read from the tool's manifest.
+          </p>
+          <FactList
+            items={[
+  { label: "Price", value: "Free" },
+  { label: "Where it runs", value: "On your device" },
+  { label: "Updated", value: "September 21, 2026", datetime: "2026-09-21" },
+]}
           />
         </div>
 

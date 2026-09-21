@@ -55,8 +55,9 @@ describe("Base layout SEO basics", () => {
     expect(metaContent(noindexHtml, "robots")).toBe("noindex, nofollow");
   });
 
-  it("renders exactly one robots meta", () => {
-    expect(html.match(/<meta[^>]*name="robots"/g)).toHaveLength(1);
+  // Before launch every page has one; after it an indexable page has none (robots.test.ts).
+  it("renders at most one robots meta", () => {
+    expect(html.match(/<meta[^>]*name="robots"/g) ?? []).toHaveLength(site.launched ? 0 : 1);
   });
 });
 

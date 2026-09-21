@@ -57,6 +57,14 @@ export interface ToolManifest<TInput extends ZodType = ZodType> {
   input: TInput;
   /** Ids of other tools to link to. Never this tool's own id. */
   related: readonly string[];
+  /**
+   * The file formats the tool takes in, as a reader would name them: `["PDF"]`, `["JPG", "PNG"]`.
+   * Optional and shown in "Quick facts" only when present (ADR 0044). Leave it out for a tool that
+   * works on text or numbers, rather than write "text".
+   */
+  accepts?: readonly string[];
+  /** The file formats the tool gives back. Same rules as `accepts`. */
+  produces?: readonly string[];
   /** Absent means unlimited. */
   limits?: ToolLimits;
   /** Absent means the default JavaScript budgets (ADR 0037). */

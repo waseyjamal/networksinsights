@@ -32,7 +32,7 @@ function toolOf(overrides: Partial<ToolManifest> = {}): Tool {
     updated: "2026-09-20",
     ...overrides,
   };
-  return { manifest, dir: `tools/text/${manifest.id}`, href: `/${manifest.id}/` };
+  return { manifest, dir: `tools/text/${manifest.id}`, href: `/${manifest.id}/`, faq: [] };
 }
 
 const related: Tool[] = [toolOf({ id: "case-converter", name: "Case converter", related: [] })];

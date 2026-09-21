@@ -48,6 +48,8 @@ describe("a finished tool set", () => {
       "contract",
       "purity",
       "min-words",
+      "answer-first",
+      "answer-first-name",
       "placeholders",
       "unfinished-code",
       "faq-structure",
@@ -56,6 +58,9 @@ describe("a finished tool set", () => {
       "near-duplicate",
     ]);
     expect(formatReport(report)).toContain("All checks pass");
+    // The fixture tools' first sentences do not name the tool: advice, never a failure.
+    expect(report.warningCount).toBeGreaterThan(0);
+    expect(formatReport(report)).toContain("do not fail the check");
   });
 
   it("with no tools at all, passes and says why", async () => {
@@ -265,7 +270,9 @@ describe("the command", () => {
       encoding: "utf8",
     });
 
-  it("exits 0 when everything passes, 1 when something needs fixing, 2 when used wrongly", async () => {
+  it("exits 0 when everything passes, 1 when something needs fixing, 2 when used wrongly", {
+    tags: ["slow"],
+  }, async () => {
     const { tools } = fresh();
     await finished(tools, "word-counter", "word-counter");
     await stub(tools, "case-converter");
@@ -280,7 +287,7 @@ describe("the command", () => {
     expect(run(["--nonsense"]).status).toBe(2);
   });
 
-  it("prints JSON that parses, with --json", async () => {
+  it("prints JSON that parses, with --json", { tags: ["slow"] }, async () => {
     const { tools } = fresh();
     await finished(tools, "word-counter", "word-counter");
     const result = run(["--tools-root", tools, "--json"]);
@@ -288,7 +295,7 @@ describe("the command", () => {
     expect(JSON.parse(result.stdout).ok).toBe(true);
   });
 
-  it("passes on the real tools folder of this repository", () => {
+  it("passes on the real tools folder of this repository", { tags: ["slow"] }, () => {
     // The production site ships no tools until Mission 13, so this is the "0 tools" run CI does.
     const result = run([]);
     expect(result.status, result.stdout + result.stderr).toBe(0);
@@ -296,7 +303,9 @@ describe("the command", () => {
 });
 
 describe("at scale", () => {
-  it("checks one tool among 150 quickly, and all 150 in a few seconds", async () => {
+  it("checks one tool among 150 quickly, and all 150 in a few seconds", {
+    tags: ["slow"],
+  }, async () => {
     const { tools } = fresh();
     for (let i = 0; i < 150; i++) writeSyntheticTool(tools, i);
     expect(existsSync(join(tools, "text", "tool-0000"))).toBe(true);

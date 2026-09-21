@@ -25,11 +25,13 @@ apps/
     src/components/tool/     the tool page template
     src/layouts/  Base (head, theme script) and Page (skip link, header, main, footer)
     src/lib/registry/        finds and validates tools at build time; fixtures/ holds test tools
+    src/lib/seo/             canonical and share tags, JSON-LD, sitemaps, robots.txt, llms.txt, IndexNow, share images (ADR 0038-0042)
+    src/pages/og/            the share images, drawn at build time; robots.txt, sitemaps and llms.txt are pages too
     src/pages/[slug].astro   one route for category pages and tool pages
 packages/
   tool-sdk/       @networksinsights/tool-sdk: the contract as code (Zod only)
 tools/            @networksinsights/tools: one folder per tool, <category-id>/<tool-id>/
-scripts/          @networksinsights/scripts: new:tool, check:tools, check:budgets
+scripts/          @networksinsights/scripts: new:tool, check:tools, check:budgets, check:seo, check:production, indexnow
 docs/             architecture, tool contract, design system, ADRs
 ```
 
@@ -74,6 +76,10 @@ Internal target: LCP under 1.5 s on a mid-range Android phone over slow 4G.
 
 `launched` in `apps/web/src/config/site.ts` is `false` until launch day. While it is false every page renders `noindex, nofollow` ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)). Everything the owner must do before flipping it is in [launch-checklist.md](launch-checklist.md).
 
+## Search and AI answers
+
+The site is built to be found (SEO) and quoted (GEO/AEO). Every page carries a canonical link on `https://networksinsights.com`, Open Graph and Twitter/X tags, and a share image drawn at build time ([ADR 0038](adr/0038-canonical-and-meta.md), [0041](adr/0041-share-images.md)). Structured data is generated from the same data as the page and tested against what the page shows ([ADR 0039](adr/0039-structured-data.md)). `robots.txt`, the sitemaps and `llms.txt` are generated; the sitemaps and `llms.txt` exist only after launch, and IndexNow announces changed URLs after each launched deploy ([ADR 0040](adr/0040-crawling-robots-and-ai-crawlers.md), [0042](adr/0042-indexnow.md)). Every tool page has visible Quick facts and an answer-first intro ([ADR 0044](adr/0044-aeo.md)). `pnpm check:seo` checks the build; `pnpm check:production` checks the live site.
+
 ## Hosting
 
 Cloudflare Workers with static assets, served on https://networksinsights.com. Deploys run only from CI ([ADR 0027](adr/0027-deployment.md), [runbook](runbooks/deploy-and-rollback.md)).
@@ -90,8 +96,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 6 | Design system | Done |
 | 7 | Site shell | Done |
 | 8 | Tool contract + registry | Done |
-| 9 | Generator + guardrails | In progress |
-| 10 | SEO/GEO engine | |
+| 9 | Generator + guardrails | Done |
+| 10 | SEO/GEO engine | In progress |
 | 11 | Search | |
 | 12 | Security | |
 | 13 | Reference tool: browser | |

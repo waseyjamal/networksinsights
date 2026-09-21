@@ -23,6 +23,8 @@ export interface CheckSection {
   id: string;
   title: string;
   rule: string;
+  /** "warning" sections print advice and never fail the check (ADR 0044). */
+  severity: "error" | "warning";
   violations: ContractViolation[];
   /** How long the rule took to run, in milliseconds. */
   ms: number;
@@ -43,7 +45,10 @@ export interface CheckReport {
   checked: string[];
   sections: CheckSection[];
   raisedBudgets: RaisedBudget[];
+  /** Problems that fail the check. Sections that only warn are counted in `warningCount`. */
   problemCount: number;
+  /** Advice from the gates that only warn (ADR 0044). It never fails the check. */
+  warningCount: number;
   ok: boolean;
   ms: number;
 }
@@ -118,6 +123,7 @@ export async function checkTools(options: CheckOptions = {}): Promise<CheckRepor
     id: "contract",
     title: "Tool contract",
     rule: "Folders, manifests, required files, island.astro and the page outline (docs/tool-contract.md).",
+    severity: "error",
     violations: contract.value.filter((violation) => inFocus(violation.dir)),
     ms: contract.ms,
   });
@@ -140,6 +146,7 @@ export async function checkTools(options: CheckOptions = {}): Promise<CheckRepor
     id: "purity",
     title: "logic.ts is pure",
     rule: "No DOM, no Node globals, no network, no top-level statements, only allowed imports.",
+    severity: "error",
     violations: purity.value,
     ms: purity.ms,
   });
@@ -154,6 +161,7 @@ export async function checkTools(options: CheckOptions = {}): Promise<CheckRepor
       id: gate.id,
       title: gate.title,
       rule: gate.rule,
+      severity: gate.severity ?? "error",
       violations: run.value.sort((a, b) => a.dir.localeCompare(b.dir)),
       ms: run.ms,
     });
@@ -166,13 +174,18 @@ export async function checkTools(options: CheckOptions = {}): Promise<CheckRepor
     return [{ dir: entry.dir, initialKb, onDemandKb, reason: parsed.data.budget.reason }];
   });
 
-  const problemCount = sections.reduce((sum, section) => sum + section.violations.length, 0);
+  const countOf = (severity: "error" | "warning") =>
+    sections
+      .filter((section) => section.severity === severity)
+      .reduce((sum, section) => sum + section.violations.length, 0);
+  const problemCount = countOf("error");
   return {
     toolCount: folders.length,
     checked: entries.map((entry) => entry.dir).filter(inFocus),
     sections,
     raisedBudgets,
     problemCount,
+    warningCount: countOf("warning"),
     ok: problemCount === 0,
     ms: now() - started,
   };
@@ -189,11 +202,13 @@ export function formatReport(report: CheckReport): string {
 
   const width = Math.max(...report.sections.map((section) => section.id.length));
   for (const section of report.sections) {
-    const mark = section.violations.length === 0 ? "✓" : "✗";
+    const isWarning = section.severity === "warning";
+    const mark = section.violations.length === 0 ? "✓" : isWarning ? "!" : "✗";
+    const [one, many] = isWarning ? ["warning", "warnings"] : ["problem", "problems"];
     const count =
       section.violations.length === 0
         ? ""
-        : `  ${section.violations.length} ${section.violations.length === 1 ? "problem" : "problems"}`;
+        : `  ${section.violations.length} ${section.violations.length === 1 ? one : many}`;
     out.push(`  ${mark} ${section.id.padEnd(width)}  ${section.title}${count}`);
   }
 
@@ -218,6 +233,7 @@ export function formatReport(report: CheckReport): string {
     );
     const byTool = new Map<string, ContractViolation[]>();
     for (const section of report.sections) {
+      if (section.severity === "warning") continue;
       for (const violation of section.violations) {
         byTool.set(violation.dir, [...(byTool.get(violation.dir) ?? []), violation]);
       }
@@ -231,6 +247,20 @@ export function formatReport(report: CheckReport): string {
   } else {
     out.push("", `All checks pass (${Math.round(report.ms)} ms).`);
   }
+
+  if (report.warningCount > 0) {
+    out.push(
+      "",
+      `${report.warningCount} ${report.warningCount === 1 ? "warning" : "warnings"} (these do not fail the check):`,
+      "",
+    );
+    for (const section of report.sections) {
+      if (section.severity !== "warning") continue;
+      for (const violation of section.violations) {
+        out.push(violation.dir, indentMessage(formatViolation(violation)), "");
+      }
+    }
+  }
   return out.join("\n");
 }
 
@@ -242,12 +272,14 @@ export function reportToJson(report: CheckReport): string {
       tools: report.toolCount,
       checked: report.checked,
       problems: report.problemCount,
+      warnings: report.warningCount,
       ms: Math.round(report.ms),
       gates: report.sections.map((section) => ({
         id: section.id,
         title: section.title,
         rule: section.rule,
-        ok: section.violations.length === 0,
+        severity: section.severity,
+        ok: section.severity === "warning" || section.violations.length === 0,
         ms: Math.round(section.ms),
         problems: section.violations.map((violation) => ({
           tool: violation.dir,

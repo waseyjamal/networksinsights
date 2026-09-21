@@ -17,8 +17,22 @@ Until the last step is done, every page renders `noindex, nofollow` ([ADR 0029](
 - [ ] **REQUIRED before launch: preview deployments (workers.dev) send `X-Robots-Tag: noindex` (Mission 12)**, because the `launched` flag stops covering them after launch. Until this is done, do not flip the flag.
 - [ ] **Category and page copy**: read the intro and meta description of each category in `apps/web/src/config/categories.ts`. The meta descriptions currently end in "Coming soon to NetworksInsights"; edit them once the category has tools.
 - [ ] **Home page claims**: the "Why NetworksInsights" points must still be true (private where the browser can do the job, free, fast, no sign-up). Remove any that are not.
+- [ ] **Redirect rule (right after the Mission 10 merge)**: create the Cloudflare rule that sends `/tools` to `/tools/` with a 301, exactly as written in [runbooks/seo-redirects.md](runbooks/seo-redirects.md). Until it exists the CI job `verify-production` is red, on purpose. Re-run that job afterwards; it must go green.
+- [ ] **IndexNow key**: create the repository *variable* `INDEXNOW_KEY` ([runbooks/indexnow.md](runbooks/indexnow.md)).
+- [ ] **Static page dates**: `pageUpdated` in `apps/web/src/config/site.ts` is the `lastmod` of the home, tools, about, contact, privacy and terms pages in the sitemap. When the wording of one of these pages changes (for example when the "Draft: owner input needed" notes come out), change its date the same day. `sitemap.test.ts` fails on a full clone if you forget.
+- [ ] **Training crawlers**: `trainingPolicy` in `apps/web/src/config/crawlers.ts` is `"allow"` (your decision, [ADR 0040](adr/0040-crawling-robots-and-ai-crawlers.md)). Change it to `"disallow"` before launch if you change your mind.
+- [ ] **Tools before categories are indexed**: a category page is `noindex` and out of the sitemaps until it has a tool, so nothing to do; check that each category you expect to rank has at least one tool at launch.
 
 ## Launch day
 
 - [ ] Set `launched` to `true` in `apps/web/src/config/site.ts` (Mission 18). Nothing else needs to change; `pnpm check` and the E2E tests cover both values of the flag.
 - [ ] Deploy through CI ([runbook](runbooks/deploy-and-rollback.md)) and check that a page on the production domain no longer has a `noindex, nofollow` robots meta, while `/404` and `/design-system/` keep `noindex`.
+- [ ] Check what search engines now see: `https://networksinsights.com/robots.txt` has a `Sitemap:` line, `/sitemap-index.xml` and `/llms.txt` answer 200, the IndexNow key file `/<key>.txt` shows the key, and `pnpm check:production` passes.
+
+## Search engines (after launch day)
+
+Do these once the site is live. Search Console is how Google learns about the site; Bing can copy it.
+
+- [ ] **Google Search Console**: add the *Domain* property `networksinsights.com` and verify it with the **DNS TXT record** that Search Console gives you (Cloudflare dashboard, DNS, add a TXT record on the apex). A Domain property covers `https`, `http` and every subdomain. Then submit `https://networksinsights.com/sitemap-index.xml` under Sitemaps.
+- [ ] **Bing Webmaster Tools**: the simplest way is **Import from Google Search Console** once step one is done; the imported site is verified automatically. Bing's own DNS method is a **CNAME** record (not a TXT record): Bing Webmaster Tools shows the name and value to add in Cloudflare DNS, with the proxy turned off. Then submit the same sitemap index.
+- [ ] **Watch the first weeks**: Search Console, Pages, shows why a page is not indexed; a category page with no tool is "Excluded by 'noindex' tag" on purpose.

@@ -1,12 +1,15 @@
 ---
-import { privacyStatement } from "@networksinsights/tool-sdk";
+import { privacyStatement, quickFacts } from "@networksinsights/tool-sdk";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { type Category, categoryHref } from "../../config/categories";
 import { sitePages, toolTitle } from "../../config/site";
 import Page from "../../layouts/Page.astro";
 import type { Tool } from "../../lib/registry/build";
+import { toolNodes } from "../../lib/seo/jsonld";
+import { toolCard } from "../../lib/seo/og";
 import Badge from "../ui/Badge.astro";
 import Breadcrumbs from "../ui/Breadcrumbs.astro";
+import FactList from "../ui/FactList.astro";
 import LinkList from "../ui/LinkList.astro";
 import PageHeader from "../ui/PageHeader.astro";
 import ToolWorkspace from "../ui/ToolWorkspace.astro";
@@ -40,17 +43,31 @@ const status =
     : manifest.status === "deprecated"
       ? { label: "Deprecated", tone: "danger" as const }
       : undefined;
----
 
-<Page title={toolTitle(manifest.name)} description={manifest.summary}>
-  <div class="grid gap-4">
-    <Breadcrumbs
-      items={[
+// The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
+const breadcrumbs = [
   { label: "Home", href: "/" },
   { label: category.name, href: categoryHref(category) },
   { label: manifest.name },
-]}
-    />
+];
+
+// Quick facts, from the manifest only (ADR 0044). The date is a date, so it carries `datetime`.
+const facts = quickFacts(manifest).map((fact) => ({
+  label: fact.label,
+  value: fact.value,
+  ...(fact.id === "updated" ? { datetime: manifest.updated } : {}),
+}));
+---
+
+<Page
+  title={toolTitle(manifest.name)}
+  description={manifest.summary}
+  breadcrumbs={breadcrumbs}
+  share={toolCard(tool)}
+  nodes={toolNodes({ tool, category, faq: tool.faq })}
+>
+  <div class="grid gap-4">
+    <Breadcrumbs items={breadcrumbs} />
     <PageHeader title={manifest.name} intro={manifest.summary} />
   </div>
 
@@ -67,6 +84,11 @@ const status =
 )}
     <Island />
   </ToolWorkspace>
+
+  <section class="space-y-3" aria-labelledby="quick-facts">
+    <h2 id="quick-facts" class="text-xl">Quick facts</h2>
+    <FactList items={facts} />
+  </section>
 
   <div class="ni-prose">
     <Content />

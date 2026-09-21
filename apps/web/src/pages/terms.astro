@@ -4,14 +4,18 @@ import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { pageTitle, site } from "../config/site";
 import Page from "../layouts/Page.astro";
+
+// The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
+const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Terms" }];
 ---
 
 <Page
+  breadcrumbs={breadcrumbs}
   title={pageTitle("Terms")}
   description="The terms for using NetworksInsights. This page is a draft and still needs owner input before launch."
 >
   <div class="grid gap-4">
-    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Terms" }]} />
+    <Breadcrumbs items={breadcrumbs} />
     <PageHeader title="Terms" intro={`The terms for using ${site.name}.`}>
       <Alert tone="warning" title="Draft: owner input needed">
         This page is a draft and a structure only. It has not had a legal review. It still needs the

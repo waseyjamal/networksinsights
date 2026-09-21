@@ -7,9 +7,10 @@ import Hero from "../components/ui/Hero.astro";
 import Icon from "../components/ui/Icon.astro";
 import type { IconName } from "../components/ui/icons";
 import { categories, categoryHref } from "../config/categories";
-import { homeTitle, sitePages } from "../config/site";
+import { homeHero, homeTitle, site, sitePages } from "../config/site";
 import Page from "../layouts/Page.astro";
 import { toolCount } from "../lib/registry";
+import { homeNodes } from "../lib/seo/jsonld";
 
 // The wide tiles make the four-column bento grid come out even: 5 wide + 6 narrow = 16 cells.
 const wideTiles = new Set(["pdf", "converters", "developer", "color-design", "date-time"]);
@@ -31,15 +32,10 @@ const reasons: Array<{ icon: IconName; title: string; text: string }> = [
 ];
 ---
 
-<Page
-  title={homeTitle}
-  description="Convert, compress, calculate and create right in your browser. Free online tools with no sign-up, private by design."
->
+<Page title={homeTitle} description={site.description} nodes={homeNodes()}>
   <Hero>
-    <h1 class="text-display">Free online tools. Private by design.</h1>
-    <p class="max-w-xl text-lg text-fg">
-      Convert, compress, calculate and create right in your browser. No sign-up needed.
-    </p>
+    <h1 class="text-display">{homeHero.headline}</h1>
+    <p class="max-w-xl text-lg text-fg">{homeHero.lead}</p>
     <CommandBar href={sitePages.tools.href} />
   </Hero>
 

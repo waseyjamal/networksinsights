@@ -95,7 +95,9 @@ test.describe("home page weight", () => {
 
     // Exactly one inline script on the page: the theme script.
     const inline = await page.evaluate(() =>
-      [...document.querySelectorAll("script")].map((s) => s.textContent ?? ""),
+      [...document.querySelectorAll('script:not([type="application/ld+json"])')].map(
+        (s) => s.textContent ?? "",
+      ),
     );
     expect(inline).toHaveLength(1);
     expect(inline[0]).toContain("ni-theme");
@@ -127,7 +129,9 @@ test.describe("home page weight", () => {
     const scripts = await size("script");
     const scriptBytes = scripts.files.reduce((sum, file) => sum + file.length, 0);
     const inlineJs = await page.evaluate(() =>
-      [...document.querySelectorAll("script")].map((s) => s.textContent ?? "").join(""),
+      [...document.querySelectorAll('script:not([type="application/ld+json"])')]
+        .map((s) => s.textContent ?? "")
+        .join(""),
     );
 
     console.log(
@@ -142,8 +146,10 @@ test.describe("home page weight", () => {
 
   test("has no other script on the 404 page than the theme script", async ({ page }) => {
     await page.goto("/no-such-page-for-budget-test/");
-    expect(await page.locator("script").count()).toBe(1);
-    expect(await page.locator("script").first().textContent()).toContain("ni-theme");
+    // The JSON-LD blocks are data, not code: only executable scripts count.
+    const code = page.locator('script:not([type="application/ld+json"])');
+    expect(await code.count()).toBe(1);
+    expect(await code.first().textContent()).toContain("ni-theme");
   });
 });
 
@@ -165,7 +171,9 @@ test.describe("pages that list tools ship no framework JavaScript", () => {
 
       // The theme script is the only inline script any page has.
       const inline = await page.evaluate(() =>
-        [...document.querySelectorAll("script")].map((script) => script.textContent ?? ""),
+        [...document.querySelectorAll('script:not([type="application/ld+json"])')].map(
+          (script) => script.textContent ?? "",
+        ),
       );
       expect(inline).toHaveLength(1);
       expect(inline[0]).toContain("ni-theme");

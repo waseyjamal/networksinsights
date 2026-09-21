@@ -1,0 +1,26 @@
+---
+// A short list of facts as a definition list: a term and its value, side by side in a grid of
+// cells. It is the "Quick facts" of a tool page (ADR 0044). The values must come from data, never
+// from copy typed into a page. A value that is a date passes `datetime`, and is wrapped in <time>.
+interface Item {
+  label: string;
+  value: string;
+  /** An ISO date (YYYY-MM-DD): the value is a date, shown as text. */
+  datetime?: string;
+}
+
+interface Props {
+  items: readonly Item[];
+}
+
+const { items } = Astro.props;
+---
+
+<dl class="ni-facts">
+  {items.map((item) => (
+  <div class="ni-facts__row">
+    <dt>{item.label}</dt>
+    <dd>{item.datetime ? <time datetime={item.datetime}>{item.value}</time> : item.value}</dd>
+  </div>
+))}
+</dl>

@@ -2,6 +2,8 @@
 import SiteFooter from "../components/layout/SiteFooter.astro";
 import SiteHeader from "../components/layout/SiteHeader.astro";
 import SkipLink from "../components/ui/SkipLink.astro";
+import { breadcrumbNode, type Crumb, graph, type JsonLdNode } from "../lib/seo/jsonld";
+import type { ShareCard } from "../lib/seo/og";
 import Base from "./Base.astro";
 
 // The page frame of every public page: skip link, header, <main id="main"> and footer.
@@ -10,12 +12,21 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
+  /** The trail the page shows in its breadcrumbs. The page passes the same list to <Breadcrumbs>. */
+  breadcrumbs?: readonly Crumb[];
+  /** Structured-data nodes about the page itself: the tool, the list, the organization. */
+  nodes?: readonly JsonLdNode[];
+  share?: ShareCard | undefined;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, breadcrumbs, nodes = [], share } = Astro.props;
+
+// The structured data is built here, from the same lists the page draws itself from (ADR 0039).
+const all = [...nodes, ...(breadcrumbs ? [breadcrumbNode(breadcrumbs, Astro.url.pathname)] : [])];
+const jsonLd = all.length > 0 ? graph(all) : undefined;
 ---
 
-<Base title={title} description={description} noindex={noindex}>
+<Base title={title} description={description} noindex={noindex} share={share} jsonLd={jsonLd}>
   <SkipLink />
   <SiteHeader />
   <main id="main" tabindex="-1" class="ni-main">
