@@ -63,7 +63,7 @@ const sum = (files: FileWeight[]): Weight => ({
 
 const readDist = (distDir: string, path: string) => readFileSync(join(distDir, path));
 
-function weigh(distDir: string, path: string): FileWeight {
+export function weigh(distDir: string, path: string): FileWeight {
   const bytes = readDist(distDir, path);
   return {
     path,
@@ -74,14 +74,14 @@ function weigh(distDir: string, path: string): FileWeight {
 }
 
 /** `/_astro/x.js` and `./x.js` (from `_astro/a.js`) to a path inside dist: `_astro/x.js`. */
-function resolveUrl(url: string, from: string): string | undefined {
+export function resolveUrl(url: string, from: string): string | undefined {
   if (/^(?:[a-z]+:)?\/\//i.test(url) || url.startsWith("data:")) return undefined;
   const clean = url.split(/[?#]/)[0] ?? url;
   if (clean.startsWith("/")) return clean.slice(1);
   return posix.normalize(posix.join(posix.dirname(from), clean));
 }
 
-interface Edges {
+export interface Edges {
   /** Chunks imported statically: they load with the chunk that imports them. */
   static: string[];
   /** Chunks imported with import(): they load when that code runs. */
@@ -96,7 +96,7 @@ const IMPORT_DYNAMIC = /\bimport\(\s*["'`]([^"'`]+\.m?js)["'`]\s*\)/g;
 const URL_ASSET = /new URL\(\s*["'`]([^"'`]+\.(?:wasm|m?js))["'`]\s*,\s*import\.meta\.url\s*\)/g;
 const BARE_ASSET = /["'`](\/[^"'`\s]+\.wasm)["'`]/g;
 
-function edgesOf(distDir: string, file: string): Edges {
+export function edgesOf(distDir: string, file: string): Edges {
   const text = readDist(distDir, file).toString("utf8");
   const collect = (pattern: RegExp) =>
     [...text.matchAll(pattern)]

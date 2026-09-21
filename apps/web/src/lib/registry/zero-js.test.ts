@@ -9,13 +9,20 @@ import { describe, expect, it } from "vitest";
 //   1. The registry modules a listing page imports hold metadata only.
 //   2. The two modules that do load tool UI are imported by the tool route alone.
 //
-// budgets.spec.ts then measures the built pages in three real browsers.
+// Since Mission 11 every page also carries one deferred script, the search loader, and nothing else
+// (ADR 0046). It comes from SearchDialog.astro, which layouts/Base.astro renders once for every
+// page. That is what the last block below pins down; search-dialog.test.ts checks the loader's own
+// source, scripts/search-loader.test.ts its built size, and budgets.spec.ts measures the built
+// pages in three real browsers.
 
-const sources = import.meta.glob(["./*.ts", "../../pages/*.astro", "../../components/**/*.astro"], {
-  eager: true,
-  query: "?raw",
-  import: "default",
-}) as Record<string, string>;
+const sources = import.meta.glob(
+  ["./*.ts", "../../pages/*.astro", "../../components/**/*.astro", "../../layouts/*.astro"],
+  {
+    eager: true,
+    query: "?raw",
+    import: "default",
+  },
+) as Record<string, string>;
 
 const source = (path: string) => {
   const text = sources[path];
@@ -108,5 +115,32 @@ describe("the pages that list tools", () => {
     const category = route.slice(route.indexOf("category && ("));
     expect(category).not.toContain("client:");
     expect(category).not.toContain("Island");
+  });
+});
+
+describe("the one script every page carries: the search loader (ADR 0046)", () => {
+  it("comes from SearchDialog, which the base layout renders once and no page renders itself", () => {
+    const base = source("../../layouts/Base.astro");
+    expect(base.match(/<SearchDialog\s*\/>/g)).toHaveLength(1);
+    expect(importsOf(base)).toContain("../components/ui/SearchDialog.astro");
+
+    for (const [path, text] of Object.entries(sources)) {
+      if (path === "../../layouts/Base.astro") continue;
+      expect(importsOf(text).join(" "), path).not.toContain("SearchDialog");
+    }
+  });
+
+  it("gives a listing page no island of its own for it: the loader is a plain script", () => {
+    const dialog = source("../../components/ui/SearchDialog.astro");
+    expect(dialog).not.toMatch(/client:(?:load|idle|visible|media|only)/);
+    expect(dialog).not.toContain("astro-island");
+    expect(dialog).toContain("<script>");
+  });
+
+  it("keeps the registry out of the loader: the index is read by build code, never the browser", () => {
+    const dialog = source("../../components/ui/SearchDialog.astro");
+    const script = dialog.slice(dialog.lastIndexOf("<script>"));
+    expect(script).not.toContain("registry");
+    expect(script).not.toContain("engine");
   });
 });

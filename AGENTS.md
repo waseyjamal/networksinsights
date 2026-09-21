@@ -61,7 +61,7 @@ No AGPL, GPL, SSPL or non-commercial licenses, for code, fonts or AI models, wit
 
 ## Architecture principles
 
-- Static HTML first. JavaScript only inside islands.
+- Static HTML first. JavaScript only inside islands, plus two scripts every page carries: the inline theme script and the deferred search loader (ADR 0046). Nothing of search loads until a visitor shows intent.
 - Tool logic is pure TypeScript with no UI or framework imports.
 - Three runtimes: browser, worker, server.
 - Process user files on the device whenever possible.
@@ -86,13 +86,15 @@ Run from the repo root:
   `docs/adding-a-tool.md`)
 - `pnpm check:tools` — every tool gate on its own with a readable summary; `--tool <id>` checks one
   tool, `--json` prints JSON. Part of `pnpm check`
-- `pnpm check:budgets` — the JavaScript budget of every tool page, from the build output; run
-  after `pnpm build`. Runs in CI after the build (ADR 0037)
+- `pnpm check:budgets` — the JavaScript budget of every tool page, and the size and behaviour of the
+  search loader every page carries, from the build output; run after `pnpm build`. Runs in CI after
+  the build (ADR 0037, ADR 0046)
 - `pnpm check:seo` — canonical links, Open Graph and Twitter/X tags, share images, structured data,
   robots.txt, sitemaps and llms.txt, from the build output; run after `pnpm build`. Runs in CI after
   the build (ADR 0038 to 0041)
 - `pnpm check:production` — requests the live site: `/tools` must answer a permanent redirect, files
-  must not redirect, `robots.txt` must match the launch flag. Runs in CI after every production
+  must not redirect, `robots.txt` must match the launch flag, the search index must be served with a
+  year-long immutable cache header. Runs in CI after every production
   deploy (`verify-production`); it fails until the Cloudflare redirect rule exists
   (`docs/runbooks/seo-redirects.md`)
 - `pnpm indexnow` — `snapshot` and `submit`, run by CI around a production deploy to tell search
@@ -115,6 +117,15 @@ Deploy (see ADR 0027): after `quality` and `e2e` pass, `ci.yml` job `preview` up
 - Structured data must say only what the page shows. Never add `aggregateRating`, `review` or any rating: the site has none.
 - `apps/web/src/config/crawlers.ts` is the one list of crawlers behind robots.txt. `trainingPolicy` is the owner's decision (ADR 0040).
 - A tool page's Quick facts come from the manifest only (ADR 0044). The first sentence of a tool's intro answers first: at most 30 words, and it should name the tool.
+
+## Search (ADR 0045, ADR 0046)
+
+- The search index is generated from the registry at build time (`apps/web/src/lib/search/`) and served as `/search-index.<hash>.json`. Only tools whose status is not `deprecated` are in it. Never edit it by hand and never link, preload or prefetch it.
+- The engine (`engine.ts`) is pure TypeScript with no dependency. Adding a search library needs an ADR that replaces ADR 0045.
+- Every page carries one search loader script, at most 2 KB gzip, whose only job is to listen for intent and `import()` the search module. Do not add code to it, and never import the engine or the index statically from a page, a layout or the loader. `pnpm check:budgets` and `budgets.spec.ts` fail if a page loads any other script or fetches search before intent.
+- Words from tools and from visitors reach the page as text nodes only. `innerHTML`, `insertAdjacentHTML`, `DOMParser` and `eval` are forbidden in `apps/web/src/lib/search/`; a test fails if one appears.
+- Search stores nothing and sends nothing: no recent searches, no query logging. Adding either needs an ADR and a line in the privacy page.
+- Synthetic tools (`synthetic.ts`, `corpus.ts`) exist for tests only. No page or build imports them, and the site still ships zero tools until Mission 13.
 
 ## Docs map
 

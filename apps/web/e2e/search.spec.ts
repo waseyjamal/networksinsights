@@ -641,7 +641,7 @@ test.describe("keypress to results, at 1,000 synthetic tools", () => {
       try {
         new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) state.__events.push(entry.duration);
-        }).observe({ type: "event", durationThreshold: 16 });
+        }).observe({ type: "event", durationThreshold: 16 } as PerformanceObserverInit);
       } catch {
         // Not every engine has it.
       }

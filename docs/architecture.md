@@ -23,9 +23,10 @@ apps/
     src/components/ui/   Astro components; react/ holds the React versions
     src/components/layout/   site header and footer
     src/components/tool/     the tool page template
-    src/layouts/  Base (head, theme script) and Page (skip link, header, main, footer)
+    src/layouts/  Base (head, theme script, search dialog and loader) and Page (skip link, header, main, footer)
     src/lib/registry/        finds and validates tools at build time; fixtures/ holds test tools
     src/lib/seo/             canonical and share tags, JSON-LD, sitemaps, robots.txt, llms.txt, IndexNow, share images (ADR 0038-0042)
+    src/lib/search/          the search index builder, the engine, the browser code loaded on intent (ADR 0045, ADR 0046)
     src/pages/og/            the share images, drawn at build time; robots.txt, sitemaps and llms.txt are pages too
     src/pages/[slug].astro   one route for category pages and tool pages
 packages/
@@ -97,8 +98,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 7 | Site shell | Done |
 | 8 | Tool contract + registry | Done |
 | 9 | Generator + guardrails | Done |
-| 10 | SEO/GEO engine | In progress |
-| 11 | Search | |
+| 10 | SEO/GEO engine | Done |
+| 11 | Search | In progress |
 | 12 | Security | |
 | 13 | Reference tool: browser | |
 | 14 | Reference tool: worker | |

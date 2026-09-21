@@ -3,6 +3,8 @@
 Status: Accepted
 Date: 2026-09-20
 
+Amended by [ADR 0046](0046-intent-loaded-search.md): the theme script is still the only inline script, but every page now also carries one deferred search loader file.
+
 ## Context
 
 The site starts at 500+ tools and grows without limit, so every page must look and behave the same without each one inventing its own styles. ADR 0005 chose Tailwind CSS 4 with design tokens and left the design system to Mission 6. The system has to be premium and calm, fast (no layout shift, almost no JavaScript), accessible (WCAG 2.2 AA), and usable from Astro (zero JavaScript) and from React islands without duplicating styles. This ADR refines ADR 0005; it does not supersede it.

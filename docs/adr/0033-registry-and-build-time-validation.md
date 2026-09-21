@@ -3,6 +3,8 @@
 Status: Accepted
 Date: 2026-09-20
 
+Amended by [ADR 0046](0046-intent-loaded-search.md): the section "Zero JavaScript on listing pages" now allows exactly one deferred script, the search loader.
+
 ## Context
 
 The site has to turn a folder of files into a page, a listing entry and a count, for 500+ tools,
@@ -67,6 +69,8 @@ fails, which is four new failure modes to avoid one three-line file that the Mis
 writes anyway.
 
 ### Zero JavaScript on listing pages
+
+> Since Mission 11 (ADR 0046) these pages also carry one deferred script, the search loader, which fetches nothing until a visitor shows intent. Everything below still holds for framework JavaScript and islands.
 
 The home page, `/tools/` and the category pages read the registry for names and counts. The two
 modules that can load tool UI — `registry/islands.ts` and `registry/content.ts` — are imported by

@@ -31,6 +31,7 @@ import TabPanel from "../components/ui/TabPanel.astro";
 import Tabs from "../components/ui/Tabs.astro";
 import Textarea from "../components/ui/Textarea.astro";
 import ThemeToggle from "../components/ui/ThemeToggle.astro";
+import ToolFilter from "../components/ui/ToolFilter.astro";
 import Tooltip from "../components/ui/Tooltip.astro";
 import ToolWorkspace from "../components/ui/ToolWorkspace.astro";
 import Wordmark from "../components/ui/Wordmark.astro";
@@ -323,7 +324,7 @@ const themes = ["light", "dark"] as const;
         <div class="space-y-4">
           <h3 class="text-xl">Command bar</h3>
           <p class="max-w-2xl text-fg-muted">
-            The future Ctrl+K search, with a subtle glass effect. It becomes solid where blur is
+            The search field shell, with a subtle glass effect. It becomes solid where blur is
             unsupported or reduced transparency is requested.
           </p>
           <div class="ni-hero !p-6 sm:!p-10">
@@ -331,13 +332,29 @@ const themes = ["light", "dark"] as const;
             <CommandBar id="ds-command-bar" />
           </div>
           <p class="max-w-2xl text-fg-muted">
-            With an <code>href</code> it is a real link that looks the same. It works without
-            JavaScript and takes the visitor to all tools, until search arrives.
+            With an <code>href</code> it is a real link that looks the same. It is the trigger of
+            the search dialog: without JavaScript it takes the visitor to all tools, and with it a
+            click, a tap, Ctrl+K, Cmd+K or "/" opens the dialog instead. The key hint appears only
+            when the page has scripts.
           </p>
           <div class="ni-hero !p-6 sm:!p-10">
             <div class="ni-aurora" aria-hidden="true"></div>
             <CommandBar href="/tools/" />
           </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Search dialog and tool filter</h3>
+          <p class="max-w-2xl text-fg-muted">
+            <code>SearchDialog</code>
+            is on every page, shut: a native <code>&lt;dialog&gt;</code>
+            with a combobox, a listbox of results, the categories and three honest messages. Open it
+            from the command bar above to try it. Its script is loaded only when a visitor shows
+            intent (ADR 0046). <code>ToolFilter</code>, below, is the filter box of the all-tools
+            page. It is shown only when the page has scripts, and it needs the list of tools that
+            page provides, so here it has nothing to filter.
+          </p>
+          <ToolFilter id="ds-tool-filter" />
         </div>
 
         <div class="space-y-4">
