@@ -1,0 +1,27 @@
+Read a Base64 string back as the text it hides. Paste the string and see the original at once, with no upload and no waiting. Reach for it when a log line, an API response or a token contains a block of letters that you need to read.
+
+## How to use
+
+Paste the Base64 string into the box. If it is valid, the decoded text shows below it straight away. If it is not, a short message says what is wrong, for example that the length is off or that a character does not belong. The tool accepts both the standard alphabet and the URL-safe one, and it forgives missing padding at the end.
+
+## Examples
+
+Pasting SGVsbG8= gives the word "Hello", and pasting the encoded form of a whole sentence gives that sentence back. A string that decodes to bytes that are not readable text, such as the start of an image file, shows unreadable symbols, which tells you it is data rather than a message.
+
+## Limits
+
+Decoding cannot tell you whether the result is trustworthy. Do not paste a secret that belongs to someone else. Only text is shown: binary content such as a picture cannot be previewed or saved here, and very long inputs may take a moment.
+
+## FAQ
+
+### Why do I see strange symbols instead of words?
+
+The string probably holds binary data, such as an image or a compressed file, and not text in UTF-8.
+
+### Can it decode a string with line breaks?
+
+Yes. Line breaks and spaces inside the pasted string are ignored before decoding.
+
+### Does the tool keep what I paste?
+
+No. The string is decoded in your browser and forgotten when you close the tab.

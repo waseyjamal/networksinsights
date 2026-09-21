@@ -34,13 +34,20 @@ Tools:
   URL; the parent folder name is the category id. The full contract is `docs/tool-contract.md`.
 - Required files: `tool.config.ts`, `logic.ts`, `ui.tsx`, `island.astro`, `content/en.mdx`,
   `logic.test.ts`. `worker.ts` is optional.
+- Never write a tool folder by hand. Create it with `pnpm new:tool` (flags, no prompts) and follow
+  `docs/adding-a-tool.md`. Remove every `TODO(new-tool)` marker before the tool is done.
+- `ui.tsx` imports design-system components as `@ui`, and loads heavy code with a dynamic
+  `import()` so the initial JavaScript stays under 40 KB gzip (ADR 0037).
 - `island.astro` is fixed, byte for byte (`ISLAND_SOURCE` in the SDK). Never edit it per tool.
 - `logic.ts` is pure: no DOM, no Node globals, no network, no React or Astro, and no top-level
   statements. It may import only `zod`, `@networksinsights/tool-sdk` and files in its own folder.
   Adding any other library to that allowlist takes an ADR stating license, size and why.
 - The privacy statement on a tool page is derived from `runtime`. Never write it by hand.
 - `content/en.mdx` is an intro paragraph, then H2 "How to use", "Examples", "Limits", "FAQ", in
-  that order, with no H1.
+  that order, with no H1. The FAQ is `###` questions ending in `?`. Minimum prose words: intro 40,
+  How to use 50, Examples 40, Limits 30, FAQ 60 (two pairs). No placeholder text, no copied page
+  (ADR 0036). A tool is not done until `pnpm check:tools --tool <id>` passes.
+- A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.
 - Never add a tool to make a page look fuller. The site ships zero tools until Mission 13.
 
 Safety:
@@ -72,18 +79,31 @@ Run from the repo root:
 - `pnpm typecheck` — type check the web app (`astro check`)
 - `pnpm test` — run Vitest (fails if no tests are found)
 - `pnpm test:e2e` — build, then run the Playwright E2E tests on chromium, firefox and webkit against `astro preview`. Not part of `pnpm check` or the pre-push hook because it is slow; it runs in CI and on demand. First run needs `pnpm --filter web exec playwright install` (browsers go to Playwright's cache outside the repo).
-- `pnpm check` — typecheck, then lint, then test; stops at the first failure
+- `pnpm check` — typecheck (SDK, scripts, tools, web), then lint, then test, then `check:tools`;
+  stops at the first failure
+- `pnpm new:tool` — create a tool folder (interactive, or with flags for an agent; see
+  `docs/adding-a-tool.md`)
+- `pnpm check:tools` — every tool gate on its own with a readable summary; `--tool <id>` checks one
+  tool, `--json` prints JSON. Part of `pnpm check`
+- `pnpm check:budgets` — the JavaScript budget of every tool page, from the build output; run
+  after `pnpm build`. Runs in CI after the build (ADR 0037)
 
 Git hooks (husky, see ADR 0024): pre-commit runs Biome on staged files; pre-push runs `pnpm check`.
 
 CI (see ADR 0025): `.github/workflows/ci.yml` runs job `quality` (`pnpm check`, `pnpm build`) and job `e2e` (`pnpm test:e2e`) on every pull request to `main` and every push to `main`. Actions are pinned to full commit SHAs.
+
+Tool gates (ADR 0035 to 0037): `pnpm build`, `pnpm check:tools` and CI fail on contract, purity and
+content quality problems. In `pnpm dev` the content quality problems only warn, so a tool that is
+being written keeps rendering; contract violations stay hard. `quality` runs `pnpm check:budgets`
+right after `pnpm build`.
 
 Deploy (see ADR 0027): after `quality` and `e2e` pass, `ci.yml` job `preview` uploads a per-PR preview version, and job `deploy` deploys production on push to `main`. `.github/workflows/rollback.yml` is a manual rollback, from `main` only. Wrangler is pinned in `apps/web` and runs through pnpm in CI only. Runbook: `docs/runbooks/deploy-and-rollback.md`.
 
 ## Docs map
 
 - `docs/architecture.md` — goals, layout, runtimes, quality targets, mission table
-- `docs/tool-contract.md` — the contract every tool follows (draft until Mission 8)
+- `docs/tool-contract.md` — the contract every tool follows
+- `docs/adding-a-tool.md` — how to add a tool, with the prompt template for an AI agent
 - `docs/design-system.md` — the Signal design system: how to use tokens and components
 - `docs/adr/` — one file per architecture decision
 - `docs/launch-checklist.md` — every owner input and step needed before launch

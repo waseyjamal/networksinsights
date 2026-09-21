@@ -1,6 +1,6 @@
 # 0018. Build-time content quality gates
 
-Status: Accepted
+Status: Superseded by [0036](0036-content-quality-gates.md)
 Date: 2026-09-19
 
 ## Context

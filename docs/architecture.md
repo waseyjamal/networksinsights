@@ -29,11 +29,14 @@ apps/
 packages/
   tool-sdk/       @networksinsights/tool-sdk: the contract as code (Zod only)
 tools/            @networksinsights/tools: one folder per tool, <category-id>/<tool-id>/
+scripts/          @networksinsights/scripts: new:tool, check:tools, check:budgets
 docs/             architecture, tool contract, design system, ADRs
 ```
 
 `tools/` is empty until Mission 13. The contract every folder follows is
-[tool-contract.md](tool-contract.md); the decisions behind it are ADR 0031–0034.
+[tool-contract.md](tool-contract.md); the decisions behind it are ADR 0031–0037. A tool is added
+with `pnpm new:tool` ([adding-a-tool.md](adding-a-tool.md)) and held to the content quality gates
+(ADR 0036) and the JavaScript budgets (ADR 0037).
 
 ## Tool runtimes
 
@@ -86,8 +89,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 5 | Deploy pipeline | Done |
 | 6 | Design system | Done |
 | 7 | Site shell | Done |
-| 8 | Tool contract + registry | In progress |
-| 9 | Generator + guardrails | |
+| 8 | Tool contract + registry | Done |
+| 9 | Generator + guardrails | In progress |
 | 10 | SEO/GEO engine | |
 | 11 | Search | |
 | 12 | Security | |
@@ -95,5 +98,5 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 14 | Reference tool: worker | |
 | 15 | Reference tool: server + AI | |
 | 16 | Observability | |
-| 17 | Offline + budgets | |
+| 17 | Offline + site-wide budgets | |
 | 18 | Launch audit | |

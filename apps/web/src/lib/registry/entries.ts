@@ -20,6 +20,11 @@ export interface ToolGlobs {
   islands: Record<string, string>;
   /** `<dir>/content/en.mdx` → its source text. */
   contents: Record<string, string>;
+  /**
+   * `<dir>/logic.ts`, `ui.tsx`, `logic.test.ts` and `worker.ts` → their source text, for the
+   * quality gate that refuses unfinished code (ADR 0036). Optional: the fixtures do not need it.
+   */
+  sources?: Record<string, string>;
 }
 
 /**
@@ -72,11 +77,19 @@ export function toEntries(globs: ToolGlobs, root: string, depth: number): ToolEn
   const islands = byDir(globs.islands);
   const contents = byDir(globs.contents);
 
+  // The code files of each folder, by file name: `{ "logic.ts": "..." }`.
+  const sources = new Map<string, Record<string, string>>();
+  for (const [key, text] of Object.entries(globs.sources ?? {})) {
+    const split = splitKey(key, root, depth);
+    if (split) sources.set(split.dir, { ...sources.get(split.dir), [split.file]: text });
+  }
+
   return [...files.keys()].sort().map((dir) => ({
     dir,
     manifest: (manifests.get(dir) as { default?: unknown } | undefined)?.default,
     files: [...new Set(files.get(dir) ?? [])].sort(),
     content: contents.get(dir),
     island: islands.get(dir),
+    sources: sources.get(dir) ?? {},
   }));
 }

@@ -48,7 +48,10 @@ function problems(name: string): string[] {
     buildRegistry(set(name));
     return [];
   } catch (error) {
-    if (error instanceof ToolContractError) return error.violations.map(formatViolation);
+    // The first line names the folder and the problem; the lines under it are the fix (tested below).
+    if (error instanceof ToolContractError) {
+      return error.violations.map((violation) => formatViolation(violation).split("\n")[0] ?? "");
+    }
     throw error;
   }
 }
@@ -191,6 +194,33 @@ describe("each rule the build enforces, and the folder that breaks it", () => {
     expect(found[0]).toContain(
       "fixtures/duplicate-summary/text/case-converter — summary is the same as the summary of fixtures/duplicate-summary/text/word-counter",
     );
+  });
+});
+
+describe("every problem says where to look and what to change", () => {
+  it("prints the file path and a fix under the first line", () => {
+    try {
+      buildRegistry(set("tampered-island"));
+      expect.unreachable("the tampered island must fail");
+    } catch (error) {
+      expect(error).toBeInstanceOf(ToolContractError);
+      const message = (error as Error).message;
+      expect(message).toContain("File:    fixtures/tampered-island/text/word-counter/island.astro");
+      expect(message).toContain("Fix:     restore the file to the contract source");
+    }
+  });
+
+  it("gives every violation of every fixture a file or a fix", () => {
+    for (const name of new Set(allEntries.map((entry) => entry.dir.split("/")[1]))) {
+      if (name === "valid" || name === undefined) continue;
+      try {
+        buildRegistry(set(name));
+      } catch (error) {
+        for (const violation of (error as ToolContractError).violations) {
+          expect(violation.fix, `${name}: ${violation.problem}`).toBeTruthy();
+        }
+      }
+    }
   });
 });
 

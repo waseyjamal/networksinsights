@@ -1,5 +1,6 @@
 // @ts-check
 
+import { fileURLToPath } from "node:url";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
@@ -23,6 +24,13 @@ export default defineConfig({
   integrations: [react(), mdx()],
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        // The design system's React components, for tool islands: `import { Button } from "@ui"`.
+        // tools/tsconfig.json has the matching path for the type checker (docs/adding-a-tool.md).
+        "@ui": fileURLToPath(new URL("./src/components/ui/react/index.ts", import.meta.url)),
+      },
+    },
   },
   fonts: [
     {

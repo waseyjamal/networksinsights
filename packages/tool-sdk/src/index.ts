@@ -3,13 +3,30 @@
 // Pure TypeScript and Zod. No React, no Astro, no DOM: a tool's manifest and logic must be
 // readable from the browser, a Web Worker and a server alike (ADR 0031, docs/tool-contract.md).
 
-export { checkContent, outlineContent, REQUIRED_SECTIONS } from "./content";
+export {
+  BUDGET_REASON_MIN_LENGTH,
+  DEFAULT_INITIAL_JS_KB,
+  DEFAULT_ON_DEMAND_JS_KB,
+  INITIAL_JS_CEILING_KB,
+  ON_DEMAND_JS_CEILING_KB,
+  type ResolvedBudget,
+  resolveBudget,
+} from "./budget";
+export {
+  type ContentParts,
+  type ContentSection,
+  checkContent,
+  outlineContent,
+  REQUIRED_SECTIONS,
+  readContent,
+} from "./content";
 export { ISLAND_SOURCE, normalizeSource, OPTIONAL_FILES, REQUIRED_FILES } from "./files";
 export {
   defineTool,
   ISO_DATE,
   KEBAB_CASE,
   SUMMARY_MAX_LENGTH,
+  toolBudgetSchema,
   toolLimitsSchema,
   toolManifestSchema,
 } from "./manifest";
@@ -20,10 +37,19 @@ export {
   BANNED_GLOBALS,
   BANNED_IMPORT_EXTENSIONS,
 } from "./purity";
-export type { IsoDate, ToolLimits, ToolManifest, ToolRuntime, ToolStatus } from "./types";
+export * from "./quality";
+export type {
+  IsoDate,
+  ToolBudget,
+  ToolLimits,
+  ToolManifest,
+  ToolRuntime,
+  ToolStatus,
+} from "./types";
 export {
   type ContractViolation,
   formatViolation,
+  indentMessage,
   ToolContractError,
   type ToolEntry,
   type ValidateOptions,

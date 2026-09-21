@@ -1,0 +1,13 @@
+{
+  "id": "character-counter-name",
+  "name": "TBD counter",
+  "category": "text",
+  "summary": "Check the length of a text in characters, with and without spaces.",
+  "tags": ["fixture"],
+  "runtime": "client",
+  "status": "beta",
+  "related": [],
+  "added": "2026-09-20",
+  "updated": "2026-09-20",
+  "contentFrom": "pages/character-counter.mdx"
+}

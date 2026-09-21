@@ -5,6 +5,14 @@
   "type": "module",
   "dependencies": {
     "@networksinsights/tool-sdk": "workspace:*",
+    "react": "19.3.0",
     "zod": "4.6.5"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "typescript": "6.0.3"
   }
 }

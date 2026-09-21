@@ -1,0 +1,13 @@
+{
+  "id": "jpg-to-png",
+  "name": "JPG to PNG converter",
+  "category": "image",
+  "summary": "Convert a JPG picture into a lossless PNG file, right in your browser.",
+  "tags": ["fixture"],
+  "runtime": "client",
+  "status": "beta",
+  "related": [],
+  "added": "2026-09-20",
+  "updated": "2026-09-20",
+  "contentFrom": "pages/jpg-to-png.mdx"
+}

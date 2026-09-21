@@ -1,0 +1,27 @@
+Turn text into Base64, the plain-letter form that can travel safely through email bodies, URLs and configuration files. The encoding runs in your browser and the text you enter is never sent anywhere. It is meant for developers, testers and anyone who has been handed a string and told to encode it.
+
+## How to use
+
+Type or paste your text into the input box. The Base64 result appears in the output box below and updates as you type. Choose the URL-safe option if the result will go into a web address, because it swaps two characters that have a special meaning there. Press Copy to put the result on your clipboard.
+
+## Examples
+
+The text "Hello" becomes SGVsbG8=. The trailing equals sign is padding, added so the length is a multiple of four. Text with an accent, such as "café", is first turned into UTF-8 bytes and then encoded, so the result is longer than the text suggests.
+
+## Limits
+
+Base64 is an encoding, not encryption: anyone can reverse it, so never use it to hide a password. The output is about a third larger than the input. Files and images are not handled by this page; it works on text only.
+
+## FAQ
+
+### Is Base64 a secure way to store secrets?
+
+No. It only changes how data is written down. Anyone who sees the string can decode it in a second.
+
+### Why does my result end with equals signs?
+
+They pad the output to a whole number of four-character groups. Some systems accept the result without them.
+
+### Can it encode a picture?
+
+Not on this page. It works on text, and a picture would first have to be turned into text by another tool.
