@@ -109,7 +109,7 @@ describe("the layout", () => {
     // 60 characters is the longest name; 159 the longest summary (docs/tool-contract.md).
     const longest = {
       slug: "x",
-      title: "N".repeat(59) + "n",
+      title: `${"N".repeat(59)}n`,
       subtitle: "Summary words ".repeat(20).slice(0, 159),
       label: "Video and audio tools",
     };
