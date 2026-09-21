@@ -21,7 +21,7 @@ Search needs JavaScript: an engine, an index and a dialog. It also has to open f
 - a `keydown` handler for the shortcuts (`intent.ts`, tested in Node): Ctrl+K and Cmd+K from anywhere, "/" only when the visitor is not typing in an input, textarea, select or editable text;
 - one line that lets CSS show Cmd instead of Ctrl on Apple devices.
 
-It has no static import of the engine or the UI. Its size limit is **2 KB gzip**. It is 1,397 B gzip today; 1.3 KB of its 2.6 KB raw is Vite's dynamic-import helper.
+It has no static import of the engine or the UI. Its size limit is **2 KB gzip**. It is 1,329 B gzip today; 1.3 KB of its 2.6 KB raw is Vite's dynamic-import helper.
 
 **What loads, and when.** The first intent imports `search-ui.<hash>.js` (4.6 KB gzip: the engine, the index reader and the dialog and filter code) and, from it, fetches the index (ADR 0045) once. Later intents reuse both. Hovering the command bar puts the module and the index in flight before the click lands, so the first keystroke after the dialog opens is answered at once.
 
@@ -41,9 +41,9 @@ It has no static import of the engine or the UI. Its size limit is **2 KB gzip**
 
 | Engine | In the page, median / p95 | Painted, median / p95 |
 |---|---|---|
-| Chromium | 2.7 / 3.9 ms | 10.9 / 18.7 ms |
-| Firefox | 5.0 / 8.0 ms | 29 / 57 ms |
-| WebKit (Playwright build, device scale factor 2) | 6.0 / 12 ms | 85 / 128 ms |
+| Chromium | 2.5 / 3.8 ms | 10.5 / 19.4 ms |
+| Firefox | 5.0 / 8.0 ms | 27 / 45 ms |
+| WebKit (Playwright build, device scale factor 2) | 6.0 / 10 ms | 80 / 122 ms |
 
 Two findings changed the design. A `backdrop-filter: blur()` over the whole viewport behind the dialog took about 50 ms a frame in a software-rendered Chromium, against about 10 without it, so the backdrop is a plain scrim. A large `box-shadow` on the panel, whose contents change on every keystroke, took a software-rendered WebKit from 14 ms to about 60 (at a device scale factor of 1); the panel has none, and the border and the scrim set the panel apart.
 
@@ -51,7 +51,7 @@ The WebKit painted figure is a property of the test rig, not of Safari: Playwrig
 
 ## Consequences
 
-- Good: a page that is only read still costs its HTML, its CSS and one 1.4 KB script that does nothing until the visitor moves toward search.
+- Good: a page that is only read still costs its HTML, its CSS and one 1.3 KB script that does nothing until the visitor moves toward search.
 - Good: the first search is warm. Hover, focus and pointer-down all start the download, and each comes before the click completes.
 - Cost: the "no script file on a listing page" rule no longer holds, and every page carries a request for the loader. It is a static, immutable-cached file (ADR 0045).
 - Cost: a shortcut pressed on a page that has shown no earlier intent waits for the module before the dialog opens, the time it takes to fetch a 4.6 KB file. Keystrokes typed in that gap are not caught. The loader could open the dialog itself before the module arrives, but it would stop being only a loader; if the gap proves to matter it is the first thing to change.

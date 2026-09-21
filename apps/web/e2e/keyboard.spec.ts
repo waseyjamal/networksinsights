@@ -47,9 +47,12 @@ test.describe("header on a desktop viewport", () => {
     const focusedName = () =>
       page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
+        // Like an accessible name: content marked aria-hidden (the Ctrl+K hint) is not part of it.
+        const clone = el?.cloneNode(true) as HTMLElement | undefined;
+        for (const hidden of clone?.querySelectorAll('[aria-hidden="true"]') ?? []) hidden.remove();
         return (
           el?.getAttribute("aria-label") ||
-          el?.textContent?.trim() ||
+          clone?.textContent?.trim() ||
           (el as HTMLInputElement | null)?.value ||
           ""
         );
