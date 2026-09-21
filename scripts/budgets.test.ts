@@ -104,7 +104,9 @@ describe("what counts as the tool's own JavaScript", () => {
     expect(kb(js?.shared.gzip ?? 0)).toBeGreaterThan(55);
   });
 
-  it("charges a dynamic import to the on-demand number, with what that chunk imports", () => {
+  it("charges a dynamic import to the on-demand number, with what that chunk imports", {
+    tags: ["slow"],
+  }, () => {
     const { dist } = build({ staticKb: 2, lazyKb: 30, lazyDependencyKb: 20 });
     const js = measurePageJs(dist, "word-counter/index.html");
     expect(kb(js?.initial.gzip ?? 0)).toBeLessThan(6);
@@ -115,7 +117,7 @@ describe("what counts as the tool's own JavaScript", () => {
     expect(kb(js?.onDemand.gzip ?? 0)).toBeGreaterThan(48);
   });
 
-  it("charges a .wasm file loaded by URL to the on-demand number", () => {
+  it("charges a .wasm file loaded by URL to the on-demand number", { tags: ["slow"] }, () => {
     const { dist } = build({ staticKb: 2, wasmKb: 300 });
     const js = measurePageJs(dist, "word-counter/index.html");
     expect(js?.onDemand.files.map((file) => file.path)).toEqual(["_astro/engine.FFF.wasm"]);
@@ -144,7 +146,9 @@ describe("the initial budget: 40 KB gzip by default", () => {
     expect(report.results[0]?.budget).toEqual({ initialKb: 40, onDemandKb: 1024 });
   });
 
-  it("fails a tool over it, naming the tool, the file, the size, the limit and the fix", () => {
+  it("fails a tool over it, naming the tool, the file, the size, the limit and the fix", {
+    tags: ["slow"],
+  }, () => {
     const { dist } = build({ staticKb: 60 });
     const [violation] = checkBudgets(dist, [target()]).results[0]?.violations ?? [];
     expect(violation?.dir).toBe("tools/text/word-counter");
@@ -157,7 +161,9 @@ describe("the initial budget: 40 KB gzip by default", () => {
     expect(violation?.fix).toContain("_astro/ui.AAA.js");
   });
 
-  it("is the same 60 KB, and passes, once loaded on demand: lazy loading is rewarded", () => {
+  it("is the same 60 KB, and passes, once loaded on demand: lazy loading is rewarded", {
+    tags: ["slow"],
+  }, () => {
     const eager = checkBudgets(build({ staticKb: 60 }).dist, [target()]);
     const lazy = checkBudgets(build({ staticKb: 2, lazyKb: 60 }).dist, [target()]);
     expect(eager.ok).toBe(false);
@@ -165,7 +171,7 @@ describe("the initial budget: 40 KB gzip by default", () => {
     expect(kb(lazy.results[0]?.js?.onDemand.gzip ?? 0)).toBeGreaterThan(55);
   });
 
-  it("is raised by a manifest budget, and the report says so", () => {
+  it("is raised by a manifest budget, and the report says so", { tags: ["slow"] }, () => {
     const { dist } = build({ staticKb: 60 });
     const raised = target({
       maxInitialJsKb: 80,
@@ -178,7 +184,9 @@ describe("the initial budget: 40 KB gzip by default", () => {
     expect(formatBudgetReport(report)).toContain("(raised in tool.config.ts)");
   });
 
-  it("cannot be raised past the ceiling: the message says the code has to shrink", () => {
+  it("cannot be raised past the ceiling: the message says the code has to shrink", {
+    tags: ["slow"],
+  }, () => {
     const { dist } = build({ staticKb: 300 });
     const raised = target({ maxInitialJsKb: 250, reason: "As much as is allowed here." });
     const [violation] = checkBudgets(dist, [raised]).results[0]?.violations ?? [];
@@ -187,13 +195,17 @@ describe("the initial budget: 40 KB gzip by default", () => {
 });
 
 describe("the on-demand budget: 1,024 KB gzip by default, failing separately", () => {
-  it("passes a heavy engine loaded after a user action, which a PDF or media tool needs", () => {
+  it("passes a heavy engine loaded after a user action, which a PDF or media tool needs", {
+    tags: ["slow"],
+  }, () => {
     const report = checkBudgets(build({ staticKb: 3, lazyKb: 500, wasmKb: 400 }).dist, [target()]);
     expect(report.ok).toBe(true);
     expect(kb(report.results[0]?.js?.onDemand.gzip ?? 0)).toBeGreaterThan(890);
   });
 
-  it("fails when what is fetched later is over its own budget, and initial still passes", () => {
+  it("fails when what is fetched later is over its own budget, and initial still passes", {
+    tags: ["slow"],
+  }, () => {
     const { dist } = build({ staticKb: 3, lazyKb: 1100 });
     const [violation, ...rest] = checkBudgets(dist, [target()]).results[0]?.violations ?? [];
     expect(rest).toEqual([]);
@@ -203,13 +215,13 @@ describe("the on-demand budget: 1,024 KB gzip by default, failing separately", (
     expect(violation?.fix).toContain("maxOnDemandJsKb");
   });
 
-  it("is raised by a manifest budget up to its ceiling", () => {
+  it("is raised by a manifest budget up to its ceiling", { tags: ["slow"] }, () => {
     const { dist } = build({ staticKb: 3, lazyKb: 1100 });
     const raised = target({ maxOnDemandJsKb: 2048, reason: "Ships a WebAssembly PDF engine." });
     expect(checkBudgets(dist, [raised]).ok).toBe(true);
   });
 
-  it("fails initial and on demand separately when both are over", () => {
+  it("fails initial and on demand separately when both are over", { tags: ["slow"] }, () => {
     const { dist } = build({ staticKb: 60, lazyKb: 1100 });
     const violations = checkBudgets(dist, [target()]).results[0]?.violations ?? [];
     expect(violations).toHaveLength(2);
@@ -251,7 +263,7 @@ describe("the report", () => {
     expect(text).toContain("All tool pages are within budget.");
   });
 
-  it("is JSON an agent can read", () => {
+  it("is JSON an agent can read", { tags: ["slow"] }, () => {
     const { dist } = build({ staticKb: 60 });
     const json = JSON.parse(budgetReportToJson(checkBudgets(dist, [target()])));
     expect(json.ok).toBe(false);
@@ -280,7 +292,9 @@ describe("the report", () => {
 });
 
 describe("the command", () => {
-  it("passes on this repository, which ships no tools, whatever the build output holds", () => {
+  it("passes on this repository, which ships no tools, whatever the build output holds", {
+    tags: ["slow"],
+  }, () => {
     const { dist } = build();
     const result = spawnSync(
       process.execPath,
@@ -291,7 +305,7 @@ describe("the command", () => {
     expect(result.stdout).toContain("no tool pages in the build");
   });
 
-  it("refuses an option it does not know, with exit code 2", () => {
+  it("refuses an option it does not know, with exit code 2", { tags: ["slow"] }, () => {
     const result = spawnSync(
       process.execPath,
       ["--import", "tsx", "scripts/check-budgets.ts", "--nonsense"],

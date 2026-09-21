@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { bodyBackground, collectErrors, expectedBackground } from "./helpers";
 
 const path = "/design-system/";
@@ -97,6 +97,18 @@ for (const scheme of ["light", "dark"] as const) {
 }
 
 test.describe("theme toggle", () => {
+  // These tests reload the page. Under no-preference motion base.css opts every same-origin
+  // navigation into a cross-document view transition, and in Playwright's WebKit a reload during
+  // that transition sometimes never reaches "load" (or leaves the page never "stable"): 2 of 25
+  // repeated runs hung for the full test timeout. The toggle has nothing to do with view
+  // transitions, so the tests run with reduced motion, which switches the transition off. Every
+  // step below waits for the state it needs, never for time.
+  test.use({ reducedMotion: "reduce" });
+
+  /** The saved choice, polled: a read straight after a click is a guess about timing. */
+  const savedChoice = (page: Page) =>
+    expect.poll(() => page.evaluate(() => localStorage.getItem("ni-theme")));
+
   test("persists the choice after a reload", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto(path);
@@ -105,23 +117,32 @@ test.describe("theme toggle", () => {
 
     await page.getByRole("radio", { name: "Dark" }).first().check();
     await expect(html).toHaveAttribute("data-theme", "dark");
-    expect(await page.evaluate(() => localStorage.getItem("ni-theme"))).toBe("dark");
+    await savedChoice(page).toBe("dark");
     const dark = expectedBackground("dark");
-    const painted = await bodyBackground(page);
-    for (const i of [0, 1, 2] as const)
-      expect(Math.abs((painted[i] ?? 0) - dark[i])).toBeLessThanOrEqual(1);
+    await expect
+      .poll(async () => {
+        const painted = await bodyBackground(page);
+        return [0, 1, 2].every((i) => Math.abs((painted[i] ?? 0) - (dark[i] ?? 0)) <= 1);
+      })
+      .toBe(true);
 
     await page.reload();
     await expect(html).toHaveAttribute("data-theme", "dark");
     await expect(page.getByRole("radio", { name: "Dark" }).first()).toBeChecked();
 
     await page.getByRole("radio", { name: "Light" }).first().check();
+    await expect(html).toHaveAttribute("data-theme", "light");
+    await savedChoice(page).toBe("light");
     await page.reload();
     await expect(html).toHaveAttribute("data-theme", "light");
+    await expect(page.getByRole("radio", { name: "Light" }).first()).toBeChecked();
 
     await page.getByRole("radio", { name: "System" }).first().check();
+    await expect(html).toHaveAttribute("data-theme", "system");
+    await savedChoice(page).toBe("system");
     await page.reload();
     await expect(html).toHaveAttribute("data-theme", "system");
+    await expect(page.getByRole("radio", { name: "System" }).first()).toBeChecked();
   });
 
   test("keeps the theme-color metas in step with a manual choice", async ({ page }) => {
@@ -137,10 +158,12 @@ test.describe("theme toggle", () => {
     expect(lightColor).not.toBe(darkColor);
 
     await page.getByRole("radio", { name: "Dark" }).first().check();
-    expect(await colors()).toEqual([darkColor, darkColor]);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect.poll(colors).toEqual([darkColor, darkColor]);
 
     await page.getByRole("radio", { name: "System" }).first().check();
-    expect(await colors()).toEqual([lightColor, darkColor]);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "system");
+    await expect.poll(colors).toEqual([lightColor, darkColor]);
   });
 
   test("can be used with the keyboard", async ({ page }) => {

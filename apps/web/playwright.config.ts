@@ -27,5 +27,11 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
+    // Astro 7 detects a coding agent and then starts `astro preview` as a detached background
+    // process, which Playwright cannot supervise (on Windows it is killed with its parent, see
+    // withastro/astro#18019). `ASTRO_PREVIEW_BACKGROUND` is Astro's own opt-out: when it is set to
+    // any non-empty value the agent detection is skipped and the server stays in the foreground.
+    // CI is not an agent, so there it changes nothing (ADR 0043).
+    env: { ASTRO_PREVIEW_BACKGROUND: "false" },
   },
 });

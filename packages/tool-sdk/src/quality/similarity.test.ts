@@ -86,7 +86,10 @@ describe("the fast path finds what brute force finds", () => {
 });
 
 describe("speed", () => {
-  it("compares 1,000 synthetic tools with planted copies in about a second", () => {
+  it("compares 1,000 synthetic tools with planted copies in about a second", {
+    tags: ["slow"],
+    timeout: 60_000,
+  }, () => {
     const { pages, planted } = syntheticPages(1000, 20);
     const start = performance.now();
     const sets = pages.map((page) => shingleSet(page));
@@ -103,7 +106,7 @@ describe("speed", () => {
     // A loose ceiling: the number that matters is the one printed above.
     expect(done - start).toBeLessThan(15_000);
     // The brute-force pass takes several seconds, so this test gets more than the default five.
-  }, 60_000);
+  });
 });
 
 describe("calibration: how far apart are 'similar topic' and 'copied template'?", () => {

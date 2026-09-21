@@ -7,6 +7,8 @@ export default getViteConfig(
   {
     test: {
       name: "web",
+      // Slow tests carry the "slow" tag: `pnpm test` skips them, `pnpm test:slow` runs only them (ADR 0043).
+      tags: [{ name: "slow" }],
       environment: "node",
       include: ["src/**/*.test.ts"],
       // The registry fixtures are folders that look exactly like tools, down to the required

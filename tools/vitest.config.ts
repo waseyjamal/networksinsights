@@ -8,6 +8,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     name: "tools",
+    // Slow tests carry the "slow" tag: `pnpm test` skips them, `pnpm test:slow` runs only them (ADR 0043).
+    tags: [{ name: "slow" }],
     environment: "node",
     include: ["*/*/**/*.test.ts"],
     passWithNoTests: true,
