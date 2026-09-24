@@ -1,5 +1,6 @@
 ---
 import { Font } from "astro:assets";
+import SearchDialog from "../components/ui/SearchDialog.astro";
 import { site } from "../config/site";
 import { toHex } from "../lib/color";
 import { robotsContent } from "../lib/robots";
@@ -52,8 +53,10 @@ const themeColorDark = chrome("dark");
 //      valid is stored),
 //   2. keeps the theme-color metas in step with a manual choice,
 //   3. handles the theme toggle (change and storage events).
-// It is the only JavaScript every page ships. Astro's island bootstrap is separate and only
-// appears on pages that have an island.
+// Besides the theme script, every page ships exactly one more: the search loader in
+// SearchDialog.astro, a deferred module that imports the search code only when a visitor shows
+// intent (ADR 0046). Astro's island bootstrap is separate and only appears on pages that have an
+// island.
 ---
 
 <!doctype html>
@@ -132,5 +135,6 @@ const themeColorDark = chrome("dark");
   </head>
   <body>
     <slot />
+    <SearchDialog />
   </body>
 </html>

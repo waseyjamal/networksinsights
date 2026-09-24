@@ -1,13 +1,15 @@
 // pnpm check:budgets [--tool <id>] [--report] [--json] [--dist <folder>]
 //
 // Measures the JavaScript of every tool page in the real build output (apps/web/dist) against its
-// budget (ADR 0037): the initial island code, and the code fetched on demand, separately. Run it
-// after `pnpm build`. CI runs it on every pull request. Exit code 0 means every page is within
-// budget; 1 means a page is over; 2 means the command was used wrongly.
+// budget (ADR 0037): the initial island code, and the code fetched on demand, separately. It also
+// checks the search loader that every page carries (ADR 0046): at most 2 KB gzip, and nothing of
+// search fetched before a visitor shows intent. Run it after `pnpm build`. CI runs it on every
+// pull request. Exit code 0 means every page is within budget; 1 means a page is over; 2 means the
+// command was used wrongly.
 
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { toolManifestSchema } from "@networksinsights/tool-sdk";
+import { formatViolation, indentMessage, toolManifestSchema } from "@networksinsights/tool-sdk";
 import {
   budgetReportToJson,
   checkBudgets,
@@ -15,6 +17,7 @@ import {
   formatPageWeight,
   measurePageWeight,
 } from "./lib/budgets";
+import { checkSearchLoader, formatSearchLoaderReport } from "./lib/search-loader";
 import { defaultToolsRoot, loadTools, repoRoot } from "./lib/tools";
 
 const HELP = `Usage: pnpm check:budgets [--tool <id>] [--report] [--json] [--dist <folder>]
@@ -73,14 +76,61 @@ async function main(): Promise<number> {
   }
 
   const report = checkBudgets(distDir, chosen);
-  console.log(values.json ? budgetReportToJson(report) : formatBudgetReport(report));
+  const loader = checkSearchLoader(distDir);
+  const ok = report.ok && loader.violations.length === 0;
+  if (values.json) {
+    console.log(
+      JSON.stringify(
+        {
+          ...JSON.parse(budgetReportToJson(report)),
+          ok,
+          searchLoader: {
+            ok: loader.violations.length === 0,
+            measured: loader.measured,
+            pages: loader.pages,
+            loaders: loader.loaders.map((file) => ({
+              path: file.path,
+              gzip: file.gzip,
+              raw: file.raw,
+            })),
+            moduleGzip: loader.module?.gzip ?? null,
+            problems: loader.violations.map((v) => ({
+              page: v.dir,
+              problem: v.problem,
+              fix: v.fix,
+            })),
+          },
+        },
+        null,
+        2,
+      ),
+    );
+  } else {
+    console.log(formatBudgetReport(report));
+    console.log(`
+${formatSearchLoaderReport(loader)}`);
+    if (loader.violations.length > 0) {
+      console.log(
+        `
+${loader.violations.length} search ${loader.violations.length === 1 ? "problem" : "problems"} to fix:
+`,
+      );
+      for (const violation of loader.violations) {
+        console.log(
+          indentMessage(
+            formatViolation(violation).replace('Quality gate "budget":', "JavaScript budget:"),
+          ),
+        );
+      }
+    }
+  }
   if (values.report && !values.json) {
     for (const target of chosen) {
       const weight = measurePageWeight(distDir, target.id);
       if (weight) console.log(`\n${formatPageWeight(target.id, weight)}`);
     }
   }
-  return report.ok ? 0 : 1;
+  return ok ? 0 : 1;
 }
 
 process.exitCode = await main();

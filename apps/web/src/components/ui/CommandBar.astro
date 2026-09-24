@@ -2,12 +2,14 @@
 import Icon from "./Icon.astro";
 import Kbd from "./Kbd.astro";
 
-// The visual shell of the future Ctrl+K search. Two variants:
-//   - default: a search field. Behavior (opening, results) comes with the search mission. It is
-//     a landmark (role="search") but not a <form>, so it cannot navigate.
-//   - `href`: a real link that looks like the field. It works without JavaScript and takes the
-//     visitor to the page that lists every tool. It has no Ctrl+K hint, because that shortcut
-//     does not exist yet. The search mission upgrades it.
+// The command bar. Two variants:
+//   - default: a search field shell, used by the style guide. It is a landmark (role="search")
+//     but not a <form>, so it cannot navigate.
+//   - `href`: a real link that looks like the field. Without JavaScript it takes the visitor to
+//     the page that lists every tool. With JavaScript, the loader in SearchDialog.astro opens the
+//     search dialog instead (click, tap, Ctrl+K, Cmd+K or "/"; ADR 0046). The Ctrl+K hint is in
+//     the markup but hidden by CSS until the page has scripts, so it never promises a shortcut
+//     that does not work.
 interface Props {
   id?: string;
   label?: string;
@@ -26,9 +28,20 @@ const {
 ---
 
 {href ? (
-  <a class="ni-commandbar" href={href} data-size={size}>
+  <a
+    class="ni-commandbar"
+    href={href}
+    data-size={size}
+    data-ni-search-trigger
+    aria-keyshortcuts="Control+K Meta+K /"
+  >
     <Icon name="search" />
     <span class="ni-commandbar__label">{label}</span>
+    <span class="ni-commandbar__hint" data-js-only aria-hidden="true">
+      <Kbd class="ni-key-pc">Ctrl</Kbd>
+      <Kbd class="ni-key-mac">⌘</Kbd>
+      <Kbd>K</Kbd>
+    </span>
   </a>
 ) : (
   /* biome-ignore lint/a11y/useSemanticElements: the <search> element is not supported in Safari 16.4, our floor */

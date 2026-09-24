@@ -5,7 +5,8 @@ import { formatChecks, runProductionChecks, runWithRetries } from "./lib/product
 // Cloudflare sends by itself) must fail, and a 301 or 308 must pass.
 
 const BASE = "https://networksinsights.com";
-const home = `<html><head><link rel="canonical" href="${BASE}/"></head></html>`;
+const INDEX = "/search-index.0123456789ab.json";
+const home = `<html><head><link rel="canonical" href="${BASE}/"></head><body><dialog data-ni-search data-index="${INDEX}"></dialog></body></html>`;
 
 interface Fake {
   tools?: { status: number; location?: string };
@@ -14,6 +15,9 @@ interface Fake {
   favicon?: number;
   missing?: number;
   launched?: boolean;
+  /** The Cache-Control the search index is served with. */
+  indexCache?: string;
+  indexStatus?: number;
 }
 
 /** A fetch that answers like the site does, with the parts a test wants to change. */
@@ -32,6 +36,14 @@ function fakeFetch(fake: Fake = {}): typeof fetch {
       return respond(tools.status, "", tools.location ? { location: tools.location } : {});
     }
     if (path === "/") return respond(200, fake.home ?? home);
+    if (path === INDEX) {
+      const headers: Record<string, string> = fake.indexCache
+        ? { "cache-control": fake.indexCache }
+        : fake.indexCache === undefined
+          ? { "cache-control": "public, max-age=31536000, immutable" }
+          : {};
+      return respond(fake.indexStatus ?? 200, '{"version":1,"tools":[]}', headers);
+    }
     if (path === "/tools/") return respond(200, "<html></html>");
     if (path === "/favicon.ico") return respond(fake.favicon ?? 200, "x");
     if (path === "/robots.txt") return respond(200, robots);
@@ -207,5 +219,38 @@ describe("the summary", () => {
     expect(text).toContain("1 check failed.");
     const good = await runProductionChecks({ fetchFn: fakeFetch(), launched: false });
     expect(formatChecks(good, BASE)).toContain("All checks pass.");
+  });
+});
+
+describe("the search index", () => {
+  const indexCheck = (checks: Awaited<ReturnType<typeof runProductionChecks>>) =>
+    checks.find((check) => check.name.includes("search-index"));
+
+  it("passes when the home page names it and it is served with an immutable, year-long cache", async () => {
+    const checks = await runProductionChecks({ fetchFn: fakeFetch(), launched: false });
+    expect(indexCheck(checks)?.ok).toBe(true);
+    expect(indexCheck(checks)?.name).toContain(INDEX);
+  });
+
+  it("fails when it is served without the cache header, and points at _headers", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch({ indexCache: "public, max-age=0, must-revalidate" }),
+      launched: false,
+    });
+    expect(indexCheck(checks)?.ok).toBe(false);
+    expect(indexCheck(checks)?.detail).toContain("_headers");
+  });
+
+  it("fails when it is missing, and when the home page does not name it", async () => {
+    const missing = await runProductionChecks({
+      fetchFn: fakeFetch({ indexStatus: 404 }),
+      launched: false,
+    });
+    expect(indexCheck(missing)?.ok).toBe(false);
+    const unnamed = await runProductionChecks({
+      fetchFn: fakeFetch({ home: `<link rel="canonical" href="${BASE}/">` }),
+      launched: false,
+    });
+    expect(unnamed.find((check) => check.name.includes("names the search index"))?.ok).toBe(false);
   });
 });

@@ -37,11 +37,21 @@ describe("CategoryTile", () => {
 });
 
 describe("CommandBar", () => {
-  it("is a real link to /tools/ when it has an href, with no Ctrl+K hint", async () => {
+  it("is a real link to /tools/ when it has an href, and the search trigger", async () => {
     const html = await container.renderToString(CommandBar, { props: { href: "/tools/" } });
     expect(html).toMatch(/<a[^>]*class="ni-commandbar"[^>]*href="\/tools\/"/);
+    expect(html).toContain("data-ni-search-trigger");
+    expect(html).toContain('aria-keyshortcuts="Control+K Meta+K /"');
     expect(html).not.toContain("<input");
-    expect(html).not.toContain("Ctrl");
+  });
+
+  it("marks the Ctrl+K hint as decoration that CSS shows only when the page has scripts", async () => {
+    const html = await container.renderToString(CommandBar, { props: { href: "/tools/" } });
+    const hint = /<span class="ni-commandbar__hint"([^>]*)>/.exec(html)?.[1] ?? "";
+    expect(hint).toContain("data-js-only");
+    expect(hint).toContain('aria-hidden="true"');
+    // The link's accessible name is its label alone: the keys are not read out.
+    expect(html).toContain("Search tools");
   });
 
   it("claims no tool count in its placeholder", async () => {
@@ -86,7 +96,9 @@ describe("Page layout", () => {
 
   it("gives every navigation landmark its own name", () => {
     const labels = [...html.matchAll(/<nav[^>]*aria-label="([^"]+)"/g)].map((m) => m[1]);
-    expect(labels).toEqual(["Main", "Menu", "Footer"]);
+    // The last one is inside the search dialog, which every page carries (shut).
+    expect(labels).toEqual(["Main", "Menu", "Footer", "Browse by category"]);
+    expect(new Set(labels).size).toBe(labels.length);
   });
 
   it("links every category in the footer and the menu", () => {

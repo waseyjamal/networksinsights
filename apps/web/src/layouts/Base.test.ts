@@ -117,4 +117,19 @@ describe("Base layout theming", () => {
   it("places the theme script after the theme-color metas it updates", () => {
     expect(html.lastIndexOf('<meta name="theme-color"')).toBeLessThan(html.indexOf("<script"));
   });
+
+  // Since Mission 11 every page also carries the search dialog, and with it the one deferred
+  // loader (ADR 0046). The loader is a bundled script file, so it is not among the inline scripts
+  // counted above: the inline theme script is still the only one.
+  it("renders the search dialog once, in the body, after the page content", () => {
+    expect(html.match(/<dialog\b/g)).toHaveLength(1);
+    expect(html.indexOf("<dialog")).toBeGreaterThan(html.indexOf("<body"));
+    expect(html.indexOf("data-ni-search")).toBeGreaterThan(html.indexOf("<body"));
+  });
+
+  it("keeps the search dialog out of the head, and shut", () => {
+    const head = html.slice(0, html.indexOf("</head>"));
+    expect(head).not.toContain("<dialog");
+    expect(/<dialog[^>]*\sopen[\s>=]/.test(html)).toBe(false);
+  });
 });

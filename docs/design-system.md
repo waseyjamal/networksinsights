@@ -133,7 +133,9 @@ these components and the design tokens, and never styles a one-off (docs/adding-
 | ThemeToggle | yes | no | Uses the head script |
 | Icon | yes | yes | Decorative (`aria-hidden`). Put the meaning in text |
 | ToolWorkspace | yes | yes | Glow border, dropzone, actions, result, privacy badge. The actions and result areas render only when something fills them, so a tool page can use the card as a shell around its island. `privacy` and `privacyOnDevice` come from the tool's runtime and are never written by hand (ADR 0034); the default is the on-device statement |
-| CommandBar, Hero, Constellation, BentoGrid, CategoryTile | yes | no | Signature elements. `CommandBar` with `href` is a real link (no JavaScript, no Ctrl+K hint) until search arrives. `CategoryTile` without `count` says "Coming soon" and never shows a number |
+| CommandBar, Hero, Constellation, BentoGrid, CategoryTile | yes | no | Signature elements. `CommandBar` with `href` is a real link, and the trigger of the search dialog: without JavaScript it goes to all tools; with it a click, a tap, Ctrl+K, Cmd+K or "/" opens the dialog. Its Ctrl+K hint is hidden by CSS until the page has scripts. `CategoryTile` without `count` says "Coming soon" and never shows a number |
+| SearchDialog | yes | no | The instant-search dialog, rendered once by `layouts/Base.astro` and never by a page. A native `<dialog>` (shut, so absent without JavaScript) with a WAI-ARIA combobox and listbox, the categories, and three honest messages (No tools yet, No results, Could not load). It also carries the one deferred search loader script (ADR 0046). Results are built by `lib/search/search-ui.ts` as text nodes, never markup. The active result has a ring as well as a tint. The matched text is bold and underlined, so its contrast is the text's own. The panel has no shadow and the backdrop no blur: both were repainted on every keystroke (ADR 0046) |
+| ToolFilter | yes | no | The filter box of the all-tools page. Hidden until the page has scripts (`html[data-theme-js]`); the full list is always in the HTML. Needs `[data-ni-filter-list]` and `[data-ni-filter-group]` around the list it filters |
 | Wordmark | yes | no | Constellation mark and the site name, from `config/site.ts` |
 | SkipLink | yes | no | First focusable element of a page; its target is `<main id="main" tabindex="-1">` |
 | Breadcrumbs | yes | no | `items`: the last one is the current page and not a link |
@@ -175,7 +177,9 @@ Every component must have: a visible focus ring (from `base.css`, do not remove 
 | `Base.test.ts` | Theme script, `color-scheme` meta, `theme-color` metas, robots meta |
 | `config/*.test.ts`, `components/shell.test.ts` | Site and category configs are valid and collide with no page; header, footer, tile and command bar rules |
 | `e2e/design-system.spec.ts` | No console errors, axe zero violations in light and dark, reduced motion, toggle persistence, theme before first paint |
-| `e2e/budgets.spec.ts` | CSS size, font preloads, no JavaScript on the home page except the theme script, CLS, LCP |
+| `e2e/budgets.spec.ts` | CSS size, font preloads, on a page with no island only the theme script and the search loader (at most 2 KB gzip) and no search request before intent, CLS, LCP |
+| `e2e/search.spec.ts` | Search in three engines: open by click, tap, Ctrl+K, Cmd+K and "/"; keyboard use, Esc and focus return; safe highlighting; every state; axe with the dialog open in light and dark; nothing loads before intent; keypress to results at 1,000 tools; the /tools/ filter with and without JavaScript |
+| `lib/search/*.test.ts`, `scripts/search-loader.test.ts` | The engine and its ranking, highlight safety, the index, the dialog markup, the loader's source and its built size |
 | `e2e/site.spec.ts` | Every page in light and dark: status, one H1, no console errors, axe zero violations, noindex, title |
 | `e2e/keyboard.spec.ts` | Skip link, header keyboard use, mobile menu without JavaScript |
 | `e2e/links.spec.ts` | Every internal link returns 200 directly; titles and descriptions are unique |
@@ -187,7 +191,8 @@ Every component must have: a visible focus ring (from `base.css`, do not remove 
 |---|---|
 | Design CSS on `/design-system` | 30 KB compressed |
 | Preloaded font files | 2 (today: 1) |
-| Home page JavaScript | none: no script files, only the inline theme script |
+| JavaScript on a page with no island | the inline theme script and one deferred search loader, at most 2 KB gzip (ADR 0046); nothing of search is fetched before intent |
+| Search module, on demand | 4.6 KB gzip today; the engine alone must stay under 15 KB gzip |
 | CLS on `/design-system` | at most 0.1 (Core Web Vitals "good") |
 
 ## Browser support

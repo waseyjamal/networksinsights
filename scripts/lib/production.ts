@@ -84,7 +84,28 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
     `canonical is ${canonical ?? "missing"}`,
   );
 
-  // 6. After launch the sitemap index and llms.txt exist.
+  // 6. The search index (ADR 0045): the home page names it, it answers, and it is cached for good.
+  // Its name carries a hash of its content, so `immutable` is safe; without the header every visit
+  // to search would revalidate a file that cannot have changed. The header comes from
+  // apps/web/public/_headers, which only Cloudflare reads, so only a live request can prove it.
+  const indexPath = /\bdata-index="(\/search-index\.[0-9a-f]+\.json)"/.exec(home)?.[1];
+  if (indexPath === undefined) {
+    add(
+      "the home page names the search index",
+      false,
+      "no data-index=/search-index.<hash>.json on the page; SearchDialog.astro must be rendered on every page",
+    );
+  } else {
+    const response = await get(fetchFn, `${base}${indexPath}`);
+    const cache = response.headers.get("cache-control") ?? "";
+    add(
+      `${indexPath} is served and cached for good`,
+      response.status === 200 && /\bimmutable\b/.test(cache) && /\bmax-age=\d{7,}\b/.test(cache),
+      `answered ${response.status} with Cache-Control: ${cache || "(none)"}. Expected 200 and "public, max-age=31536000, immutable": check apps/web/public/_headers.`,
+    );
+  }
+
+  // 7. After launch the sitemap index and llms.txt exist.
   if (launched) {
     for (const path of ["/sitemap-index.xml", "/llms.txt"]) {
       const response = await get(fetchFn, `${base}${path}`);

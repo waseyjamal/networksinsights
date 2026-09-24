@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { categoryHref } from "../src/config/categories";
 import { sitePages } from "../src/config/site";
-import { collectResponses, compressed } from "./helpers";
+import { collectRequests, collectResponses, compressed, expectOnlySearchLoader } from "./helpers";
 
 // Budgets and layout stability. Numbers are printed so the mission report can quote them.
 // The layout-shift and LCP APIs exist only in Chromium, so those tests run there only.
@@ -81,28 +81,26 @@ test.describe("budgets", () => {
 });
 
 test.describe("home page weight", () => {
-  test("ships no framework JavaScript: no script files, only the inline theme script", async ({
+  test("ships no framework JavaScript: the theme script and the search loader, nothing else", async ({
     page,
   }, testInfo) => {
     const responses = collectResponses(page);
+    const requests = collectRequests(page);
     await page.goto("/", { waitUntil: "networkidle" });
 
-    // No JavaScript file is requested at all: no React, no Astro island bootstrap.
-    const scripts = responses.filter((r) => r.type === "script").map((r) => r.url);
-    expect(scripts).toEqual([]);
-    expect(await page.locator("script[src]").count()).toBe(0);
-    expect(await page.locator("astro-island").count()).toBe(0);
-
-    // Exactly one inline script on the page: the theme script.
-    const inline = await page.evaluate(() =>
-      [...document.querySelectorAll('script:not([type="application/ld+json"])')].map(
-        (s) => s.textContent ?? "",
-      ),
-    );
-    expect(inline).toHaveLength(1);
-    expect(inline[0]).toContain("ni-theme");
+    // Since Mission 11 (ADR 0046) the rule is exact: one inline theme script, one deferred loader
+    // of at most 2 KB gzip, no island, and no request for the search module or the index.
+    const { loader } = await expectOnlySearchLoader(page, responses, requests);
     console.log(
-      `theme script (${testInfo.project.name}): ${inline[0]?.length} B raw, ${compressed.gzip(inline[0] ?? "")} B gzip`,
+      `search loader (${testInfo.project.name}): ${loader.raw} B raw, ${loader.gzip} B gzip`,
+    );
+    const inline = await page.evaluate(
+      () =>
+        document.querySelector('script:not([src]):not([type="application/ld+json"])')
+          ?.textContent ?? "",
+    );
+    console.log(
+      `theme script (${testInfo.project.name}): ${inline.length} B raw, ${compressed.gzip(inline)} B gzip`,
     );
   });
 
@@ -138,18 +136,21 @@ test.describe("home page weight", () => {
       `home weight (${testInfo.project.name}): JS ${scriptBytes} B in ${scripts.urls.length} files + ${inlineJs.length} B inline; CSS ${cssAll.length} B raw, ${compressed.gzip(cssAll)} B gzip, ${compressed.brotli(cssAll)} B brotli; fonts ${fontBytes} B in ${new Set(fonts.urls).size} files`,
     );
 
-    expect(scriptBytes).toBe(0);
+    // The search loader is the only script file (ADR 0046); expectOnlySearchLoader checks it too.
+    expect(scripts.urls).toHaveLength(1);
+    expect(compressed.gzip(Buffer.concat(scripts.files))).toBeLessThanOrEqual(2 * KB);
     expect(compressed.gzip(cssAll)).toBeLessThanOrEqual(30 * KB);
     expect(compressed.brotli(cssAll)).toBeLessThanOrEqual(30 * KB);
     expect(new Set(fonts.urls).size).toBeLessThanOrEqual(2);
   });
 
-  test("has no other script on the 404 page than the theme script", async ({ page }) => {
-    await page.goto("/no-such-page-for-budget-test/");
-    // The JSON-LD blocks are data, not code: only executable scripts count.
-    const code = page.locator('script:not([type="application/ld+json"])');
-    expect(await code.count()).toBe(1);
-    expect(await code.first().textContent()).toContain("ni-theme");
+  test("has no other script on the 404 page than the theme script and the search loader", async ({
+    page,
+  }) => {
+    const responses = collectResponses(page);
+    const requests = collectRequests(page);
+    await page.goto("/no-such-page-for-budget-test/", { waitUntil: "networkidle" });
+    await expectOnlySearchLoader(page, responses, requests);
   });
 });
 
@@ -157,26 +158,15 @@ test.describe("pages that list tools ship no framework JavaScript", () => {
   // The registry puts names and counts on these pages, and the category pages share their route
   // module with the tool pages, which do mount an island. Neither may leak JavaScript here
   // (ADR 0033). zero-js.test.ts checks the same rule in the source; this measures the built site.
+  // The one script they do carry is the search loader (ADR 0046), which fetches nothing by itself.
   const listings = ["/", sitePages.tools.href, categoryHref({ slug: "text-tools" })];
 
   for (const path of listings) {
-    test(`${path} loads no script file and mounts no island`, async ({ page }) => {
+    test(`${path} loads only the search loader and mounts no island`, async ({ page }) => {
       const responses = collectResponses(page);
+      const requests = collectRequests(page);
       await page.goto(path, { waitUntil: "networkidle" });
-
-      const scripts = responses.filter((response) => response.type === "script");
-      expect(scripts.map((script) => script.url)).toEqual([]);
-      expect(await page.locator("script[src]").count()).toBe(0);
-      expect(await page.locator("astro-island").count()).toBe(0);
-
-      // The theme script is the only inline script any page has.
-      const inline = await page.evaluate(() =>
-        [...document.querySelectorAll('script:not([type="application/ld+json"])')].map(
-          (script) => script.textContent ?? "",
-        ),
-      );
-      expect(inline).toHaveLength(1);
-      expect(inline[0]).toContain("ni-theme");
+      await expectOnlySearchLoader(page, responses, requests);
     });
   }
 });
