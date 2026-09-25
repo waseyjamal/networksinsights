@@ -59,6 +59,8 @@ export default defineTool({
   updated: "2026-09-20",
   // Only for a genuinely heavy tool (ADR 0037):
   // budget: { maxOnDemandJsKb: 3000, reason: "Loads a WebAssembly PDF renderer after a file is chosen." },
+  // Only with an accepted ADR (ADR 0047), for a tool that needs more than the site-wide headers:
+  // security: { adr: "0051", crossOriginIsolated: true },
 });
 ```
 
@@ -76,6 +78,7 @@ export default defineTool({
 | `accepts`, `produces` | Optional. One to twelve file formats, named as a reader names them (`PDF`, `JPG`, `H.264`, `Plain text`), no repeats. They appear in the page's Quick facts only when present (ADR 0044). `pnpm new:tool` takes `--accepts` and `--produces`. |
 | `limits` | Optional `{ maxInputBytes, maxFiles, maxRunsPerDay }` for a future Pro tier. Absent means unlimited, which is what every tool ships with today. |
 | `budget` | Optional. Raises the JavaScript budget of a heavy tool: `maxInitialJsKb` (above 40, up to 250) and/or `maxOnDemandJsKb` (above 1,024, up to 8,192), and a `reason` of at least 20 characters. Never displayed on the page (ADR 0037). |
+| `security` | Optional, and only with an accepted ADR: `{ adr, crossOriginIsolated?, sources? }`. Gives this page cross-origin isolation (COEP `require-corp`) and/or extra https origins for `connect-src`, `img-src`, `media-src`, `font-src` or `worker-src`. Never scripts or styles. See "Security overrides" below (ADR 0047). |
 | `added`, `updated` | Real ISO dates, `YYYY-MM-DD`. `updated` is never earlier than `added`. |
 
 `defineTool()` types the manifest and returns it unchanged. It does not validate: validation runs
@@ -150,6 +153,57 @@ depth goes under H3s inside a section. The FAQ is `###` questions ending in `?`,
 gates (ADR 0036) add word minimums, no placeholders and no near-duplicates on top of these rules;
 see "Content quality gates" below.
 
+## Security
+
+Every tool page gets the site's Content-Security-Policy and security headers (ADR 0047, ADR 0048):
+same-origin scripts only (no inline script, no `eval`), same-origin fetches only, Web Workers and
+WebAssembly allowed, `blob:` and `data:` images and media allowed. A tool never writes a header or a
+`<meta>` policy itself.
+
+### Downloads
+
+A tool gives the visitor a file only with `saveFile` from `@ui` (ADR 0050):
+
+```tsx
+import { Button, saveFile } from "@ui";
+
+<Button onClick={() => saveFile(result, `${file.name}.png`, { extension: "png" })}>Download</Button>
+```
+
+It makes the name safe (`safeFilename`: no paths, no control or bidirectional characters, no Windows
+reserved names, at most 255 bytes), sets the type from the extension (`mimeTypeFor`, or
+`application/octet-stream`), always downloads instead of opening a tab, and revokes the object URL
+once the download has started. `safeFilename` and `mimeTypeFor` are pure, so `logic.ts` may import
+them from `@networksinsights/tool-sdk` to name its result. Never make an `<a href="blob:…">` or call
+`window.open` on a result yourself.
+
+### Rendering user text
+
+Words from the visitor or from a file reach the page as text, never as markup or code (ADR 0050):
+
+- In React, `{value}`. Outside React, `setText(node, value)` from `@ui`.
+- A URL the visitor typed becomes a link only through `safeUrl(value)` from `@ui`, which returns an
+  absolute http, https or mailto URL, or `undefined`.
+- Never: `innerHTML`, `outerHTML`, `srcdoc`, `insertAdjacentHTML`, `dangerouslySetInnerHTML`,
+  `document.write`, `DOMParser`, `createContextualFragment`, `setHTMLUnsafe`, `eval`,
+  `new Function`, a string passed to `setTimeout` or `setInterval`, or a `javascript:` URL. The
+  `safe-rendering` gate in `pnpm check:tools` fails on each, naming the line.
+
+### Security overrides
+
+Almost no tool needs one. A tool that genuinely needs cross-origin isolation (multi-threaded
+WebAssembly, `SharedArrayBuffer`) or one more https origin sets `security` in its manifest, naming
+the ADR that approved it. `pnpm check:tools` fails unless that ADR is Accepted. The steps are in
+[runbooks/security.md](runbooks/security.md), "Add a CSP exception for a tool".
+
+### Server runtime
+
+A `runtime: "server"` tool runs behind an endpoint on our own origin that validates the input with
+the manifest's `input` schema before any work, refuses oversized bodies, rate-limits per IP, stops at
+a hard daily spending cap, logs nothing the visitor sent, and stores no user data. The full contract
+is ADR 0050, section 3. Mission 15 builds the shared middleware that enforces it, so a tool never
+writes its own.
+
 ## The page the contract builds
 
 | Part | Where it comes from |
@@ -188,6 +242,7 @@ The build fails if any of these fail. Each message names the folder and the exac
 - `content/en.mdx` has an intro and the four H2 sections, in order, with no H1.
 - Every `logic.ts` is pure.
 - A `budget` field, when present, raises something, stays under the ceiling and gives a reason.
+- A `security` field, when present, widens only fetch directives, only with https origins.
 
 ### Content quality gates
 
@@ -226,7 +281,7 @@ Still to come: complete translations for enabled languages (ADR 0023).
 | Command | What it does |
 |---|---|
 | `pnpm new:tool` | Creates a tool folder (ADR 0035). |
-| `pnpm check:tools` | Runs the contract, purity and the content quality gates on every tool and prints a summary. |
+| `pnpm check:tools` | Runs the contract, purity, safe rendering, security overrides and the content quality gates on every tool and prints a summary. |
 | `pnpm check:tools --tool <id>` | The same for one tool, fast with hundreds of tools. `--json` prints JSON. |
 | `pnpm check:budgets` | The JavaScript budget of every tool page, after `pnpm build`. |
 | `pnpm check` | Type-checks tools too, lints, tests, and runs `check:tools`. |

@@ -72,6 +72,10 @@ design tokens; a component that does not exist goes into the design system first
 change. The page already draws the workspace card and the privacy statement, so the island renders
 only the fields, the buttons and the result.
 
+Give files back with `saveFile` from `@ui`, show visitor text as `{value}`, and link a visitor's URL
+only through `safeUrl`. `innerHTML`, `dangerouslySetInnerHTML`, `eval` and the other HTML and code
+sinks fail the `safe-rendering` gate ([tool-contract.md](tool-contract.md), "Security").
+
 Keep the island small. The budget is 40 KB of gzip for the tool's own code that loads with the
 page. **Heavy code loaded after a user action does not count against that number**: put a PDF
 engine, a codec or a WebAssembly module behind a dynamic import.
@@ -262,6 +266,9 @@ HOW TO WORK
 3. Write logic.ts (pure), real tests in logic.test.ts, and the workspace in ui.tsx with components
    imported from "@ui". Heavy code goes behind a dynamic import() so the initial JavaScript stays
    under 40 KB gzip. Add no dependency without telling me why, its size and its license first.
+   Give files back only with saveFile from "@ui", show visitor text as text ({value}), and never
+   use innerHTML, dangerouslySetInnerHTML, eval or any other HTML or code sink. Never add a header,
+   a CSP or a `security` field to the manifest without an ADR I have accepted.
 4. Write content/en.mdx, following the AEO rules in docs/adding-a-tool.md: an intro of at least 40
    words whose first sentence says what the tool does, names the tool and has at most 30 words; then
    How to use (50), Examples (40), Limits (30) and an FAQ of at least two `###` questions, phrased

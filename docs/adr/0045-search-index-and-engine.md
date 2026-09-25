@@ -3,6 +3,8 @@
 Status: Accepted
 Date: 2026-09-22
 
+Amended by [ADR 0048](0048-security-headers.md): the cache rules now live in `apps/web/src/config/headers.ts`, and the build writes `dist/_headers` from it; `apps/web/public/_headers` is gone.
+
 ## Context
 
 The site starts at 500+ tools and grows without limit, so a visitor finds a tool by typing, not by browsing. Search has to be instant (a result for every keystroke), forgiving (typos, half-typed words, "jpg to png"), private (a query never leaves the device) and small (the site's rule is static HTML first, ADR 0002). Mission 11 needs three things: a file that describes every tool, an engine that answers over it, and a way to show a match without ever turning a tool's words into markup.
