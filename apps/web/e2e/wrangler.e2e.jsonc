@@ -1,0 +1,15 @@
+// The Worker config the E2E edge server runs (e2e/edge.ts): the `assets` block of
+// ../wrangler.jsonc and nothing else. It has no route, because with a route `wrangler dev` sends
+// every request upstream as the route's host, and the tests need to send a workers.dev Host
+// header to prove the preview-only X-Robots-Tag. src/config/wrangler.test.ts fails if the two drift apart.
+// Used by `wrangler dev` only; nothing deploys from this file.
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "networksinsights-e2e",
+  "compatibility_date": "2026-09-16",
+  "assets": {
+    "directory": "../dist",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}

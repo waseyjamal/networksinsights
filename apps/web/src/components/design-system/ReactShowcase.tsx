@@ -9,6 +9,7 @@ import {
   Progress,
   Select,
   Switch,
+  saveFile,
   Tabs,
   Textarea,
   Tooltip,
@@ -46,6 +47,13 @@ export default function ReactShowcase() {
             onClick={() => setProgress((value) => (value >= 100 ? 0 : value + 15))}
           >
             Advance progress
+          </Button>
+          {/* saveFile (ADR 0050): the E2E download test clicks this in every engine. */}
+          <Button
+            variant="secondary"
+            onClick={() => saveFile("A file made on this device.", "../design system sample.txt")}
+          >
+            Download a sample file
           </Button>
           <Tooltip
             id="react-tip"

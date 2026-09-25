@@ -13,6 +13,7 @@ import {
   INITIAL_JS_CEILING_KB,
   ON_DEMAND_JS_CEILING_KB,
 } from "./budget";
+import { toolSecuritySchema } from "./security";
 import type { ToolManifest } from "./types";
 
 /** Lowercase words joined by single hyphens. Digits are allowed: `base64-encoder`, `sha-256`. */
@@ -150,6 +151,7 @@ export const toolManifestSchema = z.strictObject({
   produces: formatList("produces").optional(),
   limits: toolLimitsSchema.optional(),
   budget: toolBudgetSchema.optional(),
+  security: toolSecuritySchema.optional(),
   added: isoDate("added"),
   updated: isoDate("updated"),
 });

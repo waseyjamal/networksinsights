@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { HTML_CACHE_CONTROL, IMMUTABLE, securityHeaders } from "../apps/web/src/config/headers";
 import { formatChecks, runProductionChecks, runWithRetries } from "./lib/production";
 
 // `pnpm check:production` against a pretend site. The important case is the redirect: a 307 (what
@@ -6,7 +7,24 @@ import { formatChecks, runProductionChecks, runWithRetries } from "./lib/product
 
 const BASE = "https://networksinsights.com";
 const INDEX = "/search-index.0123456789ab.json";
-const home = `<html><head><link rel="canonical" href="${BASE}/"></head><body><dialog data-ni-search data-index="${INDEX}"></dialog></body></html>`;
+const SCRIPT = "/_astro/SearchDialog.abc123.js";
+const META_POLICY = "default-src 'none'; script-src 'self'";
+const HEADER_POLICY = `${META_POLICY}; frame-ancestors 'none'`;
+const home = `<html><head><meta http-equiv="content-security-policy" content="${META_POLICY}"><link rel="canonical" href="${BASE}/"></head><body><dialog data-ni-search data-index="${INDEX}"></dialog><script type="module" src="${SCRIPT}"></script></body></html>`;
+
+/** The headers the site sends on a path, as dist/_headers makes Cloudflare send them. */
+function siteHeaders(path: string, preview: boolean): Record<string, string> {
+  const headers: Record<string, string> = {
+    ...securityHeaders,
+    "content-security-policy": HEADER_POLICY,
+    "cache-control": path.startsWith("/_astro/") ? IMMUTABLE : HTML_CACHE_CONTROL,
+  };
+  if (path.startsWith("/og/") || path.startsWith("/favicon")) {
+    headers["Cross-Origin-Resource-Policy"] = "cross-origin";
+  }
+  if (preview) headers["x-robots-tag"] = "noindex";
+  return headers;
+}
 
 interface Fake {
   tools?: { status: number; location?: string };
@@ -18,6 +36,10 @@ interface Fake {
   /** The Cache-Control the search index is served with. */
   indexCache?: string;
   indexStatus?: number;
+  /** Answer as a preview deployment does: with X-Robots-Tag: noindex. */
+  preview?: boolean;
+  /** Changes the headers of one path after the site's own are set. */
+  headers?: (path: string, headers: Record<string, string>) => void;
 }
 
 /** A fetch that answers like the site does, with the parts a test wants to change. */
@@ -26,28 +48,30 @@ function fakeFetch(fake: Fake = {}): typeof fetch {
   return (async (input: string | URL | Request) => {
     const url = new URL(String(input));
     const path = url.pathname;
-    const respond = (status: number, body = "", headers: Record<string, string> = {}) =>
-      new Response(status === 301 || status === 307 || status === 308 ? null : body, {
+    const respond = (status: number, body = "", extra: Record<string, string> = {}) => {
+      const headers = { ...siteHeaders(path, fake.preview ?? false), ...extra };
+      fake.headers?.(path, headers);
+      return new Response(status === 301 || status === 307 || status === 308 ? null : body, {
         status,
         headers,
       });
+    };
     if (path === "/tools") {
       const tools = fake.tools ?? { status: 301, location: "/tools/" };
       return respond(tools.status, "", tools.location ? { location: tools.location } : {});
     }
     if (path === "/") return respond(200, fake.home ?? home);
     if (path === INDEX) {
-      const headers: Record<string, string> = fake.indexCache
-        ? { "cache-control": fake.indexCache }
-        : fake.indexCache === undefined
-          ? { "cache-control": "public, max-age=31536000, immutable" }
-          : {};
+      const headers: Record<string, string> = {
+        "cache-control": fake.indexCache ?? "public, max-age=31536000, immutable",
+      };
       return respond(fake.indexStatus ?? 200, '{"version":1,"tools":[]}', headers);
     }
     if (path === "/tools/") return respond(200, "<html></html>");
     if (path === "/favicon.ico") return respond(fake.favicon ?? 200, "x");
     if (path === "/robots.txt") return respond(200, robots);
     if (path === "/sitemap-index.xml" || path === "/llms.txt") return respond(200, "x");
+    if (path === SCRIPT || path === "/og/home.png") return respond(200, "x");
     return respond(fake.missing ?? 404, "not found");
   }) as typeof fetch;
 }
@@ -252,5 +276,123 @@ describe("the search index", () => {
       launched: false,
     });
     expect(unnamed.find((check) => check.name.includes("names the search index"))?.ok).toBe(false);
+  });
+});
+
+describe("security and cache headers", () => {
+  const failing = (checks: Awaited<ReturnType<typeof runProductionChecks>>) =>
+    checks.filter((check) => !check.ok);
+
+  it("pass when every response carries them", async () => {
+    const checks = await runProductionChecks({ fetchFn: fakeFetch(), launched: false });
+    expect(checks.some((check) => check.name.includes("sends every security header"))).toBe(true);
+    expect(failing(checks)).toEqual([]);
+  });
+
+  it("fail when a header is missing or has another value, naming it", async () => {
+    for (const [name, change] of [
+      [
+        "Strict-Transport-Security",
+        (h: Record<string, string>) => delete h["Strict-Transport-Security"],
+      ],
+      [
+        "Permissions-Policy",
+        (h: Record<string, string>) => (h["Permissions-Policy"] = "camera=(self)"),
+      ],
+      ["X-Content-Type-Options", (h: Record<string, string>) => delete h["X-Content-Type-Options"]],
+    ] as const) {
+      const checks = await runProductionChecks({
+        fetchFn: fakeFetch({ headers: (path, headers) => path === "/tools/" && change(headers) }),
+        launched: false,
+      });
+      const bad = failing(checks);
+      expect(
+        bad.map((check) => check.name),
+        name,
+      ).toEqual(["/tools/ sends every security header, and no noindex"]);
+      expect(bad[0]?.detail).toContain(name);
+    }
+  });
+
+  it("fail when the CSP header is not the page's own policy with frame-ancestors", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch({
+        headers: (path, headers) => {
+          if (path === "/") headers["content-security-policy"] = "default-src 'none'";
+        },
+      }),
+      launched: false,
+    });
+    expect(failing(checks).map((check) => check.name)).toEqual([
+      "/ sends every security header, and no noindex",
+    ]);
+  });
+
+  it("fail when a share image cannot be embedded by other sites", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch({
+        headers: (path, headers) => {
+          if (path === "/og/home.png") headers["Cross-Origin-Resource-Policy"] = "same-origin";
+        },
+      }),
+      launched: false,
+    });
+    expect(failing(checks)[0]?.detail).toContain("Cross-Origin-Resource-Policy: same-origin");
+  });
+
+  it("fail when production sends noindex", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch({ headers: (_path, headers) => (headers["x-robots-tag"] = "noindex") }),
+      launched: false,
+    });
+    expect(failing(checks).length).toBeGreaterThan(0);
+    expect(failing(checks)[0]?.detail).toContain("production must never send");
+  });
+
+  it("fail when pages are cached, or hashed files are not", async () => {
+    const pages = await runProductionChecks({
+      fetchFn: fakeFetch({
+        headers: (path, headers) => {
+          if (path === "/") headers["cache-control"] = "public, max-age=3600";
+        },
+      }),
+      launched: false,
+    });
+    expect(failing(pages).map((check) => check.name)).toEqual(["/ is revalidated on every visit"]);
+    const assets = await runProductionChecks({
+      fetchFn: fakeFetch({
+        headers: (path, headers) => {
+          if (path.startsWith("/_astro/")) headers["cache-control"] = HTML_CACHE_CONTROL;
+        },
+      }),
+      launched: false,
+    });
+    expect(failing(assets).map((check) => check.name)).toEqual([
+      "/_astro/SearchDialog.abc123.js is cached for good",
+    ]);
+  });
+});
+
+describe("a preview deployment", () => {
+  it("must send noindex on every response, and is not held to the production redirect", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch({ preview: true, tools: { status: 307, location: "/tools/" } }),
+      launched: false,
+      preview: true,
+    });
+    expect(checks.filter((check) => !check.ok)).toEqual([]);
+    expect(checks.some((check) => check.name.includes("redirects permanently"))).toBe(false);
+    expect(checks.some((check) => check.name.includes("and noindex"))).toBe(true);
+  });
+
+  it("fails without noindex", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch(),
+      launched: false,
+      preview: true,
+    });
+    const bad = checks.filter((check) => !check.ok);
+    expect(bad.length).toBeGreaterThan(0);
+    expect(bad[0]?.detail).toContain("expected noindex on a preview");
   });
 });

@@ -5,6 +5,10 @@ import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
+import { csp } from "./src/config/headers.ts";
+import { securityHeaders } from "./src/integrations/security-headers.ts";
+import { cspHash } from "./src/lib/security/hash.ts";
+import { themeScript } from "./src/lib/theme-script.ts";
 
 // Fonts: Geist and Geist Mono (SIL OFL 1.1), self-hosted by Astro's Fonts API. The files are
 // the Latin variable-weight woff2 files of two pinned @fontsource-variable packages, read
@@ -21,15 +25,49 @@ export default defineConfig({
   trailingSlash: "always",
   // MDX renders every tool's content/en.mdx (ADR 0033). It is not used anywhere else: the site's
   // own pages are .astro, so no page gains JavaScript from this.
-  integrations: [react(), mdx()],
+  // securityHeaders writes dist/_headers from the built pages' policy and config/headers.ts.
+  integrations: [react(), mdx(), securityHeaders()],
+  // Content-Security-Policy with hashes for every inline script and style (ADR 0047). Astro writes
+  // it into each page as a <meta>; the integration above sends the same policy as a header.
+  security: {
+    csp: {
+      directives: [...csp.directives],
+      // Astro hashes the scripts it bundles, not is:inline ones: the theme script is added here.
+      scriptDirective: { resources: [...csp.scriptResources], hashes: [cspHash(themeScript)] },
+      styleDirective: {
+        resources: [
+          ...csp.styleElementResources.map((resource) => ({
+            resource,
+            kind: /** @type {const} */ ("element"),
+          })),
+          ...csp.styleAttributeResources.map((resource) => ({
+            resource,
+            kind: /** @type {const} */ ("attribute"),
+          })),
+        ],
+      },
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
     resolve: {
-      alias: {
+      alias: [
         // The design system's React components, for tool islands: `import { Button } from "@ui"`.
         // tools/tsconfig.json has the matching path for the type checker (docs/adding-a-tool.md).
-        "@ui": fileURLToPath(new URL("./src/components/ui/react/index.ts", import.meta.url)),
-      },
+        {
+          find: "@ui",
+          replacement: fileURLToPath(
+            new URL("./src/components/ui/react/index.ts", import.meta.url),
+          ),
+        },
+        // Exactly "zod" (not zod/v4, which the wrapper itself imports) goes through a wrapper that
+        // turns on Zod's jitless mode first, so validating in the browser never trips the CSP
+        // (src/lib/zod-jitless.ts, ADR 0047).
+        {
+          find: /^zod$/,
+          replacement: fileURLToPath(new URL("./src/lib/zod-jitless.ts", import.meta.url)),
+        },
+      ],
     },
   },
   fonts: [

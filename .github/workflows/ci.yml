@@ -45,6 +45,79 @@ jobs:
       # What search engines and share previews will read, on the build just made (ADR 0038 to 0041).
       - run: pnpm check:seo
 
+  # Known vulnerabilities, registry signatures and licences of every installed package, direct or
+  # transitive, dev or not (ADR 0049). It gates preview and deploy like quality and e2e do, and
+  # .github/workflows/supply-chain.yml runs the same checks on main every week.
+  supply-chain:
+    name: supply-chain
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Fails at moderate severity or higher. A registry error fails too: an unanswered audit is not
+      # a passed one. docs/runbooks/security.md says what to do when it fires.
+      - run: pnpm audit --audit-level moderate
+      # Every installed tarball carries a valid npm registry signature.
+      - run: pnpm audit signatures
+      - run: pnpm check:licenses
+
+  # What a pull request changes in pnpm-lock.yaml, as a comment on the pull request (ADR 0049).
+  # It installs nothing and runs no third-party code: the diff script needs only Node, and this is
+  # the only job besides preview that may write to the pull request.
+  lockfile:
+    name: lockfile
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+      - name: Summarize the lockfile change
+        id: diff
+        run: |
+          if git diff --quiet "$BASE_SHA" HEAD -- pnpm-lock.yaml; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "pnpm-lock.yaml is unchanged." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git show "$BASE_SHA:pnpm-lock.yaml" > "$RUNNER_TEMP/base-lock.yaml"
+          node scripts/lockfile-diff.ts --base "$RUNNER_TEMP/base-lock.yaml" --head pnpm-lock.yaml > "$RUNNER_TEMP/lockfile.md"
+          cat "$RUNNER_TEMP/lockfile.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Post or update the lockfile comment
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          id=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- lockfile-diff -->"))) | .id' \
+            | head -n 1)
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/${REPO}/issues/comments/${id}" -F body=@"$RUNNER_TEMP/lockfile.md" > /dev/null
+          else
+            gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" -F body=@"$RUNNER_TEMP/lockfile.md" > /dev/null
+          fi
+
   e2e:
     name: e2e
     needs: quality
@@ -72,11 +145,11 @@ jobs:
           if-no-files-found: ignore
 
   # Deploys happen only here, in CI, and only after both checks pass (ADR 0027).
-  # Gating on `quality` and `e2e` is our substitute for branch protection on the Free plan.
+  # Gating on `quality`, `e2e` and `supply-chain` is our substitute for branch protection on the Free plan.
   # Wrangler is the version pinned in the lockfile and runs through pnpm.
   preview:
     name: preview
-    needs: [quality, e2e]
+    needs: [quality, e2e, supply-chain]
     # Forks and Dependabot do not receive repository secrets, so they get no preview.
     if: >-
       github.event_name == 'pull_request' &&
@@ -134,10 +207,16 @@ jobs:
           else
             gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" -f body="$body" > /dev/null
           fi
+      # The preview must send every security header and X-Robots-Tag: noindex (ADR 0048). Six
+      # tries, ten seconds apart, while the new version reaches the edge.
+      - name: Check the preview's headers
+        env:
+          PREVIEW_URL: ${{ steps.upload.outputs.url }}
+        run: pnpm check:production --url "$PREVIEW_URL" --preview --attempts 6
 
   deploy:
     name: deploy
-    needs: [quality, e2e]
+    needs: [quality, e2e, supply-chain]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15

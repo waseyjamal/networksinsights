@@ -16,6 +16,11 @@ import {
   validateTools,
 } from "@networksinsights/tool-sdk";
 import { checkLogicPurity } from "../../apps/web/src/lib/registry/purity";
+import {
+  checkSafeRendering,
+  SAFE_RENDERING_FILES,
+} from "../../apps/web/src/lib/registry/safe-rendering";
+import { adrProblem } from "./adr";
 import { defaultToolsRoot, findToolDir, listToolFolders, loadTools, siteConfig } from "./tools";
 
 /** One line of the summary: a rule, and what it found. */
@@ -149,6 +154,59 @@ export async function checkTools(options: CheckOptions = {}): Promise<CheckRepor
     severity: "error",
     violations: purity.value,
     ms: purity.ms,
+  });
+
+  const rendering = time(() =>
+    readable.flatMap((entry) => {
+      if (!inFocus(entry.dir)) return [];
+      return SAFE_RENDERING_FILES.flatMap((file) => {
+        const source = entry.sources?.[file];
+        if (source === undefined) return [];
+        return checkSafeRendering(source, file).map(
+          (problem): ContractViolation => ({
+            dir: entry.dir,
+            file,
+            problem: `${file} ${problem}`,
+            fix: "render words as text: {value} in JSX or textContent, never markup built from a string; see “Rendering user text” in docs/tool-contract.md",
+          }),
+        );
+      });
+    }),
+  );
+  sections.push({
+    id: "safe-rendering",
+    title: "User text is rendered as text",
+    rule: "No innerHTML, dangerouslySetInnerHTML, eval or any other API that turns a string into markup or code (ADR 0050).",
+    severity: "error",
+    violations: rendering.value,
+    ms: rendering.ms,
+  });
+
+  // A security override (ADR 0047) is only as good as the decision behind it.
+  const overrides = time(() =>
+    readable.flatMap((entry): ContractViolation[] => {
+      const parsed = toolManifestSchema.safeParse(entry.manifest);
+      if (!parsed.success || !parsed.data.security || !inFocus(entry.dir)) return [];
+      const problem = adrProblem(parsed.data.security.adr);
+      return problem === undefined
+        ? []
+        : [
+            {
+              dir: entry.dir,
+              file: "tool.config.ts",
+              problem: `security names ${problem}`,
+              fix: "write the ADR that approves this override and have the owner accept it, or remove security from the manifest (docs/runbooks/security.md, “Adding a CSP exception”)",
+            },
+          ];
+    }),
+  );
+  sections.push({
+    id: "security-override",
+    title: "Security overrides are approved",
+    rule: "A manifest that asks for more than the site-wide headers names an accepted ADR (ADR 0047).",
+    severity: "error",
+    violations: overrides.value,
+    ms: overrides.ms,
   });
 
   const context: QualityContext = {

@@ -1,8 +1,45 @@
-# Keeps the SHA-pinned actions in .github/workflows current.
-# npm dependency automation comes in Mission 12.
+# Dependency updates (ADR 0049). Weekly, grouped, and never for a release younger than three days:
+# `cooldown` matches `minimumReleaseAge: 4320` in pnpm-workspace.yaml (ADR 0019), so a pull request
+# is only opened for a version that `pnpm install` will accept.
+#
+# Security updates are separate: Dependabot alerts open them as soon as a fix exists, and cooldown
+# does not delay them. A fix younger than three days still fails `pnpm install` on purpose; the
+# owner-approved exception is in docs/runbooks/security.md.
 version: 2
 updates:
+  - package-ecosystem: npm
+    # The workspace root: Dependabot reads pnpm-workspace.yaml and updates every package in it.
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    cooldown:
+      default-days: 3
+    # Keep exact pins exact: 1.2.3 becomes 1.2.4, never ^1.2.4 (AGENTS.md).
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    groups:
+      # Minor and patch updates of everything arrive as one pull request a week.
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    # Majors are left out of the group, so each arrives on its own and is read on its own.
+    commit-message:
+      prefix: deps
+
+  # Keeps the SHA-pinned actions in .github/workflows current.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    cooldown:
+      default-days: 3
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
