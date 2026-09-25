@@ -36,7 +36,7 @@ The site is static assets on Cloudflare Workers (ADR 0007). Cloudflare reads res
 - The owner decided to deny camera, microphone and screen capture until a tool needs them; adding one takes an ADR.
 - `fullscreen`, `picture-in-picture` and `autoplay` are allowed on our origin only, for video, image and audio tools. The browser still asks the visitor whenever a feature needs permission.
 - `web-share` is not written out because its default is already our own origin, and Chromium builds without the Web Share API print a console warning for the name. `attribution-reporting` is left out for the same reason.
-- Only names Chromium recognizes are listed, and the E2E test fails on any Permissions-Policy console warning.
+- Only names Chromium recognizes are listed, and the E2E test fails on any Permissions-Policy console warning, with one exception: Chromium on Linux has no Web Bluetooth and warns about `bluetooth`. The denial stays, because Chrome on Windows, macOS and Android knows the feature, and the test ignores that one warning (`platformDependentFeatures` in `config/headers.ts`).
 
 **Previews.** A rule for `https://:alias.:account.workers.dev/*` adds `X-Robots-Tag: noindex`. It matches every preview URL of the Worker and never the production domain.
 - `e2e/headers.spec.ts` proves it by Host header against `wrangler dev`: noindex for a workers.dev host, none for `networksinsights.com`.

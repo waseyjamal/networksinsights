@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { platformDependentFeatures } from "../src/config/headers";
 import { edgeURL } from "./edge";
 import { pages } from "./pages";
 
@@ -36,11 +37,18 @@ async function watchViolations(page: Page): Promise<() => Promise<Violation[]>> 
     );
 }
 
-/** Console lines about a policy: CSP refusals and Permissions-Policy warnings. */
+/**
+ * Console lines about a policy: CSP refusals and Permissions-Policy warnings. A denied feature that
+ * this Chromium build does not know (config/headers.ts, platformDependentFeatures) is not a problem.
+ */
 function watchPolicyConsole(page: Page): string[] {
   const lines: string[] = [];
   page.on("console", (message) => {
     const text = message.text();
+    const platform = platformDependentFeatures.some((name) =>
+      text.includes(`Unrecognized feature: '${name}'`),
+    );
+    if (platform) return;
     if (/content.security.policy|permissions.policy|unrecognized feature|refused to/i.test(text)) {
       lines.push(`${message.type()}: ${text}`);
     }

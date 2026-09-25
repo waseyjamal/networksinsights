@@ -47,6 +47,14 @@ export const csp = {
 } as const;
 
 /**
+ * Features denied here that some Chromium builds do not know, and warn about: Chromium on Linux
+ * has no Web Bluetooth, so it prints "Unrecognized feature: 'bluetooth'". The denial is kept,
+ * because Chrome on Windows, macOS and Android does know it and would otherwise allow it on our
+ * origin. The CSP E2E test ignores that warning for these names only.
+ */
+export const platformDependentFeatures: readonly string[] = ["bluetooth"];
+
+/**
  * Permissions-Policy: every powerful feature is denied, except four that tools will use on our
  * own origin and that still ask nothing more of the visitor than a click. Camera, microphone and
  * screen capture stay denied until a tool needs them; adding one takes an ADR (ADR 0048).
