@@ -2,9 +2,12 @@
 import { type DropzoneState, dropzoneAttrs } from "./attrs";
 import Icon from "./Icon.astro";
 
-// Visual only. Dropping, validation and reading files come with the first tool.
-// The real <input type="file"> keeps it keyboard accessible: the label opens the picker.
+// The file input, without JavaScript: the static twin of the React Dropzone, which a tool's island
+// uses to receive the files. The real <input type="file"> keeps it keyboard accessible: the label
+// opens the picker.
 interface Props {
+  /** The id of the file input. */
+  id?: string;
   state?: DropzoneState;
   disabled?: boolean;
   multiple?: boolean;
@@ -14,6 +17,7 @@ interface Props {
 }
 
 const {
+  id,
   state,
   disabled = false,
   multiple = true,
@@ -26,6 +30,7 @@ const {
 <label class="ni-dropzone" {...dropzoneAttrs({ state, disabled })}>
   <input
     class="sr-only"
+    id={id}
     type="file"
     multiple={multiple ? "" : undefined}
     accept={accept}

@@ -16,6 +16,8 @@ import CommandBar from "../components/ui/CommandBar.astro";
 import Dropzone from "../components/ui/Dropzone.astro";
 import EmptyState from "../components/ui/EmptyState.astro";
 import FactList from "../components/ui/FactList.astro";
+import FileResult from "../components/ui/FileResult.astro";
+import FileResultList from "../components/ui/FileResultList.astro";
 import Hero from "../components/ui/Hero.astro";
 import Icon from "../components/ui/Icon.astro";
 import Input from "../components/ui/Input.astro";
@@ -289,7 +291,9 @@ const themes = ["light", "dark"] as const;
         <div class="space-y-4">
           <h3 class="text-xl">Dropzone</h3>
           <p class="max-w-2xl text-fg-muted">
-            Visual only for now. Dropping and reading files arrive with the first tool.
+            The file input of a tool. Without JavaScript it is a plain file picker; in a tool's
+            island the React version also takes dropped files and shows the active state while files
+            are dragged over it. It hands the files to the tool, which checks its own limits.
           </p>
           <div class="grid gap-4 md:grid-cols-2">
             <Dropzone hint="or click to browse. Up to 100 MB" />
@@ -297,6 +301,27 @@ const themes = ["light", "dark"] as const;
             <Dropzone state="error" title="That file is too large" hint="Limit is 100 MB" />
             <Dropzone disabled title="Drop files here" hint="Unavailable right now" />
           </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">File results</h3>
+          <p class="max-w-2xl text-fg-muted">
+            One row per file a tool worked on: a preview of the visitor's own file, its name, its
+            sizes, its state and its actions. The rows below are samples, not data.
+          </p>
+          <FileResultList label="Sample file results">
+            <FileResult name="sample-photo.jpg" meta="Waiting" state="waiting" />
+            <FileResult name="sample-scan.png" meta="Working" state="working">
+              <Progress label="Compressing sample-scan.png" />
+            </FileResult>
+            <FileResult name="sample-diagram.png" meta="1.2 MB → 310 KB (sample)" state="done">
+              <Badge tone="success">74% smaller</Badge>
+              <Button slot="actions" size="sm">Download</Button>
+            </FileResult>
+            <FileResult name="sample-notes.txt" state="error">
+              <Alert tone="danger" title="Not an image">Choose a JPG, PNG or WebP file.</Alert>
+            </FileResult>
+          </FileResultList>
         </div>
 
         <div class="space-y-4">

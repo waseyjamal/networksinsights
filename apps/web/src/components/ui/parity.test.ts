@@ -12,6 +12,8 @@ import Button from "./Button.astro";
 import Card from "./Card.astro";
 import Checkbox from "./Checkbox.astro";
 import Dropzone from "./Dropzone.astro";
+import FileResult from "./FileResult.astro";
+import FileResultList from "./FileResultList.astro";
 import Icon from "./Icon.astro";
 import Input from "./Input.astro";
 import Kbd from "./Kbd.astro";
@@ -25,6 +27,8 @@ import {
   CardLink as ReactCardLink,
   Checkbox as ReactCheckbox,
   Dropzone as ReactDropzone,
+  FileResult as ReactFileResult,
+  FileResultList as ReactFileResultList,
   Icon as ReactIcon,
   Input as ReactInput,
   Kbd as ReactKbd,
@@ -211,7 +215,11 @@ describe("Astro and React components emit the same markup", () => {
   });
 
   it("Dropzone", async () => {
+    expect(await astro(Dropzone, { id: "files" })).toBe(
+      react(createElement(ReactDropzone, { id: "files" })),
+    );
     const props = {
+      id: "files",
       state: "error",
       disabled: true,
       accept: "image/*",
@@ -219,6 +227,40 @@ describe("Astro and React components emit the same markup", () => {
       hint: "Or click",
     };
     expect(await astro(Dropzone, props)).toBe(react(createElement(ReactDropzone, props as never)));
+  });
+
+  it("FileResult and FileResultList", async () => {
+    const props = {
+      name: "photo.jpg",
+      meta: "2.4 MB → 612 KB",
+      state: "done",
+      previewSrc: "blob:https://example.com/1",
+      previewAlt: "Compressed photo.jpg",
+    };
+    expect(
+      await astro(FileResult, props, {
+        default: "<p>Done</p>",
+        actions: '<button type="button">Save</button>',
+      }),
+    ).toBe(
+      react(
+        createElement(
+          ReactFileResult,
+          {
+            ...props,
+            state: "done" as const,
+            actions: createElement("button", { type: "button" }, "Save"),
+          },
+          createElement("p", null, "Done"),
+        ),
+      ),
+    );
+    expect(await astro(FileResult, { name: "a.png", state: "working" })).toBe(
+      react(createElement(ReactFileResult, { name: "a.png", state: "working" })),
+    );
+    expect(await astro(FileResultList, { label: "Results" }, { default: "" })).toBe(
+      react(createElement(ReactFileResultList, { label: "Results" })),
+    );
   });
 
   it("Tooltip", async () => {

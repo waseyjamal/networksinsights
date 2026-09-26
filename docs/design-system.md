@@ -124,6 +124,8 @@ these components and the design tokens, and never styles a one-off (docs/adding-
 `setText(node, value)` to write visitor text outside React, and `safeUrl(value)` to turn a
 visitor's URL into an `href` only when it is http, https or mailto. The design-system page's React
 showcase has a "Download a sample file" button that the E2E tests click in every engine.
+A worker tool also takes `createWorkerClient` and `WorkerJobError` from `@ui`, to send jobs to its
+Web Worker (ADR 0051, docs/tool-contract.md "The worker runtime").
 
 | Component | Astro | React | Notes |
 |---|---|---|---|
@@ -135,7 +137,7 @@ showcase has a "Download a sample file" button that the E2E tests click in every
 | Tabs | `Tabs` + `TabPanel` | `Tabs` | WAI-ARIA Tabs: arrow keys, Home, End, roving tabindex |
 | Tooltip | yes | yes | The trigger must carry `aria-describedby={id}`. Esc dismisses |
 | Kbd, Alert, Progress, Skeleton | yes | yes | Progress needs a `label` |
-| Dropzone | yes | yes | Visual only for now |
+| Dropzone | yes | yes | The file input of a tool. The real `<input type="file">` keeps it keyboard accessible. The React version takes dropped and picked files and calls `onFiles(files)`; it shows `active` while files are dragged over it. It never reads or checks the files: the tool does, against its manifest limits. `id` names the input |
 | ThemeToggle | yes | no | Uses the head script |
 | Icon | yes | yes | Decorative (`aria-hidden`). Put the meaning in text |
 | ToolWorkspace | yes | yes | Glow border, dropzone, actions, result, privacy badge. The actions and result areas render only when something fills them, so a tool page can use the card as a shell around its island. `privacy` and `privacyOnDevice` come from the tool's runtime and are never written by hand (ADR 0034); the default is the on-device statement |
@@ -151,6 +153,7 @@ showcase has a "Download a sample file" button that the E2E tests click in every
 | FactList | yes | no | A definition list in a grid of cells, the "Quick facts" of a tool page. `items` are `{ label, value, datetime? }`; every value comes from data, never from copy typed into a page (ADR 0044) |
 | ToolCardList | yes | no | The grid of tool cards on All tools, a category page and a tool's related links. Each card is one link: the category icon chip (the only use of the accent), the name, a Beta badge for a beta tool, and the summary. `items` are `ToolCardItem`s from `toolCardItem(tool)` in `lib/registry/cards.ts`, so every value comes from the manifest. `label` names the list when no heading does. The rows are `li > a`, which the /tools/ filter relies on |
 | StatGrid | yes | yes | Live numbers with a label, in a grid of cells: the results of a counting tool. `items` are `{ label, value, id? }`; `value` arrives formatted, `id` becomes `data-stat` for tests. The label is the `<dt>` and comes first in reading order; the number shows above it in Geist Mono |
+| FileResult, FileResultList | yes | yes | One row per file a tool worked on: a preview (a `blob:` URL of the visitor's own file, with `previewAlt`), the name, one line of facts in Geist Mono (`meta`), a status in the children (progress, a message) and `actions` (download). `state` is waiting, working (`aria-busy`), done or error. The list takes a `label` |
 | SiteHeader, SiteFooter | yes | no | Live in `components/layout/`, built from the configs. Use them only through `layouts/Page.astro` |
 
 Long-form text (About, Privacy, Terms) sits in a `<div class="ni-prose">`. The mobile menu is a native `<details>`, so it needs no JavaScript and works on Safari 16.4; it closes through its summary only.
