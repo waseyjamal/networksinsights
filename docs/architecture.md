@@ -108,8 +108,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 10 | SEO/GEO engine | Done |
 | 11 | Search | Done |
 | 12 | Security | Done |
-| 13 | Reference tool: browser | In progress |
-| 14 | Reference tool: worker | |
+| 13 | Reference tool: browser | Done |
+| 14 | Reference tool: worker | In progress |
 | 15 | Reference tool: server + AI | |
 | 16 | Observability | |
 | 17 | Offline + site-wide budgets | |
