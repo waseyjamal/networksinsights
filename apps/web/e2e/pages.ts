@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { categories, categoryHref } from "../src/config/categories";
 import { homeTitle, pageTitle, sitePages, toolTitle } from "../src/config/site";
 
@@ -29,10 +29,15 @@ const toolsRoot = new URL("../../../tools/", import.meta.url);
 
 /** Every tool folder, with the fields the browser tests compare against the built page. */
 export const siteTools: SiteTool[] = readdirSync(toolsRoot, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory())
+  // Only category folders: tools/ also holds node_modules and config files.
+  .filter((entry) => entry.isDirectory() && categories.some((item) => item.id === entry.name))
   .flatMap((category) =>
     readdirSync(new URL(`${category.name}/`, toolsRoot), { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          existsSync(new URL(`${category.name}/${entry.name}/tool.config.ts`, toolsRoot)),
+      )
       .map((tool) => {
         const config = readFileSync(
           new URL(`${category.name}/${tool.name}/tool.config.ts`, toolsRoot),
