@@ -36,6 +36,26 @@ export interface ToolBudget {
   reason: string;
 }
 
+/**
+ * More than the site-wide security headers, for this tool's page only (ADR 0047). Absent means the
+ * defaults, which is what almost every tool needs. Using it requires an accepted ADR, named here.
+ */
+export interface ToolSecurity {
+  /** The four-digit number of the ADR that approved this override. */
+  adr: string;
+  /** Cross-Origin-Embedder-Policy: require-corp, so the page is cross-origin isolated. */
+  crossOriginIsolated?: true | undefined;
+  /** Extra https origins, per fetch directive. Never scripts or styles. */
+  sources?:
+    | Partial<
+        Record<
+          "connect-src" | "img-src" | "media-src" | "font-src" | "worker-src",
+          readonly string[]
+        >
+      >
+    | undefined;
+}
+
 /** An ISO calendar date, `YYYY-MM-DD`. */
 export type IsoDate = string;
 
@@ -69,6 +89,8 @@ export interface ToolManifest<TInput extends ZodType = ZodType> {
   limits?: ToolLimits;
   /** Absent means the default JavaScript budgets (ADR 0037). */
   budget?: ToolBudget;
+  /** Absent means the site-wide security headers (ADR 0047). */
+  security?: ToolSecurity;
   /** The date the tool went live. */
   added: IsoDate;
   /** The date it last changed. Never earlier than `added`. */

@@ -1,5 +1,10 @@
 ---
-import { privacyStatement, quickFacts } from "@networksinsights/tool-sdk";
+import {
+  overrideDirectives,
+  overrideMarker,
+  privacyStatement,
+  quickFacts,
+} from "@networksinsights/tool-sdk";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { type Category, categoryHref } from "../../config/categories";
 import { sitePages, toolTitle } from "../../config/site";
@@ -51,6 +56,14 @@ const breadcrumbs = [
   { label: manifest.name },
 ];
 
+// An approved security override (ADR 0047): the extra sources go into this page's own policy,
+// and the marker tells the security-headers integration to send this page its own header rule.
+// Astro.csp is undefined only where CSP is off (the Container API in tests).
+const security = manifest.security;
+if (security) {
+  for (const directive of overrideDirectives(security)) Astro.csp?.insertDirective(directive);
+}
+
 // Quick facts, from the manifest only (ADR 0044). The date is a date, so it carries `datetime`.
 const facts = quickFacts(manifest).map((fact) => ({
   label: fact.label,
@@ -65,6 +78,7 @@ const facts = quickFacts(manifest).map((fact) => ({
   breadcrumbs={breadcrumbs}
   share={toolCard(tool)}
   nodes={toolNodes({ tool, category, faq: tool.faq })}
+  securityOverride={security ? overrideMarker(security) : undefined}
 >
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />

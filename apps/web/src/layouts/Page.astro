@@ -17,16 +17,33 @@ interface Props {
   /** Structured-data nodes about the page itself: the tool, the list, the organization. */
   nodes?: readonly JsonLdNode[];
   share?: ShareCard | undefined;
+  /** An approved security override's marker (ADR 0047). Only a tool page sets it. */
+  securityOverride?: string | undefined;
 }
 
-const { title, description, noindex = false, breadcrumbs, nodes = [], share } = Astro.props;
+const {
+  title,
+  description,
+  noindex = false,
+  breadcrumbs,
+  nodes = [],
+  share,
+  securityOverride,
+} = Astro.props;
 
 // The structured data is built here, from the same lists the page draws itself from (ADR 0039).
 const all = [...nodes, ...(breadcrumbs ? [breadcrumbNode(breadcrumbs, Astro.url.pathname)] : [])];
 const jsonLd = all.length > 0 ? graph(all) : undefined;
 ---
 
-<Base title={title} description={description} noindex={noindex} share={share} jsonLd={jsonLd}>
+<Base
+  title={title}
+  description={description}
+  noindex={noindex}
+  share={share}
+  jsonLd={jsonLd}
+  securityOverride={securityOverride}
+>
   <SkipLink />
   <SiteHeader />
   <main id="main" tabindex="-1" class="ni-main">

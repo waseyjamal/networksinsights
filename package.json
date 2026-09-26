@@ -23,6 +23,7 @@
     "check:budgets": "tsx scripts/check-budgets.ts",
     "check:seo": "tsx scripts/check-seo.ts",
     "check:production": "tsx scripts/check-production.ts",
+    "check:licenses": "tsx scripts/check-licenses.ts",
     "indexnow": "tsx scripts/indexnow.ts"
   },
   "devDependencies": {

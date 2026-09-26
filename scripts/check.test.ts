@@ -47,6 +47,8 @@ describe("a finished tool set", () => {
     expect(report.sections.map((section) => section.id)).toEqual([
       "contract",
       "purity",
+      "safe-rendering",
+      "security-override",
       "min-words",
       "answer-first",
       "answer-first-name",
@@ -153,6 +155,40 @@ describe("the gates that are not about content", () => {
     expect(problem?.file).toBe("logic.ts");
     expect(problem?.problem).toContain("uses `document`");
     expect(problem?.fix).toContain("ui.tsx");
+  });
+
+  it("safe rendering: a ui.tsx that renders a string as HTML fails, naming the line", async () => {
+    const { tools } = fresh();
+    await finished(tools, "word-counter", "word-counter");
+    writeFileSync(
+      join(tools, "text", "word-counter", "ui.tsx"),
+      "export default function Ui({ html }: { html: string }) {\n  return <div dangerouslySetInnerHTML={{ __html: html }} />;\n}\n",
+    );
+    const report = await checkTools({ root: tools });
+    const [problem] = problemsOf(report, "safe-rendering");
+    expect(report.ok).toBe(false);
+    expect(problem?.file).toBe("ui.tsx");
+    expect(problem?.problem).toContain("line 2: sets dangerouslySetInnerHTML");
+    expect(problem?.fix).toContain("Rendering user text");
+  });
+
+  it("security override: a manifest must name an accepted ADR", async () => {
+    // A tool id of its own: Node caches an imported config for the whole process.
+    const { tools } = fresh();
+    await finished(tools, "isolated-tool", "word-counter");
+    const path = join(tools, "text", "isolated-tool", "tool.config.ts");
+    writeFileSync(
+      path,
+      readFileSync(path, "utf8").replace(
+        "  related: [],\n",
+        '  related: [],\n  security: { adr: "0999", crossOriginIsolated: true },\n',
+      ),
+    );
+    const report = await checkTools({ root: tools });
+    const [problem] = problemsOf(report, "security-override");
+    expect(report.ok).toBe(false);
+    expect(problem?.problem).toBe("security names there is no ADR 0999 in docs/adr/");
+    expect(problem?.fix).toContain("docs/runbooks/security.md");
   });
 
   it("contract: a tampered island.astro fails with a fix", async () => {

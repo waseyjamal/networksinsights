@@ -6,15 +6,15 @@ Why it works this way: [ADR 0027](../adr/0027-deployment.md). Deploys happen onl
 
 | Event | What runs | Result |
 |---|---|---|
-| Pull request to `main` | `quality`, `e2e`, then `preview` | A preview version at `https://pr-<N>-networksinsights.<account>.workers.dev`, posted as one PR comment that is updated on every push |
-| Push (merge) to `main` | `quality`, `e2e`, then `deploy` | `wrangler deploy` to production at `https://networksinsights.com` |
+| Pull request to `main` | `quality`, `e2e`, `supply-chain` and `lockfile`, then `preview` | A preview version at `https://pr-<N>-networksinsights.<account>.workers.dev`, posted as one PR comment that is updated on every push, then checked for every security header and `X-Robots-Tag: noindex` |
+| Push (merge) to `main` | `quality`, `e2e`, `supply-chain`, then `deploy` and `verify-production` | `wrangler deploy` to production at `https://networksinsights.com` |
 | Manual run of "Rollback production" | `rollback` | `wrangler rollback` to the version you name |
 
-- `deploy` needs both `quality` and `e2e` green in the same run. On the GitHub Free plan this is our substitute for branch protection.
+- `deploy` needs `quality`, `e2e` and `supply-chain` green in the same run. On the GitHub Free plan this is our substitute for branch protection.
 - A production deploy is never cancelled midway. A newer push waits for the running deploy, and a waiting deploy is replaced by the newest one. Deploys and rollbacks share the concurrency group `deploy-production`.
 - Previews work only after the first production deploy exists. Until `wrangler deploy` has created the Worker, `preview` fails with "You cannot upload a new version of a Worker that does not yet exist". This happened only on the Mission 5 pull request, which was merged before any production deploy existed.
 - Forks and Dependabot pull requests get no preview, because they do not receive the secrets.
-- The secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` live only in GitHub (Settings, Secrets and variables, Actions). To rotate the token, create a new one in Cloudflare and replace the GitHub secret.
+- The secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` live only in GitHub (Settings, Secrets and variables, Actions). To rotate the token, follow [runbooks/security.md](security.md), "Rotate the Cloudflare API token".
 - Do not connect Cloudflare's own git integration (Workers Builds) to this repository. It would deploy a second time, outside this pipeline.
 
 ## Deploy a change

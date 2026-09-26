@@ -1,4 +1,8 @@
 // React entry point of the design system. Styles come from src/styles/components.css.
+
+// Helpers every tool uses to give back a file and to render visitor text safely (ADR 0050).
+export { REVOKE_AFTER_MS, type SaveFileOptions, saveFile } from "../../../lib/runtime/save-file";
+export { SAFE_URL_SCHEMES, safeUrl, setText } from "../../../lib/runtime/text";
 export { Alert, type AlertProps } from "./Alert";
 export { Badge, type BadgeProps } from "./Badge";
 export { Button, ButtonLink, type ButtonLinkProps, type ButtonProps } from "./Button";

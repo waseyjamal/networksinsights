@@ -21,6 +21,13 @@ export {
   readContent,
 } from "./content";
 export {
+  DOWNLOAD_TYPES,
+  FALLBACK_TYPE,
+  MAX_FILENAME_BYTES,
+  mimeTypeFor,
+  safeFilename,
+} from "./download";
+export {
   describeLimits,
   formatBytes,
   formatIsoDate,
@@ -50,12 +57,21 @@ export {
   BANNED_IMPORT_EXTENSIONS,
 } from "./purity";
 export * from "./quality";
+export {
+  EXTENDABLE_DIRECTIVES,
+  type ExtendableDirective,
+  HTTPS_ORIGIN,
+  overrideDirectives,
+  overrideMarker,
+  toolSecuritySchema,
+} from "./security";
 export type {
   IsoDate,
   ToolBudget,
   ToolLimits,
   ToolManifest,
   ToolRuntime,
+  ToolSecurity,
   ToolStatus,
 } from "./types";
 export {

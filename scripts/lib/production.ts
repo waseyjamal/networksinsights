@@ -6,14 +6,21 @@
 // permanent redirect (301 or 308) to /tools/. Cloudflare's own trailing-slash redirect is a 307,
 // which search engines treat as temporary, so a dashboard rule has to replace it, and nothing else
 // can prove that rule exists.
+//
+// Since Mission 12 it also checks every security and cache header (production-headers.ts). With
+// --preview it checks a preview deployment instead: the same headers plus X-Robots-Tag: noindex,
+// and no redirect, because the redirect rule belongs to the production zone.
 
 import { site } from "../../apps/web/src/config/site";
+import { headerChecks } from "./production-headers";
 
 export interface ProductionOptions {
   /** The site to check. Defaults to the production domain. */
   base?: string;
   /** Whether the site is launched (config/site.ts). Decides what robots.txt must say. */
   launched?: boolean;
+  /** A preview deployment on workers.dev rather than production (ADR 0048). */
+  preview?: boolean;
   fetchFn?: typeof fetch;
 }
 
@@ -33,14 +40,9 @@ const get = (fetchFn: typeof fetch, url: string) =>
     headers: { "user-agent": "networksinsights-post-deploy-check" },
   });
 
-export async function runProductionChecks(options: ProductionOptions = {}): Promise<Check[]> {
-  const base = (options.base ?? site.url).replace(/\/$/, "");
-  const launched = options.launched ?? site.launched;
-  const fetchFn = options.fetchFn ?? fetch;
-  const checks: Check[] = [];
-  const add = (name: string, ok: boolean, detail: string) => checks.push({ name, ok, detail });
+type Add = (name: string, ok: boolean, detail: string) => void;
 
-  // 1. The slashless URL redirects permanently to the slash URL.
+async function checkRedirect(fetchFn: typeof fetch, base: string, add: Add): Promise<void> {
   const slashless = await get(fetchFn, `${base}/tools`);
   const location = slashless.headers.get("location") ?? "";
   const target = location.startsWith("/") ? `${base}${location}` : location;
@@ -49,6 +51,19 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
     PERMANENT.has(slashless.status) && target === `${base}/tools/`,
     `answered ${slashless.status}${location ? ` with Location: ${location}` : " with no Location"}. Expected 301 or 308 to ${base}/tools/. A 307 is Cloudflare's built-in redirect: create the rule in docs/runbooks/seo-redirects.md.`,
   );
+}
+
+export async function runProductionChecks(options: ProductionOptions = {}): Promise<Check[]> {
+  const base = (options.base ?? site.url).replace(/\/$/, "");
+  const launched = options.launched ?? site.launched;
+  const fetchFn = options.fetchFn ?? fetch;
+  const preview = options.preview ?? false;
+  const checks: Check[] = [];
+  const add = (name: string, ok: boolean, detail: string) => checks.push({ name, ok, detail });
+
+  // 1. The slashless URL redirects permanently to the slash URL. Production only: the rule lives
+  // in the production zone, and a preview on workers.dev keeps Cloudflare's own redirect.
+  if (!preview) await checkRedirect(fetchFn, base, add);
 
   // 2. The redirect leaves everything that should not redirect alone.
   for (const path of ["/", "/tools/", "/favicon.ico", "/robots.txt"]) {
@@ -86,8 +101,8 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
 
   // 6. The search index (ADR 0045): the home page names it, it answers, and it is cached for good.
   // Its name carries a hash of its content, so `immutable` is safe; without the header every visit
-  // to search would revalidate a file that cannot have changed. The header comes from
-  // apps/web/public/_headers, which only Cloudflare reads, so only a live request can prove it.
+  // to search would revalidate a file that cannot have changed. The header comes from dist/_headers
+  // (apps/web/src/config/headers.ts), which only Cloudflare reads, so only a live request proves it.
   const indexPath = /\bdata-index="(\/search-index\.[0-9a-f]+\.json)"/.exec(home)?.[1];
   if (indexPath === undefined) {
     add(
@@ -101,11 +116,14 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
     add(
       `${indexPath} is served and cached for good`,
       response.status === 200 && /\bimmutable\b/.test(cache) && /\bmax-age=\d{7,}\b/.test(cache),
-      `answered ${response.status} with Cache-Control: ${cache || "(none)"}. Expected 200 and "public, max-age=31536000, immutable": check apps/web/public/_headers.`,
+      `answered ${response.status} with Cache-Control: ${cache || "(none)"}. Expected 200 and "public, max-age=31536000, immutable": check dist/_headers (apps/web/src/config/headers.ts).`,
     );
   }
 
-  // 7. After launch the sitemap index and llms.txt exist.
+  // 7. Every security header, the preview-only noindex and the cache headers (ADR 0047, ADR 0048).
+  checks.push(...(await headerChecks({ base, preview, home, get: (url) => get(fetchFn, url) })));
+
+  // 8. After launch the sitemap index and llms.txt exist.
   if (launched) {
     for (const path of ["/sitemap-index.xml", "/llms.txt"]) {
       const response = await get(fetchFn, `${base}${path}`);

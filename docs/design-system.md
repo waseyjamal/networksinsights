@@ -119,6 +119,12 @@ Import Astro components from `components/ui/`, React components from `components
 `components/ui/react/index.ts` set in `astro.config.mjs` and `tools/tsconfig.json`. Tool code uses
 these components and the design tokens, and never styles a one-off (docs/adding-a-tool.md).
 
+`@ui` also exports three helpers that are not components, so every tool uses the same safe path
+(ADR 0050, docs/tool-contract.md "Security"): `saveFile(data, name)` to give the visitor a file,
+`setText(node, value)` to write visitor text outside React, and `safeUrl(value)` to turn a
+visitor's URL into an `href` only when it is http, https or mailto. The design-system page's React
+showcase has a "Download a sample file" button that the E2E tests click in every engine.
+
 | Component | Astro | React | Notes |
 |---|---|---|---|
 | Button | `Button` | `Button`, `ButtonLink` | `variant` primary, secondary, ghost, danger; `size` sm, md, lg; `loading` |

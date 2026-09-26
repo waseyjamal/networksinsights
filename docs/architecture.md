@@ -18,7 +18,7 @@ Now:
 ```
 apps/
   web/            Astro site (Astro, React islands, Tailwind)
-    src/config/   site.ts (name, domain, tagline, launch flag) and categories.ts (the 11 categories)
+    src/config/   site.ts (name, domain, tagline, launch flag), categories.ts (the 11 categories), headers.ts (every response header)
     src/styles/   design tokens and the one component stylesheet (Signal design system)
     src/components/ui/   Astro components; react/ holds the React versions
     src/components/layout/   site header and footer
@@ -27,12 +27,15 @@ apps/
     src/lib/registry/        finds and validates tools at build time; fixtures/ holds test tools
     src/lib/seo/             canonical and share tags, JSON-LD, sitemaps, robots.txt, llms.txt, IndexNow, share images (ADR 0038-0042)
     src/lib/search/          the search index builder, the engine, the browser code loaded on intent (ADR 0045, ADR 0046)
+    src/lib/security/        builds dist/_headers and checks every inline script is hashed (ADR 0047, ADR 0048)
+    src/lib/runtime/         saveFile, setText, safeUrl: the safe way for tools to give files and show text (ADR 0050)
+    src/integrations/        security-headers: writes dist/_headers after every build
     src/pages/og/            the share images, drawn at build time; robots.txt, sitemaps and llms.txt are pages too
     src/pages/[slug].astro   one route for category pages and tool pages
 packages/
   tool-sdk/       @networksinsights/tool-sdk: the contract as code (Zod only)
 tools/            @networksinsights/tools: one folder per tool, <category-id>/<tool-id>/
-scripts/          @networksinsights/scripts: new:tool, check:tools, check:budgets, check:seo, check:production, indexnow
+scripts/          @networksinsights/scripts: new:tool, check:tools, check:budgets, check:seo, check:production, check:licenses, lockfile-diff, indexnow
 docs/             architecture, tool contract, design system, ADRs
 ```
 
@@ -81,6 +84,10 @@ Internal target: LCP under 1.5 s on a mid-range Android phone over slow 4G.
 
 The site is built to be found (SEO) and quoted (GEO/AEO). Every page carries a canonical link on `https://networksinsights.com`, Open Graph and Twitter/X tags, and a share image drawn at build time ([ADR 0038](adr/0038-canonical-and-meta.md), [0041](adr/0041-share-images.md)). Structured data is generated from the same data as the page and tested against what the page shows ([ADR 0039](adr/0039-structured-data.md)). `robots.txt`, the sitemaps and `llms.txt` are generated; the sitemaps and `llms.txt` exist only after launch, and IndexNow announces changed URLs after each launched deploy ([ADR 0040](adr/0040-crawling-robots-and-ai-crawlers.md), [0042](adr/0042-indexnow.md)). Every tool page has visible Quick facts and an answer-first intro ([ADR 0044](adr/0044-aeo.md)). `pnpm check:seo` checks the build; `pnpm check:production` checks the live site.
 
+## Security
+
+Every response carries a strict Content-Security-Policy (deny by default, same-origin scripts only, inline scripts by hash) and the standard security headers, all from `apps/web/src/config/headers.ts` ([ADR 0047](adr/0047-content-security-policy.md), [0048](adr/0048-security-headers.md)). Preview deployments send `X-Robots-Tag: noindex`; production never does. A tool that needs more asks in its manifest, with an accepted ADR. Dependencies are updated weekly by Dependabot with a three-day cooldown, and CI fails on a moderate-or-worse advisory or a licence outside the allowed set ([ADR 0049](adr/0049-supply-chain-automation.md)). Tools give files and show text only through safe helpers, and a gate refuses HTML sinks; server tools follow a written contract ([ADR 0050](adr/0050-tool-runtime-safety-contract.md)). Procedures: [runbooks/security.md](runbooks/security.md).
+
 ## Hosting
 
 Cloudflare Workers with static assets, served on https://networksinsights.com. Deploys run only from CI ([ADR 0027](adr/0027-deployment.md), [runbook](runbooks/deploy-and-rollback.md)).
@@ -99,8 +106,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 8 | Tool contract + registry | Done |
 | 9 | Generator + guardrails | Done |
 | 10 | SEO/GEO engine | Done |
-| 11 | Search | In progress |
-| 12 | Security | |
+| 11 | Search | Done |
+| 12 | Security | In progress |
 | 13 | Reference tool: browser | |
 | 14 | Reference tool: worker | |
 | 15 | Reference tool: server + AI | |
