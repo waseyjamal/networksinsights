@@ -37,6 +37,9 @@ until Mission 13, and the repo-wide default stays false (ADR 0011), so a run tha
 anywhere still fails. Nothing is lost by the override: a tool without a `logic.test.ts` fails the
 build in the registry's file check, not in Vitest.
 
+Mission 13 added the first tool and removed the override, as planned: the project now keeps the
+default (false) like every other.
+
 ## Consequences
 
 - A future API Worker imports `tools/<category>/<tool>/logic.ts` directly, with no website in the

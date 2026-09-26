@@ -103,10 +103,12 @@ for (const item of pages.filter((entry) => entry.status === 200)) {
     const collection = nodes.find((node) => node["@type"] === "CollectionPage");
     if (collection && "mainEntity" in collection && collection.mainEntity) {
       const shown = await page.evaluate(() =>
-        [...document.querySelectorAll("main ul.ni-linklist a")].map((a) => ({
-          name: a.textContent?.trim() ?? "",
-          url: a.getAttribute("href") ?? "",
-        })),
+        [...document.querySelectorAll("main ul.ni-linklist a, main ul.ni-toolcards a")].map(
+          (a) => ({
+            name: (a.querySelector(".ni-toolcard__name") ?? a).textContent?.trim() ?? "",
+            url: a.getAttribute("href") ?? "",
+          }),
+        ),
       );
       const wanted = collection.mainEntity.itemListElement.map((entry) => ({
         name: entry.name,

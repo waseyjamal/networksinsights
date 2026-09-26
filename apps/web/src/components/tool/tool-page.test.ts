@@ -93,14 +93,16 @@ describe("the tool page", () => {
   });
 
   it("links the related tools and the way back to the category", () => {
-    expect(html).toContain('aria-label="Related tools"');
-    expect(html).toContain('<a href="/case-converter/">Case converter</a>');
+    expect(html).toMatch(/<h2 id="related-tools"[^>]*>Related tools<\/h2>/);
+    expect(html).toMatch(
+      /<a class="ni-toolcard" href="\/case-converter\/" data-cat="text">[\s\S]*?<span class="ni-toolcard__name">Case converter<\/span>/,
+    );
     expect(html).toContain('<a href="/text-tools/">All text tools</a>');
     expect(html).toContain('<a href="/tools/">All tools</a>');
   });
 
   it("leaves out the related list when a tool has no related tools", async () => {
-    expect(await render(toolOf())).not.toContain('aria-label="Related tools"');
+    expect(await render(toolOf())).not.toContain("Related tools");
   });
 });
 

@@ -225,8 +225,8 @@ describe("every problem says where to look and what to change", () => {
 });
 
 describe("the fixtures are invisible to the production registry", () => {
-  it("has no tools today, and every tool it ever finds comes from tools/", () => {
-    expect(tools).toEqual([]);
+  it("finds the real tools, and every tool it finds comes from tools/", () => {
+    expect(tools.map((tool) => tool.manifest.id)).toContain("word-counter");
     for (const tool of tools) expect(tool.dir.startsWith("tools/")).toBe(true);
   });
 

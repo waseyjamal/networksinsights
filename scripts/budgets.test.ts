@@ -292,7 +292,7 @@ describe("the report", () => {
 });
 
 describe("the command", () => {
-  it("passes on this repository, which ships no tools, whatever the build output holds", {
+  it("measures this repository's tools in a build and passes when they fit", {
     tags: ["slow"],
   }, () => {
     const { dist } = build();
@@ -302,7 +302,8 @@ describe("the command", () => {
       { cwd: repoRoot, encoding: "utf8" },
     );
     expect(result.status, result.stdout + result.stderr).toBe(0);
-    expect(result.stdout).toContain("no tool pages in the build");
+    // The fixture build has a small page at /word-counter/, the real tool of this repository.
+    expect(result.stdout).toMatch(/✓ word-counter\s+initial/);
   });
 
   it("refuses an option it does not know, with exit code 2", { tags: ["slow"] }, () => {

@@ -4,8 +4,8 @@ import { categories, categoryHref } from "../../config/categories";
 import { toolOf } from "../seo/test-tools";
 import { type FixtureGroup, filterFixtureHtml } from "./filter-fixture";
 
-// The /tools/ page reads the registry, and the real one has no tools yet (Mission 13). This file
-// gives it three, so the page that has a list to filter can be checked.
+// The /tools/ page reads the registry. This file gives it three tools of its own, so the page with
+// a list to filter is checked whatever the real registry holds.
 vi.mock("../registry", async () => {
   const tools = [
     toolOf("merge-pdf", "pdf"),
@@ -36,9 +36,9 @@ const hooks = (markup: string) =>
   [...new Set([...markup.matchAll(/\bdata-ni-filter[\w-]*/g)].map((match) => match[0]))].sort();
 
 describe("the /tools/ page with tools", () => {
-  it("lists every tool as a plain link, in the HTML, filter or no filter", () => {
+  it("lists every tool as a card that is a link, in the HTML, filter or no filter", () => {
     for (const id of ["merge-pdf", "split-pdf", "word-counter"]) {
-      expect(html).toContain(`<a href="/${id}/">`);
+      expect(html).toMatch(new RegExp(`<a class="ni-toolcard" href="/${id}/"`));
     }
   });
 
@@ -77,7 +77,9 @@ describe("the /tools/ page with tools", () => {
         tools: [{ name: "Merge Pdf", href: "/merge-pdf/" }],
       },
     ]);
-    expect(fixture).toContain('<li><a href="/merge-pdf/">Merge Pdf</a></li>');
-    expect(html).toMatch(/<li>\s*<a href="\/merge-pdf\/">\s*Merge Pdf\s*<\/a>\s*<\/li>/);
+    const row =
+      /<li>\s*<a class="ni-toolcard" href="\/merge-pdf\/"[^>]*>[\s\S]*?Merge Pdf[\s\S]*?<\/a>\s*<\/li>/;
+    expect(fixture).toMatch(row);
+    expect(html).toMatch(row);
   });
 });

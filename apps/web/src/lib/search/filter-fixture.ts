@@ -1,10 +1,10 @@
 // The markup of the /tools/ page as it looks once there are tools, for the browser tests.
 //
-// The production site has no tools until Mission 13, so the built /tools/ has no list to filter.
-// The Playwright tests splice this markup into the real built page, and the real search module
-// and loader then drive it. It is a copy of what tools.astro, ToolFilter.astro and LinkList.astro
-// print, so tools-filter.test.ts renders the real page and fails if the two ever disagree on a
-// hook the script reads. Test support only: no page imports it.
+// The production site has too few tools to exercise the filter, so the Playwright tests splice this
+// markup, built from the fixed corpus, into the real built page in place of its list, and the real
+// search module and loader then drive it. It is a copy of what tools.astro, ToolFilter.astro and
+// ToolCardList.astro print (each card with its name only), so tools-filter.test.ts renders the real page and fails if
+// the two ever disagree on a hook the script reads. Test support only: no page imports it.
 
 export interface FixtureGroup {
   id: string;
@@ -22,8 +22,12 @@ export function filterFixtureHtml(groups: readonly FixtureGroup[]): string {
       (group) =>
         `<section class="space-y-4" aria-labelledby="category-${group.id}" data-ni-filter-group>` +
         `<h2 id="category-${group.id}" class="text-2xl"><a href="${group.href}">${escapeHtml(group.name)}</a></h2>` +
-        `<ul class="ni-linklist">${group.tools
-          .map((tool) => `<li><a href="${tool.href}">${escapeHtml(tool.name)}</a></li>`)
+        `<ul class="ni-toolcards">${group.tools
+          .map(
+            (tool) =>
+              `<li><a class="ni-toolcard" href="${tool.href}" data-cat="${group.id}">` +
+              `<span class="ni-toolcard__head"><span class="ni-toolcard__name">${escapeHtml(tool.name)}</span></span></a></li>`,
+          )
           .join("")}</ul>` +
         "</section>",
     )

@@ -3,11 +3,13 @@ import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import EmptyState from "../components/ui/EmptyState.astro";
 import LinkList from "../components/ui/LinkList.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
+import ToolCardList from "../components/ui/ToolCardList.astro";
 import ToolFilter from "../components/ui/ToolFilter.astro";
 import { categories, categoryHref } from "../config/categories";
 import { pageTitle, sitePages } from "../config/site";
 import Page from "../layouts/Page.astro";
 import { tools, toolsInCategory } from "../lib/registry";
+import { toolCardItem } from "../lib/registry/cards";
 import { collectionNode } from "../lib/seo/jsonld";
 
 const categoryLinks = categories.map((category) => ({
@@ -23,6 +25,9 @@ const groups = categories
 // The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
 const breadcrumbs = [{ label: "Home", href: "/" }, { label: "All tools" }];
 const intro = "Every tool on NetworksInsights is listed here, grouped by category.";
+// A real count, from the registry: never a rounded or hoped-for number.
+const countLine = tools.length === 1 ? "1 tool" : `${tools.length.toLocaleString("en-US")} tools`;
+const categoryLine = groups.length === 1 ? "1 category" : `${groups.length} categories`;
 ---
 
 <Page
@@ -39,14 +44,19 @@ const intro = "Every tool on NetworksInsights is listed here, grouped by categor
   }),
 ]}
   title={pageTitle("All tools")}
-  description="Every tool on NetworksInsights, in one list. No tools are live yet; new tools appear here as they are added."
+  description={tools.length > 0
+  ? "Every tool on NetworksInsights, in one list, grouped by category. Filter by name, task or file type to find the one you need."
+  : "Every tool on NetworksInsights, in one list. No tools are live yet; new tools appear here as they are added."}
 >
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />
     <PageHeader title="All tools" intro={intro} />
   </div>
   {tools.length > 0 ? (
-  <div class="grid gap-8">
+  <div class="grid gap-8" data-ni-tools>
+    <p class="text-fg-muted" data-ni-tool-count>
+      {countLine} in {categoryLine}.
+    </p>
     <ToolFilter />
     <div class="grid gap-8" data-ni-filter-list>
       {groups.map((group) => (
@@ -58,12 +68,7 @@ const intro = "Every tool on NetworksInsights is listed here, grouped by categor
           <h2 id={`category-${group.category.id}`} class="text-2xl">
             <a href={categoryHref(group.category)}>{group.category.name}</a>
           </h2>
-          <LinkList
-            items={group.tools.map((tool) => ({
-              label: tool.manifest.name,
-              href: tool.href,
-            }))}
-          />
+          <ToolCardList items={group.tools.map(toolCardItem)} />
         </section>
       ))}
     </div>

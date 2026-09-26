@@ -27,7 +27,7 @@ export type ApplicationCategory =
  * The date the wording of the category pages last changed, as `YYYY-MM-DD`: the `lastmod` of a
  * category page that has no tool yet, and the floor for one that has (see `pageUpdated`, ADR 0040).
  */
-export const categoriesUpdated = "2026-09-21";
+export const categoriesUpdated = "2026-09-26";
 
 export interface Category {
   id: string;
@@ -99,7 +99,7 @@ export const categories = [
     intro:
       "Count words and characters, compare two versions of a text, clean up pasted content or change its case and format. These are quick jobs, so each tool aims to do one thing and show the result immediately.",
     metaDescription:
-      "Free text tools for counting, comparing, cleaning and transforming text. Coming soon to NetworksInsights.",
+      "Free text tools for counting, comparing, cleaning and transforming text, right in your browser on NetworksInsights.",
   },
   {
     id: "calculators",

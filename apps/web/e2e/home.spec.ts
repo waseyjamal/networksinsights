@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { categories } from "../src/config/categories";
+import { siteTools } from "./pages";
 
 test.describe("home page", () => {
   test("shows the main heading and the subtitle", async ({ page }) => {
@@ -26,17 +27,23 @@ test.describe("home page", () => {
     await expect(bar).toHaveAttribute("href", "/tools/");
   });
 
-  test("shows every category as a tile that says Coming soon, with no number", async ({ page }) => {
+  test("shows every category as a tile with its real count, or Coming soon", async ({ page }) => {
     await page.goto("/");
     const tiles = page.locator("main .ni-tile");
     await expect(tiles).toHaveCount(categories.length);
     for (const category of categories) {
       const tile = page.locator(`main .ni-tile[href="/${category.slug}/"]`);
       await expect(tile).toContainText(category.name);
-      await expect(tile).toContainText("Coming soon");
+      const count = siteTools.filter((tool) => tool.category === category.id).length;
+      if (count === 0) {
+        await expect(tile).toContainText("Coming soon");
+        await expect(tile).not.toContainText(/\d+\s+tools?\b/);
+      } else {
+        await expect(tile.locator(".ni-tile__meta")).toHaveText(
+          `${count} ${count === 1 ? "tool" : "tools"}`,
+        );
+      }
     }
-    // No tool count anywhere on the page.
-    await expect(page.locator("main")).not.toContainText(/\d+\s+tools?\b/);
   });
 
   test("explains why NetworksInsights, in four points", async ({ page }) => {
