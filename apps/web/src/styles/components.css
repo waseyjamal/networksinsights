@@ -1605,6 +1605,108 @@
     }
   }
 
+  /* Tool cards: the list of tools on /tools/, a category page and a tool's related links. The
+     whole card is one link; the category accent tints only the icon chip. */
+
+  .ni-toolcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ni-toolcard {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.25rem 0.875rem;
+    height: 100%;
+    padding: 1rem 1.125rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-xs);
+    color: var(--fg);
+    text-decoration: none;
+    transition-property: transform, box-shadow, border-color;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .ni-toolcard .ni-icon-tint {
+    grid-row: span 2;
+  }
+
+  @media (hover: hover) {
+    .ni-toolcard:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  .ni-toolcard__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ni-toolcard__name {
+    font-size: var(--text-base);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+
+  .ni-toolcard__summary {
+    color: var(--fg-muted);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+  }
+
+  /* Stats: live numbers with a label, such as the counts of a text tool. */
+
+  .ni-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .ni-stats__item {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 0.125rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface-raised);
+  }
+
+  .ni-stats dt {
+    color: var(--fg-muted);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+  }
+
+  .ni-stats dd {
+    margin: 0;
+    color: var(--fg);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xl);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
   /* Facts: a definition list in a grid of cells, the "Quick facts" of a tool page. */
 
   .ni-facts {

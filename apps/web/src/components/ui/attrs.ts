@@ -77,6 +77,26 @@ export function cardAttrs({
   };
 }
 
+/** One card of a ToolCardList. Every field comes from a tool's manifest and its category. */
+export interface ToolCardItem {
+  href: string;
+  name: string;
+  summary: string;
+  /** Category id: tints the icon chip (data-cat). */
+  category: string;
+  icon: IconName;
+  /** True for a beta tool: the card shows a "Beta" badge. */
+  beta?: boolean | undefined;
+}
+
+/** One number of a StatGrid. `value` is already formatted (digits grouped, units added). */
+export interface StatItem {
+  label: string;
+  value: string;
+  /** A stable hook for tests and scripts, set as data-stat. */
+  id?: string | undefined;
+}
+
 export const alertIcon: Record<AlertTone, IconName> = {
   info: "info",
   success: "check-circle",

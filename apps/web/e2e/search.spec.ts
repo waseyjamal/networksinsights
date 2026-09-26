@@ -8,12 +8,13 @@ import { buildSearchIndex } from "../src/lib/search/index-build";
 import { syntheticTools } from "../src/lib/search/synthetic";
 import type { SearchRecord } from "../src/lib/search/types";
 import { collectRequests, isSearchRequest } from "./helpers";
+import { siteTools } from "./pages";
 
 // Instant search (Mission 11, ADR 0045 and 0046), in the three engines.
 //
-// The built site has no tools until Mission 13, so its real index is empty. Tests that need
-// results answer the index request themselves, with the fixed `corpus` or with synthetic tools;
-// the "No tools yet" tests use the real, empty index.
+// The built site has few real tools, so tests that need results answer the index request
+// themselves, with the fixed `corpus` or with synthetic tools; the "No tools yet" tests answer it
+// with an empty index.
 
 const wcagTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const INDEX_URL = /\/search-index\.[0-9a-f]+\.json$/;
@@ -404,6 +405,7 @@ test.describe("what the words on the page cannot do", () => {
 
 test.describe("an empty site and a broken index", () => {
   test("with no tools it says so: No tools yet, and offers the categories", async ({ page }) => {
+    await serveIndex(page, []);
     await page.goto("/about/");
     await openByShortcut(page);
     await expect(dialogOf(page)).toContainText("No tools yet");
@@ -570,7 +572,8 @@ for (const scheme of ["light", "dark"] as const) {
       await scan(page, "no results", testInfo);
     });
 
-    test("No tools yet, on the real empty index", async ({ page }, testInfo) => {
+    test("No tools yet, on an empty index", async ({ page }, testInfo) => {
+      await serveIndex(page, []);
       await page.goto("/about/");
       await openByShortcut(page);
       await expect(dialogOf(page)).toContainText("No tools yet");
@@ -689,10 +692,10 @@ test.describe("keypress to results, at 1,000 synthetic tools", () => {
   });
 });
 
-// The /tools/ page filter. The built site has no tools, so its /tools/ has no list to filter. These
-// tests splice the markup the page has once there are tools (filter-fixture.ts, checked against the
-// real page by tools-filter.test.ts) into the built page. The real loader and the real search
-// module then do the work.
+// The /tools/ page filter, on a list long enough to filter. These tests splice the markup of a
+// page with the fixed corpus (filter-fixture.ts, checked against the real page by
+// tools-filter.test.ts) into the built page, in place of its real list. The real loader and the
+// real search module then do the work.
 const fixtureGroups: FixtureGroup[] = categories
   .map((category) => ({
     id: category.id,
@@ -708,7 +711,7 @@ async function toolsPageWithList(page: Page) {
   await page.route("**/tools/", async (route: Route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /<section class="ni-empty">[\s\S]*?<\/section>/,
+      /<div class="grid gap-8" data-ni-tools>[\s\S]*?(?=<\/main>)/,
       filterFixtureHtml(fixtureGroups),
     );
     await route.fulfill({
@@ -851,10 +854,20 @@ test.describe("the /tools/ filter without JavaScript", () => {
   });
 });
 
-test.describe("the /tools/ page with no tools", () => {
-  test("has no filter box and says so", async ({ page }) => {
+// The empty /tools/ page (no filter box, an honest empty state) is checked in
+// tools-filter-empty.test.ts, since the built site has tools.
+test.describe("the /tools/ page with the real tools", () => {
+  test("says how many tools there are and lists each one as a card", async ({ page }) => {
     await page.goto("/tools/");
-    await expect(page.getByText("No tools are live yet")).toBeVisible();
-    await expect(page.getByRole("searchbox", { name: "Filter tools" })).toHaveCount(0);
+    const count = siteTools.length;
+    await expect(page.locator("[data-ni-tool-count]")).toContainText(
+      `${count} ${count === 1 ? "tool" : "tools"} in`,
+    );
+    for (const tool of siteTools) {
+      const card = page.locator(`main a.ni-toolcard[href="${tool.path}"]`);
+      await expect(card.locator(".ni-toolcard__name")).toHaveText(tool.name);
+      await expect(card.locator(".ni-toolcard__summary")).toHaveText(tool.summary);
+    }
+    await expect(page.getByText("No tools are live yet")).toHaveCount(0);
   });
 });

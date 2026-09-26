@@ -39,7 +39,7 @@ scripts/          @networksinsights/scripts: new:tool, check:tools, check:budget
 docs/             architecture, tool contract, design system, ADRs
 ```
 
-`tools/` is empty until Mission 13. The contract every folder follows is
+The first tool, `tools/text/word-counter`, arrived in Mission 13. The contract every folder follows is
 [tool-contract.md](tool-contract.md); the decisions behind it are ADR 0031–0037. A tool is added
 with `pnpm new:tool` ([adding-a-tool.md](adding-a-tool.md)) and held to the content quality gates
 (ADR 0036) and the JavaScript budgets (ADR 0037).
@@ -107,8 +107,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 9 | Generator + guardrails | Done |
 | 10 | SEO/GEO engine | Done |
 | 11 | Search | Done |
-| 12 | Security | In progress |
-| 13 | Reference tool: browser | |
+| 12 | Security | Done |
+| 13 | Reference tool: browser | In progress |
 | 14 | Reference tool: worker | |
 | 15 | Reference tool: server + AI | |
 | 16 | Observability | |

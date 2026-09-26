@@ -103,12 +103,19 @@ describe("the pages that list tools", () => {
   for (const page of ["../../pages/index.astro", "../../pages/tools.astro"]) {
     it(`${page} uses the registry for counts and names only`, () => {
       const text = source(page);
-      expect(importsOf(text).filter((specifier) => specifier.includes("registry"))).toEqual([
-        "../lib/registry",
-      ]);
+      for (const specifier of importsOf(text).filter((item) => item.includes("registry"))) {
+        expect(["../lib/registry", "../lib/registry/cards"]).toContain(specifier);
+      }
       expect(text).not.toContain("client:");
     });
   }
+
+  it("builds its tool cards from metadata only: cards.ts loads no island and no content", () => {
+    const cards = source("./cards.ts");
+    expect(cards).not.toContain("islands");
+    expect(cards).not.toContain("content");
+    expect(cards).not.toContain("import.meta.glob");
+  });
 
   it("the category branch of the tool route ships no island of its own", () => {
     const route = source("../../pages/[slug].astro");

@@ -56,7 +56,7 @@ Tools:
   naming an ADR the owner accepted (ADR 0047). Never widen the site-wide policy for one tool.
 - A `server` runtime tool follows the server contract of ADR 0050: validate with the manifest
   schema, size limits, per-IP rate limit, daily spending cap, no body logging, no stored user data.
-- Never add a tool to make a page look fuller. The site ships zero tools until Mission 13.
+- Never add a tool to make a page look fuller. The first real tool, `word-counter`, shipped in Mission 13.
 
 Security (ADR 0047 to 0050, `docs/runbooks/security.md`):
 - Every response header comes from `apps/web/src/config/headers.ts`; the build writes
@@ -151,7 +151,7 @@ Deploy (see ADR 0027): after `quality`, `e2e` and `supply-chain` pass, `ci.yml` 
 - Every page carries one search loader script, at most 2 KB gzip, whose only job is to listen for intent and `import()` the search module. Do not add code to it, and never import the engine or the index statically from a page, a layout or the loader. `pnpm check:budgets` and `budgets.spec.ts` fail if a page loads any other script or fetches search before intent.
 - Words from tools and from visitors reach the page as text nodes only. `innerHTML`, `insertAdjacentHTML`, `DOMParser` and `eval` are forbidden in `apps/web/src/lib/search/`; a test fails if one appears.
 - Search stores nothing and sends nothing: no recent searches, no query logging. Adding either needs an ADR and a line in the privacy page.
-- Synthetic tools (`synthetic.ts`, `corpus.ts`) exist for tests only. No page or build imports them, and the site still ships zero tools until Mission 13.
+- Synthetic tools (`synthetic.ts`, `corpus.ts`) exist for tests only. No page or build imports them.
 
 ## Docs map
 

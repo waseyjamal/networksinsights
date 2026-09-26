@@ -3,8 +3,8 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { type Category, categories, categoryHref } from "../../config/categories";
 import { toolOf } from "./test-tools";
 
-// The category page reads the registry, and the real registry has no tools yet (Mission 13). This
-// file gives it two, so the page that has tools can be compared with the one that has none.
+// The category page reads the registry. This file gives it two PDF tools of its own, so the page
+// that has tools can be compared with the one that has none, whatever the real registry holds.
 vi.mock("../registry", async () => {
   const tools = [toolOf("merge-pdf", "pdf"), toolOf("split-pdf", "pdf")];
   return {

@@ -31,6 +31,7 @@ import {
   Progress as ReactProgress,
   Select as ReactSelect,
   Skeleton as ReactSkeleton,
+  StatGrid as ReactStatGrid,
   Switch as ReactSwitch,
   Tabs as ReactTabs,
   Textarea as ReactTextarea,
@@ -39,6 +40,7 @@ import {
 } from "./react";
 import Select from "./Select.astro";
 import Skeleton from "./Skeleton.astro";
+import StatGrid from "./StatGrid.astro";
 import Switch from "./Switch.astro";
 import TabPanel from "./TabPanel.astro";
 import Tabs from "./Tabs.astro";
@@ -259,6 +261,14 @@ describe("Astro and React components emit the same markup", () => {
         }),
       ),
     );
+  });
+
+  it("StatGrid", async () => {
+    const items = [
+      { id: "words", label: "Words", value: "1,234" },
+      { label: "Reading time", value: "5 min 11 sec" },
+    ];
+    expect(await astro(StatGrid, { items })).toBe(react(createElement(ReactStatGrid, { items })));
   });
 
   it("ToolWorkspace", async () => {

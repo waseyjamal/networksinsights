@@ -5,11 +5,13 @@ import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import EmptyState from "../components/ui/EmptyState.astro";
 import LinkList from "../components/ui/LinkList.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
+import ToolCardList from "../components/ui/ToolCardList.astro";
 import { categories, categoryById, categoryHref } from "../config/categories";
 import { pageTitle, sitePages } from "../config/site";
 import Page from "../layouts/Page.astro";
 import { getTool, tools, toolsInCategory } from "../lib/registry";
 import type { Tool } from "../lib/registry/build";
+import { toolCardItem } from "../lib/registry/cards";
 import { loadContent } from "../lib/registry/content";
 import { loadIsland } from "../lib/registry/islands";
 import { collectionNode } from "../lib/seo/jsonld";
@@ -77,10 +79,15 @@ const breadcrumbs = category ? [{ label: "Home", href: "/" }, { label: category.
       <PageHeader title={category.name} intro={category.intro} />
     </div>
     {inCategory.length > 0 ? (
-      <LinkList
-        label={`Tools in ${category.name.toLowerCase()}`}
-        items={inCategory.map((item) => ({ label: item.manifest.name, href: item.href }))}
-      />
+      <section class="space-y-4" aria-labelledby="category-tools">
+        <h2 id="category-tools" class="text-2xl">
+          {inCategory.length === 1 ? "1 tool" : `${inCategory.length} tools`}
+        </h2>
+        <ToolCardList
+          label={`Tools in ${category.name.toLowerCase()}`}
+          items={inCategory.map(toolCardItem)}
+        />
+      </section>
     ) : (
       <EmptyState title="No tools in this category yet" icon={category.icon}>
         <p>Tools appear here as they are added. In the meantime, browse the other categories.</p>

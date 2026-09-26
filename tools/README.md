@@ -3,7 +3,7 @@
 One folder per tool: `tools/<category-id>/<tool-id>/`. The contract is
 [docs/tool-contract.md](../docs/tool-contract.md); the decisions behind it are ADR 0031–0037.
 
-There are no tools yet. The first one arrives in Mission 13.
+The first tool, `text/word-counter` (Mission 13), is the reference for a `client` runtime tool.
 
 Do not write a tool folder by hand: `pnpm new:tool` creates it, and
 [docs/adding-a-tool.md](../docs/adding-a-tool.md) says what to do next.

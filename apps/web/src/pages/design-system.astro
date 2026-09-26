@@ -26,17 +26,21 @@ import Progress from "../components/ui/Progress.astro";
 import Select from "../components/ui/Select.astro";
 import Skeleton from "../components/ui/Skeleton.astro";
 import SkipLink from "../components/ui/SkipLink.astro";
+import StatGrid from "../components/ui/StatGrid.astro";
 import Switch from "../components/ui/Switch.astro";
 import TabPanel from "../components/ui/TabPanel.astro";
 import Tabs from "../components/ui/Tabs.astro";
 import Textarea from "../components/ui/Textarea.astro";
 import ThemeToggle from "../components/ui/ThemeToggle.astro";
+import ToolCardList from "../components/ui/ToolCardList.astro";
 import ToolFilter from "../components/ui/ToolFilter.astro";
 import Tooltip from "../components/ui/Tooltip.astro";
 import ToolWorkspace from "../components/ui/ToolWorkspace.astro";
 import Wordmark from "../components/ui/Wordmark.astro";
 import { categories, categoryHref } from "../config/categories";
 import Base from "../layouts/Base.astro";
+import { tools } from "../lib/registry";
+import { toolCardItem } from "../lib/registry/cards";
 
 const wideTiles = new Set(["pdf", "converters", "developer", "color-design", "date-time"]);
 
@@ -454,6 +458,31 @@ const themes = ["light", "dark"] as const;
   { label: "Price", value: "Free" },
   { label: "Where it runs", value: "On your device" },
   { label: "Updated", value: "September 21, 2026", datetime: "2026-09-21" },
+]}
+          />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Tool cards</h3>
+          <p class="max-w-2xl text-fg-muted">
+            The list of tools on All tools, a category page and a tool's related links. The whole
+            card is one link; the icon chip carries the category tint, and a beta tool shows a
+            badge. These are the site's real tools, read from the registry.
+          </p>
+          <ToolCardList label="Example tool cards" items={tools.slice(0, 3).map(toolCardItem)} />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Stat grid</h3>
+          <p class="max-w-2xl text-fg-muted">
+            Live numbers with a label, such as the results of a counting tool. The values below are
+            a sample, not data.
+          </p>
+          <StatGrid
+            items={[
+  { id: "words", label: "Words", value: "1,234" },
+  { id: "characters", label: "Characters", value: "7,020" },
+  { id: "reading", label: "Reading time", value: "5 min 11 sec" },
 ]}
           />
         </div>

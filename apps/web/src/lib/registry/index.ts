@@ -3,8 +3,7 @@
 // Metadata only. No tool UI, no MDX component, nothing that could put JavaScript on a listing
 // page — see the comment in build.ts and zero-js.test.ts.
 //
-// There are no tools yet. Every glob below is empty, every count is zero, and the site keeps its
-// honest "Coming soon" states. The first tool arrives in Mission 13.
+// A category with no tool keeps its honest "Coming soon" state; the counts below are real counts.
 
 import type { ContractViolation } from "@networksinsights/tool-sdk";
 import { buildRegistry, type Registry, type Tool } from "./build";

@@ -10,6 +10,7 @@ import { type Category, categoryHref } from "../../config/categories";
 import { sitePages, toolTitle } from "../../config/site";
 import Page from "../../layouts/Page.astro";
 import type { Tool } from "../../lib/registry/build";
+import { toolCardItem } from "../../lib/registry/cards";
 import { toolNodes } from "../../lib/seo/jsonld";
 import { toolCard } from "../../lib/seo/og";
 import Badge from "../ui/Badge.astro";
@@ -17,6 +18,7 @@ import Breadcrumbs from "../ui/Breadcrumbs.astro";
 import FactList from "../ui/FactList.astro";
 import LinkList from "../ui/LinkList.astro";
 import PageHeader from "../ui/PageHeader.astro";
+import ToolCardList from "../ui/ToolCardList.astro";
 import ToolWorkspace from "../ui/ToolWorkspace.astro";
 
 // The page every tool gets, built from its manifest and its content/en.mdx (ADR 0033).
@@ -109,10 +111,12 @@ const facts = quickFacts(manifest).map((fact) => ({
   </div>
 
   {related.length > 0 && (
-  <LinkList
-    label="Related tools"
-    items={related.map((other) => ({ label: other.manifest.name, href: other.href }))}
-  />
+  <section class="space-y-3" aria-labelledby="related-tools">
+    <h2 id="related-tools" class="text-xl">
+      Related tools
+    </h2>
+    <ToolCardList items={related.map(toolCardItem)} />
+  </section>
 )}
 
   <LinkList

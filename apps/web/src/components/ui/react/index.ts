@@ -16,6 +16,7 @@ export { Kbd } from "./Kbd";
 export { Progress, type ProgressProps } from "./Progress";
 export { Select, type SelectProps } from "./Select";
 export { Skeleton, type SkeletonProps } from "./Skeleton";
+export { StatGrid, type StatGridProps } from "./StatGrid";
 export { Switch, type SwitchProps } from "./Switch";
 export { Tabs, type TabsProps } from "./Tabs";
 export { Textarea, type TextareaProps } from "./Textarea";

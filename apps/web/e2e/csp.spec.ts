@@ -61,9 +61,10 @@ async function openSearch(page: Page) {
   const dialog = page.getByRole("dialog", { name: "Search tools" });
   await expect(dialog).toBeVisible();
   await page.getByRole("combobox", { name: "Search tools" }).fill("pdf");
-  // The module and the index both loaded: the dialog answers the query.
+  // The module and the index both loaded: the dialog answers the query. With the real index that
+  // is "No tools yet" when it is empty and "No results" when it has tools; the other stays hidden.
   await expect(
-    dialog.locator("[data-ni-search-empty], [data-ni-search-none]").first(),
+    dialog.locator("[data-ni-search-empty]:not([hidden]), [data-ni-search-none]:not([hidden])"),
   ).toBeVisible();
 }
 
