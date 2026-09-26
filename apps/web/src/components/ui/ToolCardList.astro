@@ -1,0 +1,33 @@
+---
+import type { ToolCardItem } from "./attrs";
+import Badge from "./Badge.astro";
+import Icon from "./Icon.astro";
+
+// A grid of tool cards: /tools/, a category page, the related tools of a tool page. Each card is
+// one link with the category icon, the name, a Beta badge when it applies and the summary. Every
+// value comes from the tool's manifest (lib/registry/cards.ts), never from copy typed into a page.
+// `label` names the list for screen readers when no heading around it does.
+interface Props {
+  items: readonly ToolCardItem[];
+  label?: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<ul class="ni-toolcards" aria-label={label}>
+  {items.map((item) => (
+  <li>
+    <a class="ni-toolcard" href={item.href} data-cat={item.category}>
+      <span class="ni-icon-tint">
+        <Icon name={item.icon} />
+      </span>
+      <span class="ni-toolcard__head">
+        <span class="ni-toolcard__name">{item.name}</span>
+        {item.beta && <Badge tone="warning">Beta</Badge>}
+      </span>
+      <span class="ni-toolcard__summary">{item.summary}</span>
+    </a>
+  </li>
+))}
+</ul>

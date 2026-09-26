@@ -1,0 +1,20 @@
+---
+import type { StatItem } from "./attrs";
+
+// Numbers with a label, in a grid of cells: the results of a counting tool. Values arrive
+// formatted. The label is the <dt> and comes first in reading order; the number shows above it.
+interface Props {
+  items: readonly StatItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<dl class="ni-stats">
+  {items.map((item) => (
+  <div class="ni-stats__item" data-stat={item.id}>
+    <dt>{item.label}</dt>
+    <dd>{item.value}</dd>
+  </div>
+))}
+</dl>

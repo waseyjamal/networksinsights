@@ -149,6 +149,8 @@ showcase has a "Download a sample file" button that the E2E tests click in every
 | EmptyState | yes | no | The honest "nothing here yet" box; `actions` slot for links |
 | LinkList | yes | no | Wrapping pill links, for example the category links in an empty state |
 | FactList | yes | no | A definition list in a grid of cells, the "Quick facts" of a tool page. `items` are `{ label, value, datetime? }`; every value comes from data, never from copy typed into a page (ADR 0044) |
+| ToolCardList | yes | no | The grid of tool cards on All tools, a category page and a tool's related links. Each card is one link: the category icon chip (the only use of the accent), the name, a Beta badge for a beta tool, and the summary. `items` are `ToolCardItem`s from `toolCardItem(tool)` in `lib/registry/cards.ts`, so every value comes from the manifest. `label` names the list when no heading does. The rows are `li > a`, which the /tools/ filter relies on |
+| StatGrid | yes | yes | Live numbers with a label, in a grid of cells: the results of a counting tool. `items` are `{ label, value, id? }`; `value` arrives formatted, `id` becomes `data-stat` for tests. The label is the `<dt>` and comes first in reading order; the number shows above it in Geist Mono |
 | SiteHeader, SiteFooter | yes | no | Live in `components/layout/`, built from the configs. Use them only through `layouts/Page.astro` |
 
 Long-form text (About, Privacy, Terms) sits in a `<div class="ni-prose">`. The mobile menu is a native `<details>`, so it needs no JavaScript and works on Safari 16.4; it closes through its summary only.

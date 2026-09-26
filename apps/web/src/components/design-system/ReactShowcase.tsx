@@ -8,6 +8,7 @@ import {
   Input,
   Progress,
   Select,
+  StatGrid,
   Switch,
   saveFile,
   Tabs,
@@ -118,6 +119,12 @@ export default function ReactShowcase() {
           <Badge tone="danger">Danger</Badge>
           <Badge tone="info">Info</Badge>
         </div>
+        <StatGrid
+          items={[
+            { id: "sample-words", label: "Words (sample)", value: "42" },
+            { id: "sample-lines", label: "Lines (sample)", value: "7" },
+          ]}
+        />
       </div>
     </div>
   );
