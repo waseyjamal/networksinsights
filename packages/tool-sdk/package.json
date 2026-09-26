@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./download": "./src/download.ts"
+    "./download": "./src/download.ts",
+    "./worker": "./src/worker.ts"
   },
   "scripts": {
     "check": "tsc --noEmit"

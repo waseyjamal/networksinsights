@@ -22,7 +22,7 @@ tools/<category-id>/<tool-id>/
   island.astro      fixed glue that mounts ui.tsx (see below)
   content/en.mdx    the page content
   logic.test.ts     required
-  worker.ts         optional, for the worker runtime (wired up in Mission 14)
+  worker.ts         the Web Worker of a `worker` tool (required for that runtime; see below)
 ```
 
 The folder name is the tool id, and the parent folder name is the category id. Both must match the
@@ -152,6 +152,47 @@ should name the tool (ADR 0044). No H1: the page template renders the one H1, th
 depth goes under H3s inside a section. The FAQ is `###` questions ending in `?`, each followed by its answer. The content quality
 gates (ADR 0036) add word minimums, no placeholders and no near-duplicates on top of these rules;
 see "Content quality gates" below.
+
+## The worker runtime
+
+A `worker` tool does its heavy work in a Web Worker, so the page never freezes (ADR 0051). Both
+sides speak one typed protocol from `@networksinsights/tool-sdk/worker`: the page sends `run` and
+`cancel`, the worker answers `progress`, `result`, `error` or `cancelled`.
+
+`worker.ts` calls `defineWorker` once. The handler gets the input, `progress()` and an abort
+`signal`; throw a `ToolError` for a problem the visitor can fix, and its message is shown to them.
+
+```ts
+import { defineWorker, ToolError } from "@networksinsights/tool-sdk/worker";
+import type { Input, Output } from "./logic";
+
+defineWorker<Input, Output>(async (input, { progress, signal }) => {
+  // ...one step...
+  signal.throwIfAborted();
+  progress({ done: 1, total: 2, stage: "Encoding" });
+  // ...the next step...
+});
+```
+
+`ui.tsx` sends it jobs with `createWorkerClient` from `@ui`. The worker starts on the first run, so
+its code is on-demand JavaScript:
+
+```tsx
+import { createWorkerClient, WorkerJobError } from "@ui";
+
+const client = createWorkerClient<Input, Output>(
+  () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
+);
+
+const output = await client.run(input, { onProgress, signal: controller.signal });
+```
+
+- Aborting the signal rejects the job at once with an `AbortError`. A worker that does not stop
+  within 400 ms is terminated, and the next run starts a new one.
+- A failed job rejects with a `WorkerJobError`. Show its `message` only when `expected` is true.
+- Inputs and outputs are structured-cloned: send the visitor's `File` as it is.
+- `worker.ts` may use the web APIs a worker has (`OffscreenCanvas`, `createImageBitmap`); keep the
+  rules that decide what to do in the pure `logic.ts`, where they are tested.
 
 ## Security
 

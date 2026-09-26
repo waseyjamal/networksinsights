@@ -57,7 +57,9 @@ function nextSteps(result: GenerateResult, id: string): string[] {
     "     Every TODO(new-tool) marker must be gone before the tool can ship.",
   ];
   if (result.runtime === "worker") {
-    lines.push("  4. worker.ts is a stub; the worker runtime is wired up in Mission 14.");
+    lines.push(
+      '  4. Do the heavy work in worker.ts; ui.tsx sends it jobs (docs/tool-contract.md, "The worker runtime").',
+    );
   }
   if (result.runtime === "server") {
     lines.push(

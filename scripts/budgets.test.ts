@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -123,6 +123,20 @@ describe("what counts as the tool's own JavaScript", () => {
     expect(js?.onDemand.files.map((file) => file.path)).toEqual(["_astro/engine.FFF.wasm"]);
     expect(kb(js?.onDemand.gzip ?? 0)).toBeGreaterThan(290);
     expect(kb(js?.initial.gzip ?? 0)).toBeLessThan(6);
+  });
+
+  it("charges a worker script to the on-demand number, in the form Vite writes it", () => {
+    const { dist, put } = build({ staticKb: 2 });
+    put(
+      "_astro/ui.AAA.js",
+      "import`./react.CCC.js`;import{a}from`./shared.DDD.js`;" +
+        "export const w=()=>new Worker(new URL(`/_astro/worker-HHH.js`,``+import.meta.url),{type:`module`});" +
+        "export default ()=>a;",
+    );
+    put("_astro/worker-HHH.js", "self.onmessage=()=>{};");
+    const js = measurePageJs(dist, "word-counter/index.html");
+    expect(js?.onDemand.files.map((file) => file.path)).toEqual(["_astro/worker-HHH.js"]);
+    expect(js?.initial.files.map((file) => file.path)).not.toContain("_astro/worker-HHH.js");
   });
 
   it("reads imports quoted with backticks, as the bundler writes them", () => {
@@ -295,15 +309,27 @@ describe("the command", () => {
   it("measures this repository's tools in a build and passes when they fit", {
     tags: ["slow"],
   }, () => {
-    const { dist } = build();
+    const { dist, put } = build();
+    // The same small page for every real tool of this repository, whatever tools it has.
+    const page = readFileSync(join(dist, "word-counter", "index.html"), "utf8");
+    const ids = readdirSync(join(repoRoot, "tools"), { withFileTypes: true })
+      .filter((category) => category.isDirectory() && category.name !== "node_modules")
+      .flatMap((category) =>
+        readdirSync(join(repoRoot, "tools", category.name), { withFileTypes: true })
+          .filter((tool) =>
+            existsSync(join(repoRoot, "tools", category.name, tool.name, "tool.config.ts")),
+          )
+          .map((tool) => tool.name),
+      );
+    for (const id of ids) put(`${id}/index.html`, page);
     const result = spawnSync(
       process.execPath,
       ["--import", "tsx", "scripts/check-budgets.ts", "--dist", dist],
       { cwd: repoRoot, encoding: "utf8" },
     );
     expect(result.status, result.stdout + result.stderr).toBe(0);
-    // The fixture build has a small page at /word-counter/, the real tool of this repository.
-    expect(result.stdout).toMatch(/✓ word-counter\s+initial/);
+    expect(ids).toContain("word-counter");
+    for (const id of ids) expect(result.stdout).toMatch(new RegExp(`✓ ${id}\\s+initial`));
   });
 
   it("refuses an option it does not know, with exit code 2", { tags: ["slow"] }, () => {
