@@ -35,11 +35,22 @@ async function open(page: Page) {
   await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
 }
 
-/** The format this engine can write: WebKit (like Safari) has no WebP encoder. */
-const formatFor = (browserName: string) =>
-  browserName === "webkit"
-    ? { value: "jpg", extension: "jpg", mime: "image/jpeg", magic: [0xff, 0xd8, 0xff] }
-    : { value: "webp", extension: "webp", mime: "image/webp", magic: [0x52, 0x49, 0x46, 0x46] };
+const FORMATS = {
+  webp: { value: "webp", extension: "webp", magic: [0x52, 0x49, 0x46, 0x46] },
+  jpg: { value: "jpg", extension: "jpg", magic: [0xff, 0xd8, 0xff] },
+} as const;
+
+/**
+ * Whether this browser's canvas encoder writes WebP, asked of the browser itself. Apple's Safari
+ * cannot; Playwright's WebKit on Linux, Chromium and Firefox can.
+ */
+const writesWebp = (page: Page) =>
+  page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    return canvas.toDataURL("image/webp").startsWith("data:image/webp");
+  });
 
 test("compresses a real image in the worker, previews it and downloads it", async ({
   page,
@@ -48,7 +59,8 @@ test("compresses a real image in the worker, previews it and downloads it", asyn
   const errors = collectErrors(page);
   const violations = await watchViolations(page);
   await open(page);
-  const format = formatFor(browserName);
+  // WebP is chosen first wherever the browser writes it.
+  const format = (await writesWebp(page)) ? FORMATS.webp : FORMATS.jpg;
   await expect(page.locator("#compress-image-format")).toHaveValue(format.value);
 
   const image = await makeTestPng(page);
@@ -105,15 +117,32 @@ test("writes a JPG with a white background where the PNG was transparent", async
   for (const channel of corner.slice(0, 3)) expect(channel).toBeGreaterThan(240);
 });
 
-test("offers WebP only where the browser can write it", async ({ page, browserName }) => {
+test("offers WebP where the browser writes it", async ({ page }) => {
   await open(page);
   const webp = page.locator('#compress-image-format option[value="webp"]');
-  if (browserName === "webkit") {
-    await expect(webp).toBeDisabled();
-    await expect(page.getByText("This browser cannot write WebP files.")).toBeVisible();
-  } else {
-    await expect(webp).toBeEnabled();
-  }
+  if (await writesWebp(page)) await expect(webp).toBeEnabled();
+  else await expect(webp).toBeDisabled();
+});
+
+test("offers JPG only, and says why, in a browser with no WebP encoder", async ({ page }) => {
+  // What Safari does: asked for WebP, its encoder hands back a PNG.
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.toDataURL;
+    HTMLCanvasElement.prototype.toDataURL = function (type?: string, quality?: number) {
+      return original.call(this, type === "image/webp" ? "image/png" : type, quality);
+    };
+  });
+  await open(page);
+  await expect(page.locator('#compress-image-format option[value="webp"]')).toBeDisabled();
+  await expect(page.locator("#compress-image-format")).toHaveValue("jpg");
+  await expect(page.getByText("This browser cannot write WebP files.")).toBeVisible();
+
+  await files(page).setInputFiles(await makeTestPng(page));
+  const row = rows(page).first();
+  await expect(row).toHaveAttribute("data-state", "done", { timeout: 30_000 });
+  await expect(
+    row.getByRole("button", { name: "Download test-photo-compressed.jpg" }),
+  ).toBeVisible();
 });
 
 test("refuses a file that is not an image, and one over the size limit, with the reason", async ({
