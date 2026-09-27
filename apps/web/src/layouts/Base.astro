@@ -1,6 +1,8 @@
 ---
 import { Font } from "astro:assets";
+import Analytics from "../components/layout/Analytics.astro";
 import SearchDialog from "../components/ui/SearchDialog.astro";
+import { analyticsSettings } from "../config/analytics";
 import { OVERRIDE_META } from "../config/headers";
 import { site } from "../config/site";
 import { toHex } from "../lib/color";
@@ -51,6 +53,9 @@ const head = buildHead({
   image: shareImageOf(share),
 });
 
+// Analytics are on only in a build with a website id: the production deploy (ADR 0051).
+const analytics = analyticsSettings();
+
 // Browser-chrome colors come from the same tokens the page uses (--bg in each theme).
 const tokens = parseTokens(tokensCss);
 const chrome = (theme: "light" | "dark") => {
@@ -65,7 +70,8 @@ const themeColorDark = chrome("dark");
 // stored theme. The Content-Security-Policy allows it by hash (ADR 0047).
 // Besides the theme script, every page ships exactly one more: the search loader in
 // SearchDialog.astro, a deferred module that imports the search code only when a visitor shows
-// intent (ADR 0046). Astro's island bootstrap is separate and only appears on pages that have an
+// intent (ADR 0046). When analytics are on, two more deferred files follow it: Umami's tracker and
+// the tool-used and error script (ADR 0051). Astro's island bootstrap is separate and only appears on pages that have an
 // island.
 ---
 
@@ -105,5 +111,6 @@ const themeColorDark = chrome("dark");
   <body>
     <slot />
     <SearchDialog />
+    {analytics && <Analytics settings={analytics} />}
   </body>
 </html>

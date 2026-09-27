@@ -67,7 +67,7 @@ export const pageUpdated = {
   tools: "2026-09-21",
   about: "2026-09-21",
   contact: "2026-09-21",
-  privacy: "2026-09-21",
+  privacy: "2026-09-27",
   terms: "2026-09-21",
 } as const;
 

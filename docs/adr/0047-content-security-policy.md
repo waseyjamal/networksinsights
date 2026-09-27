@@ -3,6 +3,8 @@
 Status: Accepted
 Date: 2026-09-24
 
+Amended by [ADR 0051](0051-analytics-and-error-reporting.md): `connect-src` also allows `https://gateway.umami.is`, where the analytics tracker sends its data. `script-src` is unchanged.
+
 ## Context
 
 The site runs other people's words through its pages: tool names, files a visitor opens, text they type. A Content-Security-Policy is the browser's last line of defence if one of those words ever becomes markup. It has to be strict from the start, because every tool added later inherits it, and loosening a policy later is easy while tightening one is not. It also has to leave room for what tools will need: Web Workers, WebAssembly, previews and downloads of the visitor's own files, and a server endpoint on our own origin (Mission 15).
@@ -22,7 +24,7 @@ The site is static HTML on Cloudflare's static-asset engine, with no adapter (AD
 | `img-src` | `'self' data: blob:` | `blob:` and `data:` show previews of the visitor's own files and results. Images cannot run code, and a `blob:` URL can only be made by code already running on our origin. |
 | `media-src` | `'self' blob:` | Audio and video results a tool made on the device. |
 | `font-src` | `'self'` | The self-hosted Geist fonts (ADR 0028). |
-| `connect-src` | `'self'` | The search index today, and the Mission 15 server endpoint, which is on our own origin. No third party is ever contacted. |
+| `connect-src` | `'self'` | The search index today, and the Mission 15 server endpoint, which is on our own origin. No third party is ever contacted. (ADR 0051 adds `https://gateway.umami.is` for analytics.) |
 | `worker-src` | `'self' blob:` | Web Workers from our bundles (Mission 14), and the ones libraries start from a `blob:` URL. As with images, only code already allowed can make one. |
 | `manifest-src` | `'self'` | The installable app (ADR 0022). |
 | `object-src` | `'none'` | No plugins. |

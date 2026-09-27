@@ -39,7 +39,11 @@ jobs:
       # The slow tests (1,000-tool benchmarks, the generated-tree typecheck, spawned CLIs) stay out of
       # `pnpm check` and the pre-push hook, and run here (ADR 0043).
       - run: pnpm test:slow
+      # A test website id, so the build carries the analytics scripts that check:budgets measures
+      # (ADR 0051). The tracker sends only on the production hostname, so this build sends nothing.
       - run: pnpm build
+        env:
+          UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
       # The JavaScript budget of every tool page, measured on the build output just made (ADR 0037).
       - run: pnpm check:budgets
       # What search engines and share previews will read, on the build just made (ADR 0038 to 0041).
@@ -134,7 +138,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter web exec playwright install --with-deps
+      # The same test website id as quality: the E2E tests check the analytics scripts, and answer
+      # Umami's endpoint themselves (e2e/analytics.spec.ts, ADR 0051).
       - run: pnpm test:e2e
+        env:
+          UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -239,9 +247,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # INDEXNOW_KEY is a repository variable, not a secret: the key is published at /<key>.txt by
       # design. The build writes that file only after launch (ADR 0042).
+      # UMAMI_WEBSITE_ID is a repository variable too: the id is in every page. Unset, production
+      # has no analytics and its privacy page says so (ADR 0051). Previews never get it.
       - run: pnpm build
         env:
           INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
+          UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
       # The sitemaps that are live now, saved before they are replaced. After the deploy they are
       # compared with the new ones to find the URLs that changed (ADR 0042).
       - name: Save the live sitemaps

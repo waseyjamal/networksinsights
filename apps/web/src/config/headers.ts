@@ -5,6 +5,8 @@
 // values drive `pnpm check:production` and the E2E header tests, so a header cannot be changed in
 // one place and forgotten in another. Nothing else may write a response header.
 
+import { UMAMI_HOST } from "./analytics";
+
 /**
  * Content-Security-Policy, deny by default. Each source is here because something needs it; the
  * reason is next to it and in ADR 0047. Astro adds the hashes of our inline scripts and styles to
@@ -19,8 +21,10 @@ export const csp = {
     "img-src 'self' data: blob:",
     // Audio and video results a tool made on the device.
     "media-src 'self' blob:",
-    // The search index today, a same-origin server endpoint from Mission 15. Nothing else.
-    "connect-src 'self'",
+    // The search index and, from Mission 15, a same-origin server endpoint. The one other origin is
+    // Umami's collection endpoint, where the analytics tracker sends page views, Web Vitals and
+    // the tool-used and error events (ADR 0051). The tracker itself is served from 'self'.
+    `connect-src 'self' ${UMAMI_HOST}`,
     // Web Workers from our own bundles, and the ones libraries start from a blob: URL.
     "worker-src 'self' blob:",
     // The installable app's manifest (ADR 0022).

@@ -79,7 +79,7 @@ No AGPL, GPL, SSPL or non-commercial licenses, for code, fonts or AI models, wit
 
 ## Architecture principles
 
-- Static HTML first. JavaScript only inside islands, plus two scripts every page carries: the inline theme script and the deferred search loader (ADR 0046). Nothing of search loads until a visitor shows intent.
+- Static HTML first. JavaScript only inside islands, plus two scripts every page carries: the inline theme script and the deferred search loader (ADR 0046). Nothing of search loads until a visitor shows intent. A production build with analytics adds exactly two more deferred files (ADR 0051).
 - Tool logic is pure TypeScript with no UI or framework imports.
 - Three runtimes: browser, worker, server.
 - Process user files on the device whenever possible.
@@ -104,9 +104,9 @@ Run from the repo root:
   `docs/adding-a-tool.md`)
 - `pnpm check:tools` — every tool gate on its own with a readable summary; `--tool <id>` checks one
   tool, `--json` prints JSON. Part of `pnpm check`
-- `pnpm check:budgets` — the JavaScript budget of every tool page, and the size and behaviour of the
-  search loader every page carries, from the build output; run after `pnpm build`. Runs in CI after
-  the build (ADR 0037, ADR 0046)
+- `pnpm check:budgets` — the JavaScript budget of every tool page, the size and behaviour of the
+  search loader every page carries, and the analytics files when the build has them, from the build
+  output; run after `pnpm build`. Runs in CI after the build (ADR 0037, ADR 0046, ADR 0051)
 - `pnpm check:seo` — canonical links, Open Graph and Twitter/X tags, share images, structured data,
   robots.txt, sitemaps and llms.txt, from the build output; run after `pnpm build`. Runs in CI after
   the build (ADR 0038 to 0041)
@@ -153,6 +153,15 @@ Deploy (see ADR 0027): after `quality`, `e2e` and `supply-chain` pass, `ci.yml` 
 - Search stores nothing and sends nothing: no recent searches, no query logging. Adding either needs an ADR and a line in the privacy page.
 - Synthetic tools (`synthetic.ts`, `corpus.ts`) exist for tests only. No page or build imports them.
 
+## Analytics and error reports (ADR 0051)
+
+- Umami Cloud, cookie-free. It is on only when the build has `UMAMI_WEBSITE_ID`, a repository variable that only the production deploy passes (`docs/runbooks/analytics.md`). Without it no page carries analytics.
+- The tracker is `apps/web/src/lib/analytics/umami-tracker.js`, Umami's own file served from our origin. Never edit it, never reformat it, never load it from Umami's host. Update it only through `VENDOR.md` next to it; tests pin its hash.
+- A page with analytics carries exactly two more deferred files: the tracker (at most 3 KB gzip) and `components/layout/Analytics.astro`'s script (at most 1 KB gzip). `pnpm check:budgets` and `budgets.spec.ts` enforce it.
+- Events are only `tool-used` (`{ tool }`, once per page view) and `js-error` (scrubbed by `lib/analytics/events.ts`). Never send what a visitor typed, dropped or chose, a URL query, or anything that identifies a person. A new event, or a new field, needs an ADR and a line in the privacy page.
+- The privacy page reads the same settings: never describe analytics there by hand.
+- `connect-src` names `https://gateway.umami.is` and no other third party; `script-src` stays `'self'`.
+
 ## Docs map
 
 - `docs/architecture.md` — goals, layout, runtimes, quality targets, mission table
@@ -161,7 +170,7 @@ Deploy (see ADR 0027): after `quality`, `e2e` and `supply-chain` pass, `ci.yml` 
 - `docs/design-system.md` — the Signal design system: how to use tokens and components
 - `docs/adr/` — one file per architecture decision
 - `docs/launch-checklist.md` — every owner input and step needed before launch
-- `docs/runbooks/` — step-by-step procedures (deploy and rollback, the redirect rule, IndexNow, security)
+- `docs/runbooks/` — step-by-step procedures (deploy and rollback, the redirect rule, IndexNow, security, analytics)
 
 ## Changing a decision
 

@@ -92,6 +92,7 @@ const facts = quickFacts(manifest).map((fact) => ({
     title={manifest.name}
     privacy={privacy.text}
     privacyOnDevice={privacy.onDevice}
+    tool={manifest.id}
   >
     {status && (
   <Badge slot="badge" tone={status.tone}>

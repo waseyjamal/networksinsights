@@ -88,6 +88,8 @@ The site is built to be found (SEO) and quoted (GEO/AEO). Every page carries a c
 
 Every response carries a strict Content-Security-Policy (deny by default, same-origin scripts only, inline scripts by hash) and the standard security headers, all from `apps/web/src/config/headers.ts` ([ADR 0047](adr/0047-content-security-policy.md), [0048](adr/0048-security-headers.md)). Preview deployments send `X-Robots-Tag: noindex`; production never does. A tool that needs more asks in its manifest, with an accepted ADR. Dependencies are updated weekly by Dependabot with a three-day cooldown, and CI fails on a moderate-or-worse advisory or a licence outside the allowed set ([ADR 0049](adr/0049-supply-chain-automation.md)). Tools give files and show text only through safe helpers, and a gate refuses HTML sinks; server tools follow a written contract ([ADR 0050](adr/0050-tool-runtime-safety-contract.md)). Procedures: [runbooks/security.md](runbooks/security.md).
 
+Production counts page views, tool use, Core Web Vitals and scrubbed JavaScript errors with Umami Cloud: no cookies, no personal data, a 2.3 KB tracker served from our own origin and a script of ours under 1 KB, both deferred. Only the production build has a website id, so previews and local builds carry no analytics, and the privacy page describes exactly what the build does ([ADR 0051](adr/0051-analytics-and-error-reporting.md), [runbooks/analytics.md](runbooks/analytics.md)).
+
 ## Hosting
 
 Cloudflare Workers with static assets, served on https://networksinsights.com. Deploys run only from CI ([ADR 0027](adr/0027-deployment.md), [runbook](runbooks/deploy-and-rollback.md)).
@@ -109,8 +111,8 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 11 | Search | Done |
 | 12 | Security | Done |
 | 13 | Reference tool: browser | Done |
-| 14 | Reference tool: worker | In progress |
+| 14 | Reference tool: worker | Done |
 | 15 | Reference tool: server + AI | |
-| 16 | Observability | |
+| 16 | Observability | Done |
 | 17 | Offline + site-wide budgets | |
 | 18 | Launch audit | |
