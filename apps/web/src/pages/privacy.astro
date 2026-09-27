@@ -2,18 +2,23 @@
 import Alert from "../components/ui/Alert.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
+import { analyticsSettings, EVENTS, MAX_ERRORS_PER_PAGE } from "../config/analytics";
 import { pageTitle, site } from "../config/site";
 import Page from "../layouts/Page.astro";
+
+// What this page says about analytics comes from the same settings that decide whether the pages
+// carry the tracker, so a build without analytics cannot claim them and one with them cannot
+// hide them (ADR 0051).
+const analytics = analyticsSettings();
+const description = analytics
+  ? "What NetworksInsights does with your data: no accounts, no cookies, visit statistics without personal data, and one theme setting kept on your device."
+  : "What NetworksInsights does with your data today: no accounts, no cookies, no analytics, and one theme preference stored on your device.";
 
 // The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
 const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
 ---
 
-<Page
-  breadcrumbs={breadcrumbs}
-  title={pageTitle("Privacy")}
-  description="What NetworksInsights does with your data today: no accounts, no cookies, no analytics, and one theme preference stored on your device."
->
+<Page breadcrumbs={breadcrumbs} title={pageTitle("Privacy")} description={description}>
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />
     <PageHeader
@@ -33,7 +38,14 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
     <ul>
       <li>There are no accounts and no sign-up.</li>
       <li>The site sets no cookies.</li>
-      <li>The site has no analytics and no advertising trackers today.</li>
+      {analytics ? (
+  <li>
+    The site counts visits, tool use and errors with Umami, without cookies and without storing your
+    IP address. It has no advertising trackers.
+  </li>
+) : (
+  <li>The site has no analytics and no advertising trackers today.</li>
+)}
       <li>Your theme choice is stored on your own device and never sent to us.</li>
     </ul>
 
@@ -53,16 +65,57 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
     </p>
 
     <h2>Analytics</h2>
+    {analytics ? (
+  <Fragment>
     <p>
-      There are no analytics today. If that changes, this page will be updated before analytics go
-      live.
+      To learn which tools people use, which pages are slow and what breaks, the site uses
+      <a href="https://umami.is/">Umami Cloud</a>, a cookie-free analytics service. Its script is
+      served from this site; what it measures is sent to Umami. It sets no cookies and cannot follow
+      you to other sites.
     </p>
+    <p>For each page you open, it sends:</p>
+    <ul>
+      <li>
+        the page address, without anything after a <code>?</code> or <code>#</code>
+      </li>
+      <li>the page title, and the address of the site that linked you here, if any</li>
+      <li>your screen size and your browser's language</li>
+      <li>
+        how fast the page loaded and responded (Core Web Vitals: LCP, INP, CLS, and two related
+        timings).
+      </li>
+    </ul>
+    <p>
+      On a tool page it also sends one "{EVENTS.toolUsed}" event the first time you use the tool,
+      with the tool's name and nothing you entered. If the page hits a programming error, it sends
+      at most {MAX_ERRORS_PER_PAGE} "{EVENTS.error}" reports: the kind of error, its message with
+      any quoted text, web addresses, email addresses and long numbers removed, and the file and
+      line of our code where it happened.
+    </p>
+    <p>
+      Umami receives your IP address with each request, as any server does, and does not store it.
+      It uses it to estimate your country and region, and to count visitors: it combines your IP
+      address and browser with a secret value that changes every month, so repeat visits within a
+      month count as one visitor and nothing links you from one month to the next. See
+      <a href="https://umami.is/privacy">Umami's privacy policy</a>.
+    </p>
+    <p>
+      Nothing is sent if your browser sends Do Not Track, or if a content blocker stops the script.
+      The script reads one local storage key, <code>umami.disabled</code>, which lets the site's
+      owner leave their own visits out of the numbers. It never writes anything to your browser.
+    </p>
+  </Fragment>
+) : (
+  <p>
+    There are no analytics today. If that changes, this page will be updated before analytics go
+    live.
+  </p>
+)}
 
     <h2>Tools and your files</h2>
     <p>
-      No tools are live yet, so no files are processed today. Where a tool runs in your browser,
-      your files stay on your device. This page will say where each tool does its processing once
-      tools launch.
+      Every tool page says where that tool does its work. Where a tool runs in your browser, your
+      files and text stay on your device and are never sent to us or to the analytics service.
     </p>
 
     <h2>Hosting</h2>

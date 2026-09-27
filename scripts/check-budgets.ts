@@ -3,13 +3,15 @@
 // Measures the JavaScript of every tool page in the real build output (apps/web/dist) against its
 // budget (ADR 0037): the initial island code, and the code fetched on demand, separately. It also
 // checks the search loader that every page carries (ADR 0046): at most 2 KB gzip, and nothing of
-// search fetched before a visitor shows intent. Run it after `pnpm build`. CI runs it on every
+// search fetched before a visitor shows intent; and, in a build with analytics, the two analytics
+// files (ADR 0051). Run it after `pnpm build`. CI runs it on every
 // pull request. Exit code 0 means every page is within budget; 1 means a page is over; 2 means the
 // command was used wrongly.
 
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { formatViolation, indentMessage, toolManifestSchema } from "@networksinsights/tool-sdk";
+import { checkAnalytics, formatAnalyticsReport } from "./lib/analytics";
 import {
   budgetReportToJson,
   checkBudgets,
@@ -77,7 +79,8 @@ async function main(): Promise<number> {
 
   const report = checkBudgets(distDir, chosen);
   const loader = checkSearchLoader(distDir);
-  const ok = report.ok && loader.violations.length === 0;
+  const analytics = checkAnalytics(distDir);
+  const ok = report.ok && loader.violations.length === 0 && analytics.violations.length === 0;
   if (values.json) {
     console.log(
       JSON.stringify(
@@ -100,6 +103,18 @@ async function main(): Promise<number> {
               fix: v.fix,
             })),
           },
+          analytics: {
+            ok: analytics.violations.length === 0,
+            on: analytics.on,
+            pages: analytics.pages,
+            trackerGzip: analytics.tracker?.gzip ?? null,
+            eventsGzip: analytics.events?.gzip ?? null,
+            problems: analytics.violations.map((v) => ({
+              page: v.dir,
+              problem: v.problem,
+              fix: v.fix,
+            })),
+          },
         },
         null,
         2,
@@ -109,13 +124,20 @@ async function main(): Promise<number> {
     console.log(formatBudgetReport(report));
     console.log(`
 ${formatSearchLoaderReport(loader)}`);
-    if (loader.violations.length > 0) {
+    console.log(`
+${formatAnalyticsReport(analytics)}`);
+    const sections: Array<[string, typeof loader.violations]> = [
+      ["search", loader.violations],
+      ["analytics", analytics.violations],
+    ];
+    for (const [name, violations] of sections) {
+      if (violations.length === 0) continue;
       console.log(
         `
-${loader.violations.length} search ${loader.violations.length === 1 ? "problem" : "problems"} to fix:
+${violations.length} ${name} ${violations.length === 1 ? "problem" : "problems"} to fix:
 `,
       );
-      for (const violation of loader.violations) {
+      for (const violation of violations) {
         console.log(
           indentMessage(
             formatViolation(violation).replace('Quality gate "budget":', "JavaScript budget:"),

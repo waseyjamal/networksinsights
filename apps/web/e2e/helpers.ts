@@ -66,9 +66,29 @@ export function collectResponses(page: Page) {
 /** The most the one search loader script may weigh, gzip (ADR 0046). */
 export const LOADER_MAX_GZIP_BYTES = 2048;
 
-/** What the one deferred loader script weighs. */
+/** The most each analytics file may weigh, gzip (ADR 0051): Umami's tracker, then ours. */
+export const TRACKER_MAX_GZIP_BYTES = 3072;
+export const EVENTS_MAX_GZIP_BYTES = 1024;
+
+/**
+ * True for the two analytics files a build with a website id adds to every page (ADR 0051). The
+ * E2E job builds with a test id, so they are present there; a local build without one has neither.
+ */
+export const isAnalyticsScript = (url: string) =>
+  /^\/_astro\/(?:umami-tracker\.|Analytics\.astro_astro_type_script_)[\w.-]+\.js$/.test(
+    new URL(url).pathname,
+  );
+
+interface FileAudit {
+  url: string;
+  raw: number;
+  gzip: number;
+}
+
+/** What the one deferred loader script weighs, and the analytics files when the build has them. */
 export interface ScriptAudit {
-  loader: { url: string; raw: number; gzip: number };
+  loader: FileAudit;
+  analytics: FileAudit[];
 }
 
 /** Every request URL of a page, from the first navigation on. */
@@ -85,23 +105,32 @@ export const isSearchRequest = (url: string) =>
 /**
  * Asserts the zero-JavaScript rule as it stands since Mission 11 (ADR 0046): exactly one script
  * file, the search loader, at most 2 KB gzip; one inline script, the theme script; no island; and
- * no request for the search module or the index. `responses` and `requests` must have been
- * collected before the page was loaded.
+ * no request for the search module or the index. Since Mission 16 (ADR 0051) a build with
+ * analytics also carries the two analytics files, which expectAnalyticsScripts checks.
+ * `responses` and `requests` must have been collected before the page was loaded.
  */
 export async function expectOnlySearchLoader(
   page: Page,
   responses: ReturnType<typeof collectResponses>,
   requests: string[],
 ): Promise<ScriptAudit> {
-  const scripts = responses.filter((response) => response.type === "script");
+  const all = responses.filter((response) => response.type === "script");
+  const scripts = all.filter((script) => !isAnalyticsScript(script.url));
   expect(
     scripts.map((script) => script.url),
     "script files requested",
   ).toHaveLength(1);
   const [script] = scripts;
   if (!script) throw new Error("unreachable: the length was just asserted");
-  expect(await page.locator("script[src]").count(), "script elements with a src").toBe(1);
-  await expect(page.locator("script[src]")).toHaveAttribute("type", "module");
+  const analytics = await expectAnalyticsScripts(
+    page,
+    all.filter((s) => isAnalyticsScript(s.url)),
+  );
+  const loaderElement = page.locator(
+    'script[src]:not([data-website-id]):not([src*="Analytics.astro_astro_type_script_"])',
+  );
+  expect(await loaderElement.count(), "script elements with a src, besides analytics").toBe(1);
+  await expect(loaderElement).toHaveAttribute("type", "module");
   expect(await page.locator("astro-island").count(), "islands").toBe(0);
 
   // The theme script is the only inline script: the JSON-LD blocks are data, not code.
@@ -119,5 +148,38 @@ export async function expectOnlySearchLoader(
 
   // Nothing of search is fetched until intent: not the module, not the index.
   expect(requests.filter(isSearchRequest), "search requests before intent").toEqual([]);
-  return { loader: audit };
+  return { loader: audit, analytics };
+}
+
+/**
+ * In a build with analytics: exactly the tracker, as a classic deferred script, and our events
+ * module, each within its budget (ADR 0051). In a build without: no trace of either.
+ */
+export async function expectAnalyticsScripts(
+  page: Page,
+  responses: ReturnType<typeof collectResponses>,
+): Promise<FileAudit[]> {
+  const tracker = page.locator("script[data-website-id]");
+  if (responses.length === 0) {
+    expect(await tracker.count(), "analytics tracker elements").toBe(0);
+    return [];
+  }
+  expect(responses.map((response) => new URL(response.url).pathname).sort()).toEqual([
+    expect.stringMatching(/^\/_astro\/Analytics\.astro_astro_type_script_/),
+    expect.stringMatching(/^\/_astro\/umami-tracker\./),
+  ]);
+  expect(await tracker.count(), "analytics tracker elements").toBe(1);
+  await expect(tracker).toHaveAttribute("defer", "");
+  expect(await tracker.getAttribute("type"), "the tracker is a classic script").toBeNull();
+  const audits: FileAudit[] = [];
+  for (const response of responses) {
+    const body = await response.body();
+    const audit = { url: response.url, raw: body.length, gzip: compressed.gzip(body) };
+    const max = audit.url.includes("umami-tracker")
+      ? TRACKER_MAX_GZIP_BYTES
+      : EVENTS_MAX_GZIP_BYTES;
+    expect(audit.gzip, `${audit.url} gzip bytes`).toBeLessThanOrEqual(max);
+    audits.push(audit);
+  }
+  return audits;
 }

@@ -50,6 +50,13 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      // Astro inlines a small bundled script that imports nothing. The analytics script is one, and
+      // it must stay a file: pages carry no inline script but the theme script (ADR 0046, ADR 0051),
+      // and a file is cached across pages. Everything else keeps the default.
+      assetsInlineLimit: (path) =>
+        /Analytics\.astro_astro_type_script_/.test(path) ? false : undefined,
+    },
     resolve: {
       alias: [
         // The design system's React components, for tool islands: `import { Button } from "@ui"`.

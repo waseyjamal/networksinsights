@@ -1,0 +1,103 @@
+---
+import type { AnalyticsSettings } from "../../config/analytics";
+import trackerUrl from "../../lib/analytics/umami-tracker.js?url&no-inline";
+
+// Analytics and error reporting (ADR 0051). Base.astro renders this only when the build has a
+// website id, so a page without analytics carries none of it.
+//
+// Two deferred files, both from our own origin: Umami's tracker (page views, and Web Vitals with
+// data-performance) and the script below (one "tool used" event, and scrubbed error reports).
+// The tracker sends nothing on any other hostname than data-domains, so previews and local runs
+// stay out of the numbers, and nothing when the browser sends Do Not Track.
+interface Props {
+  settings: AnalyticsSettings;
+}
+
+const { settings } = Astro.props;
+---
+
+<script
+  is:inline
+  defer
+  src={trackerUrl}
+  data-website-id={settings.websiteId}
+  data-domains={settings.domains}
+  data-performance="true"
+  data-exclude-search="true"
+  data-exclude-hash="true"
+  data-do-not-track="true"
+></script>
+
+<script>
+import {
+  EVENTS,
+  errorReport,
+  MAX_ERRORS_PER_PAGE,
+  reportLimiter,
+} from "../../lib/analytics/events";
+
+type Data = Record<string, string | number>;
+declare global {
+  interface Window {
+    umami?: { track: (name: string, data?: Data) => unknown };
+  }
+}
+
+// Both files are deferred and run in document order, so the tracker is normally there already.
+// When it is not (an ad blocker, a failed load), the event is dropped: nothing is queued or kept.
+const send = (name: string, data: Data) => {
+  try {
+    window.umami?.track(name, data);
+  } catch {
+    // Reporting must never break the page.
+  }
+};
+
+const toolOf = (target: EventTarget | null) =>
+  target instanceof Element
+    ? (target.closest<HTMLElement>("[data-ni-tool]")?.dataset.niTool ?? "")
+    : "";
+const pageTool = () => document.querySelector<HTMLElement>("[data-ni-tool]")?.dataset.niTool ?? "";
+
+// "Tool used": the first time a visitor types, pastes, drops a file, changes a setting or presses
+// a button inside a tool. Once per page view, and only the tool's id is sent.
+if (document.querySelector("[data-ni-tool]")) {
+  const types = ["input", "change", "paste", "drop", "click"] as const;
+  const used = (event: Event) => {
+    if (
+      event.type === "click" &&
+      !(event.target instanceof Element && event.target.closest("button"))
+    ) {
+      return;
+    }
+    const tool = toolOf(event.target);
+    if (!tool) return;
+    for (const type of types) document.removeEventListener(type, used, { capture: true });
+    send(EVENTS.toolUsed, { tool });
+  };
+  for (const type of types) document.addEventListener(type, used, { capture: true, passive: true });
+}
+
+// Uncaught errors, scrubbed of anything a visitor typed (lib/analytics/events.ts).
+const allow = reportLimiter(MAX_ERRORS_PER_PAGE);
+const report = (input: Parameters<typeof errorReport>[0]) => {
+  const summary = errorReport(input);
+  if (allow(summary)) send(EVENTS.error, { ...summary });
+};
+window.addEventListener("error", (event) => {
+  // A file that failed to load fires "error" on its element, not an ErrorEvent: not a code error.
+  if (!(event instanceof ErrorEvent)) return;
+  report({
+    error: event.error,
+    message: event.message,
+    filename: event.filename,
+    line: event.lineno,
+    column: event.colno,
+    origin: location.origin,
+    tool: pageTool(),
+  });
+});
+window.addEventListener("unhandledrejection", (event) => {
+  report({ error: event.reason, origin: location.origin, tool: pageTool() });
+});
+</script>

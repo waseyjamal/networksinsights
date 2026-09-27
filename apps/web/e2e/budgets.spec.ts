@@ -1,7 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { categoryHref } from "../src/config/categories";
 import { sitePages } from "../src/config/site";
-import { collectRequests, collectResponses, compressed, expectOnlySearchLoader } from "./helpers";
+import {
+  collectRequests,
+  collectResponses,
+  compressed,
+  expectOnlySearchLoader,
+  isAnalyticsScript,
+} from "./helpers";
 
 // Budgets and layout stability. Numbers are printed so the mission report can quote them.
 // The layout-shift and LCP APIs exist only in Chromium, so those tests run there only.
@@ -90,10 +96,15 @@ test.describe("home page weight", () => {
 
     // Since Mission 11 (ADR 0046) the rule is exact: one inline theme script, one deferred loader
     // of at most 2 KB gzip, no island, and no request for the search module or the index.
-    const { loader } = await expectOnlySearchLoader(page, responses, requests);
+    const { loader, analytics } = await expectOnlySearchLoader(page, responses, requests);
     console.log(
       `search loader (${testInfo.project.name}): ${loader.raw} B raw, ${loader.gzip} B gzip`,
     );
+    for (const file of analytics) {
+      console.log(
+        `analytics ${new URL(file.url).pathname} (${testInfo.project.name}): ${file.raw} B raw, ${file.gzip} B gzip`,
+      );
+    }
     const inline = await page.evaluate(
       () =>
         document.querySelector('script:not([src]):not([type="application/ld+json"])')
@@ -110,8 +121,9 @@ test.describe("home page weight", () => {
     const responses = collectResponses(page);
     await page.goto("/", { waitUntil: "networkidle" });
 
+    // Analytics files (ADR 0051) have their own budgets, checked by expectAnalyticsScripts.
     const size = async (type: string) => {
-      const items = responses.filter((r) => r.type === type);
+      const items = responses.filter((r) => r.type === type && !isAnalyticsScript(r.url));
       const files = new Map<string, Buffer>();
       for (const item of items) files.set(item.url, await item.body());
       return { files: [...files.values()], urls: [...files.keys()] };

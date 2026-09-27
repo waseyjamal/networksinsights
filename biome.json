@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/public"]
+    "includes": ["**", "!**/public", "!**/lib/analytics/umami-tracker.js"]
   },
   "formatter": {
     "enabled": true,

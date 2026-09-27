@@ -20,12 +20,24 @@ interface Props {
   privacy?: string;
   /** False when the input leaves the device, which changes the badge from a lock to an upload. */
   privacyOnDevice?: boolean;
+  /**
+   * The tool's id, on a tool page only. It marks the workspace for the one "tool used" analytics
+   * event (ADR 0051); nothing else reads it.
+   */
+  tool?: string | undefined;
 }
 
-const { id, title, description, privacy = PRIVACY_TEXT, privacyOnDevice = true } = Astro.props;
+const {
+  id,
+  title,
+  description,
+  privacy = PRIVACY_TEXT,
+  privacyOnDevice = true,
+  tool,
+} = Astro.props;
 ---
 
-<section class="ni-workspace" aria-labelledby={`${id}-title`}>
+<section class="ni-workspace" aria-labelledby={`${id}-title`} data-ni-tool={tool}>
   <div class="ni-workspace__header">
     <div>
       <h2 class="ni-workspace__title" id={`${id}-title`}>{title}</h2>
