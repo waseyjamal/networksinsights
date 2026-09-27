@@ -36,6 +36,8 @@ interface Fake {
   /** The Cache-Control the search index is served with. */
   indexCache?: string;
   indexStatus?: number;
+  /** The Cache-Control the service worker is served with (ADR 0052). */
+  workerCache?: string;
   /** Answer as a preview deployment does: with X-Robots-Tag: noindex. */
   preview?: boolean;
   /** Changes the headers of one path after the site's own are set. */
@@ -70,6 +72,9 @@ function fakeFetch(fake: Fake = {}): typeof fetch {
     if (path === "/tools/") return respond(200, "<html></html>");
     if (path === "/favicon.ico") return respond(fake.favicon ?? 200, "x");
     if (path === "/robots.txt") return respond(200, robots);
+    if (path === "/sw.js" || path === "/manifest.webmanifest") {
+      return respond(200, "x", fake.workerCache ? { "cache-control": fake.workerCache } : {});
+    }
     if (path === "/sitemap-index.xml" || path === "/llms.txt") return respond(200, "x");
     if (path === SCRIPT || path === "/og/home.png") return respond(200, "x");
     return respond(fake.missing ?? 404, "not found");
@@ -130,6 +135,14 @@ describe("the redirect", () => {
 });
 
 describe("everything else on the site", () => {
+  it("fails when the service worker is cached for good (ADR 0052)", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch({ workerCache: "public, max-age=31536000, immutable" }),
+      launched: false,
+    });
+    expect(checks.find((check) => check.name.startsWith("/sw.js"))?.ok).toBe(false);
+  });
+
   it("passes when the site is as expected, before launch", async () => {
     const checks = await runProductionChecks({ fetchFn: fakeFetch(), launched: false });
     expect(checks.filter((check) => !check.ok)).toEqual([]);

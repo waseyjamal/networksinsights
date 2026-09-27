@@ -54,7 +54,7 @@ const entry = (path: string, lastmod: string): SitemapEntry => ({
   lastmod,
 });
 
-/** Every indexable page, in three groups. The 404 page and the design system are not among them. */
+/** Every indexable page, in three groups. The 404 page, the design system and the offline page are not among them. */
 export function indexablePages(tools: readonly Tool[]): {
   pages: SitemapEntry[];
   categories: SitemapEntry[];

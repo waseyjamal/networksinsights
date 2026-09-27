@@ -215,4 +215,6 @@ export const reservedPaths: readonly string[] = [
   ...staticPagePaths,
   // The share images live under /og/ (ADR 0041), so no tool may take that path.
   "og",
+  // The app icons live under /icons/ (ADR 0052).
+  "icons",
 ];

@@ -4,6 +4,7 @@ dist
 .wrangler
 coverage
 playwright-report
+lighthouse-report
 test-results
 *.log
 

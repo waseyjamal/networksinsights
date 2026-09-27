@@ -7,6 +7,7 @@ import {
   compressed,
   expectOnlySearchLoader,
   isAnalyticsScript,
+  isServiceWorkerScript,
 } from "./helpers";
 
 // Budgets and layout stability. Numbers are printed so the mission report can quote them.
@@ -121,9 +122,12 @@ test.describe("home page weight", () => {
     const responses = collectResponses(page);
     await page.goto("/", { waitUntil: "networkidle" });
 
-    // Analytics files (ADR 0051) have their own budgets, checked by expectAnalyticsScripts.
+    // Analytics files (ADR 0051) and the service worker's registration (ADR 0052) have their own
+    // budgets, checked by expectOnlySearchLoader.
     const size = async (type: string) => {
-      const items = responses.filter((r) => r.type === type && !isAnalyticsScript(r.url));
+      const items = responses.filter(
+        (r) => r.type === type && !isAnalyticsScript(r.url) && !isServiceWorkerScript(r.url),
+      );
       const files = new Map<string, Buffer>();
       for (const item of items) files.set(item.url, await item.body());
       return { files: [...files.values()], urls: [...files.keys()] };

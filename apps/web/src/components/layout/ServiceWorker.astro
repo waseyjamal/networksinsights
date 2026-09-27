@@ -1,0 +1,11 @@
+---
+// Registers the service worker (ADR 0052): one deferred file on every page, at most 1 KB gzip. It
+// runs after the page has loaded, so it never competes with the page for the network, and only in
+// a production build: the dev server has no sw.js.
+---
+
+<script>
+import { registerServiceWorker } from "../../lib/pwa/register";
+
+registerServiceWorker(navigator, window);
+</script>

@@ -32,6 +32,7 @@ Until the last step is done, every page renders `noindex, nofollow` ([ADR 0029](
 
 - [ ] Set `launched` to `true` in `apps/web/src/config/site.ts` (Mission 18). Nothing else needs to change; `pnpm check` and the E2E tests cover both values of the flag.
 - [ ] Deploy through CI ([runbook](runbooks/deploy-and-rollback.md)) and check that a page on the production domain no longer has a `noindex, nofollow` robots meta, while `/404` and `/design-system/` keep `noindex`.
+- [ ] Install the site from Chrome on a desktop and on an Android phone, open a tool once, turn on flight mode and use it ([runbooks/pwa-and-play-store.md](runbooks/pwa-and-play-store.md)). The Play Store app is a separate, later decision: its `assetlinks.json` step is in the same runbook.
 - [ ] Check what search engines now see: `https://networksinsights.com/robots.txt` has a `Sitemap:` line, `/sitemap-index.xml` and `/llms.txt` answer 200, the IndexNow key file `/<key>.txt` shows the key, and `pnpm check:production` passes.
 
 ## Search engines (after launch day)

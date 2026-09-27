@@ -33,8 +33,8 @@ export interface SeoReport {
 /** The pages that must always carry a canonical link: the home page and the site pages. */
 const CANONICAL_PAGES = ["/", ...Object.values(sitePages).map((page) => page.href)];
 
-/** Pages that opt out of indexing, and so have no canonical link. */
-const NOINDEX_PAGES = new Set(["/404/", "/design-system/"]);
+/** Pages that opt out of indexing, and so have no canonical link. The offline page is ADR 0052's. */
+const NOINDEX_PAGES = new Set(["/404/", "/design-system/", "/offline/"]);
 
 /** Every .html file under a folder, as a page path: `dist/a/index.html` is `/a/`. */
 export function htmlPages(dist: string): Array<{ path: string; file: string }> {
@@ -240,7 +240,7 @@ export function checkSeo(options: SeoOptions): SeoReport {
           `${url}: is in a sitemap but its canonical is ${canonicalOf.get(path) ?? "missing"}`,
         );
     }
-    for (const forbidden of ["/404/", "/design-system/"]) {
+    for (const forbidden of NOINDEX_PAGES) {
       if (urls.includes(`${site.url}${forbidden}`))
         problems.push(`${forbidden}: must not be in a sitemap`);
     }

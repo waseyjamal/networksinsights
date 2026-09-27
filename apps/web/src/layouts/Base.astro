@@ -1,19 +1,19 @@
 ---
 import { Font } from "astro:assets";
 import Analytics from "../components/layout/Analytics.astro";
+import ServiceWorker from "../components/layout/ServiceWorker.astro";
 import SearchDialog from "../components/ui/SearchDialog.astro";
 import { analyticsSettings } from "../config/analytics";
 import { OVERRIDE_META } from "../config/headers";
 import { site } from "../config/site";
-import { toHex } from "../lib/color";
+import { themeBackground } from "../lib/pwa/manifest";
+import { appIcons, iconPath, MANIFEST_PATH } from "../lib/pwa/paths";
 import { robotsContent } from "../lib/robots";
 import { buildHead } from "../lib/seo/head";
 import { type JsonLdDocument, serializeJsonLd } from "../lib/seo/jsonld";
 import { homeCard, type ShareCard, shareImageOf } from "../lib/seo/og";
 import { themeScript } from "../lib/theme-script";
-import { parseTokens, themeColors } from "../lib/tokens";
 import "../styles/global.css";
-import tokensCss from "../styles/tokens.css?raw";
 
 interface Props {
   title: string;
@@ -57,22 +57,17 @@ const head = buildHead({
 const analytics = analyticsSettings();
 
 // Browser-chrome colors come from the same tokens the page uses (--bg in each theme).
-const tokens = parseTokens(tokensCss);
-const chrome = (theme: "light" | "dark") => {
-  const bg = themeColors(tokens, theme).get("bg");
-  if (!bg) throw new Error("tokens.css has no --bg token");
-  return toHex(bg);
-};
-const themeColorLight = chrome("light");
-const themeColorDark = chrome("dark");
+const themeColorLight = themeBackground("light");
+const themeColorDark = themeBackground("dark");
+const appleTouchIcon = appIcons.find((icon) => icon.name === "apple-touch-icon");
 
 // The inline theme script in <head> (lib/theme-script.ts) runs before first paint and applies the
 // stored theme. The Content-Security-Policy allows it by hash (ADR 0047).
 // Besides the theme script, every page ships exactly one more: the search loader in
 // SearchDialog.astro, a deferred module that imports the search code only when a visitor shows
 // intent (ADR 0046). When analytics are on, two more deferred files follow it: Umami's tracker and
-// the tool-used and error script (ADR 0051). Astro's island bootstrap is separate and only appears on pages that have an
-// island.
+// the tool-used and error script (ADR 0051). One more registers the service worker after load
+// (ADR 0052). Astro's island bootstrap is separate and only appears on pages that have an island.
 ---
 
 <!doctype html>
@@ -94,6 +89,10 @@ const themeColorDark = chrome("dark");
       data-theme-color="dark"
     />
     <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {appleTouchIcon && <link rel="apple-touch-icon" href={iconPath(appleTouchIcon)} />}
+    <link rel="manifest" href={MANIFEST_PATH} />
     {robots && <meta name="robots" content={robots} />}
     {securityOverride && <meta name={OVERRIDE_META} content={securityOverride} />}
     {head.canonical && <link rel="canonical" href={head.canonical} />}
@@ -111,6 +110,7 @@ const themeColorDark = chrome("dark");
   <body>
     <slot />
     <SearchDialog />
+    <ServiceWorker />
     {analytics && <Analytics settings={analytics} />}
   </body>
 </html>

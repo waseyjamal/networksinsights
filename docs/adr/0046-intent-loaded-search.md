@@ -5,6 +5,8 @@ Date: 2026-09-22
 
 Amended by [ADR 0051](0051-analytics-and-error-reporting.md): a build with analytics carries two more deferred files, the analytics tracker and its events script; the loader and its 2 KB limit are unchanged.
 
+Amended by [ADR 0052](0052-pwa-service-worker-and-lighthouse-budgets.md): every page also carries one deferred file that registers the service worker; the service worker never fetches search before intent.
+
 Amends [ADR 0033](0033-registry-and-build-time-validation.md) (zero JavaScript on listing pages) and [ADR 0028](0028-design-system-signal.md) (the theme script is the only JavaScript every page ships).
 
 ## Context

@@ -63,6 +63,12 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
       <code>ni-theme</code>: your choice of light, dark or system theme, if you make one. It stays
       on your device, and the site does not read it for any other purpose.
     </p>
+    <p>
+      So that tools keep working without a connection, the site's service worker keeps a copy of the
+      site's own pages you open, and of the code they need, in your browser's cache: up to the last
+      hundred pages. It never keeps what you type or the files you open in a tool, and it never
+      sends anything anywhere. Clearing your browser's data for this site removes the copies.
+    </p>
 
     <h2>Analytics</h2>
     {analytics ? (

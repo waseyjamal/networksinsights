@@ -3,8 +3,9 @@
 // Measures the JavaScript of every tool page in the real build output (apps/web/dist) against its
 // budget (ADR 0037): the initial island code, and the code fetched on demand, separately. It also
 // checks the search loader that every page carries (ADR 0046): at most 2 KB gzip, and nothing of
-// search fetched before a visitor shows intent; and, in a build with analytics, the two analytics
-// files (ADR 0051). Run it after `pnpm build`. CI runs it on every
+// search fetched before a visitor shows intent; in a build with analytics, the two analytics files
+// (ADR 0051); and the installable app: the service worker, its registration script, the manifest
+// and its icons (ADR 0052). Run it after `pnpm build`. CI runs it on every
 // pull request. Exit code 0 means every page is within budget; 1 means a page is over; 2 means the
 // command was used wrongly.
 
@@ -19,6 +20,7 @@ import {
   formatPageWeight,
   measurePageWeight,
 } from "./lib/budgets";
+import { checkPwa, formatPwaReport } from "./lib/pwa";
 import { checkSearchLoader, formatSearchLoaderReport } from "./lib/search-loader";
 import { defaultToolsRoot, loadTools, repoRoot } from "./lib/tools";
 
@@ -80,7 +82,12 @@ async function main(): Promise<number> {
   const report = checkBudgets(distDir, chosen);
   const loader = checkSearchLoader(distDir);
   const analytics = checkAnalytics(distDir);
-  const ok = report.ok && loader.violations.length === 0 && analytics.violations.length === 0;
+  const pwa = checkPwa(distDir);
+  const ok =
+    report.ok &&
+    loader.violations.length === 0 &&
+    analytics.violations.length === 0 &&
+    pwa.violations.length === 0;
   if (values.json) {
     console.log(
       JSON.stringify(
@@ -115,6 +122,14 @@ async function main(): Promise<number> {
               fix: v.fix,
             })),
           },
+          pwa: {
+            ok: pwa.violations.length === 0,
+            pages: pwa.pages,
+            registerGzip: pwa.register?.gzip ?? null,
+            workerGzip: pwa.worker?.gzip ?? null,
+            icons: pwa.icons,
+            problems: pwa.violations.map((v) => ({ page: v.dir, problem: v.problem, fix: v.fix })),
+          },
         },
         null,
         2,
@@ -126,9 +141,12 @@ async function main(): Promise<number> {
 ${formatSearchLoaderReport(loader)}`);
     console.log(`
 ${formatAnalyticsReport(analytics)}`);
+    console.log(`
+${formatPwaReport(pwa)}`);
     const sections: Array<[string, typeof loader.violations]> = [
       ["search", loader.violations],
       ["analytics", analytics.violations],
+      ["installable app", pwa.violations],
     ];
     for (const [name, violations] of sections) {
       if (violations.length === 0) continue;

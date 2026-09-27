@@ -9,14 +9,16 @@
 //   2. the search module is reached only through `import()`: no page and no other file imports it
 //      statically, and no page names it or the index in a script, preload, prefetch or
 //      modulepreload;
-//   3. a page with no island has no other script than the loader and the theme script, and, in a
-//      build with analytics, the two analytics files that analytics.ts checks (ADR 0051).
+//   3. a page with no island has no other script than the loader and the theme script, the
+//      service worker's registration that pwa.ts checks (ADR 0052), and, in a build with
+//      analytics, the two analytics files that analytics.ts checks (ADR 0051).
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, posix } from "node:path";
 import type { ContractViolation } from "@networksinsights/tool-sdk";
 import { isAnalyticsScript } from "./analytics";
 import { edgesOf, type FileWeight, resolveUrl, weigh } from "./budgets";
+import { isServiceWorkerScript } from "./pwa";
 
 /** The most the one loader script may weigh, gzip (ADR 0046). */
 export const LOADER_MAX_GZIP_BYTES = 2048;
@@ -131,13 +133,14 @@ export function checkSearchLoader(distDir: string): SearchLoaderReport {
     // only inline one. A page with an island also has Astro's own scripts.
     if (!hasIsland) {
       const others = sources.filter(
-        (source) => !loading.includes(source) && !isAnalyticsScript(source),
+        (source) =>
+          !loading.includes(source) && !isAnalyticsScript(source) && !isServiceWorkerScript(source),
       );
       for (const path of others) {
         problem(
           page,
           `loads the script ${path}, and this page has no island`,
-          "a page without an island ships only the search loader and the inline theme script (ADR 0046)",
+          "a page without an island ships only the search loader, the service worker registration and the inline theme script (ADR 0046, ADR 0052)",
         );
       }
       const inline = [
