@@ -79,15 +79,26 @@ export const isAnalyticsScript = (url: string) =>
     new URL(url).pathname,
   );
 
+/** The most the service worker's registration script may weigh, gzip (ADR 0052). */
+export const REGISTER_MAX_GZIP_BYTES = 1024;
+
+/** True for the one file that registers the service worker, on every page (ADR 0052). */
+export const isServiceWorkerScript = (url: string) =>
+  /^\/_astro\/ServiceWorker\.astro_astro_type_script_[\w.-]+\.js$/.test(new URL(url).pathname);
+
 interface FileAudit {
   url: string;
   raw: number;
   gzip: number;
 }
 
-/** What the one deferred loader script weighs, and the analytics files when the build has them. */
+/**
+ * What the one deferred loader script weighs, the service worker's registration script, and the
+ * analytics files when the build has them.
+ */
 export interface ScriptAudit {
   loader: FileAudit;
+  register: FileAudit;
   analytics: FileAudit[];
 }
 
@@ -115,7 +126,9 @@ export async function expectOnlySearchLoader(
   requests: string[],
 ): Promise<ScriptAudit> {
   const all = responses.filter((response) => response.type === "script");
-  const scripts = all.filter((script) => !isAnalyticsScript(script.url));
+  const scripts = all.filter(
+    (script) => !isAnalyticsScript(script.url) && !isServiceWorkerScript(script.url),
+  );
   expect(
     scripts.map((script) => script.url),
     "script files requested",
@@ -127,7 +140,7 @@ export async function expectOnlySearchLoader(
     all.filter((s) => isAnalyticsScript(s.url)),
   );
   const loaderElement = page.locator(
-    'script[src]:not([data-website-id]):not([src*="Analytics.astro_astro_type_script_"])',
+    'script[src]:not([data-website-id]):not([src*="Analytics.astro_astro_type_script_"]):not([src*="ServiceWorker.astro_astro_type_script_"])',
   );
   expect(await loaderElement.count(), "script elements with a src, besides analytics").toBe(1);
   await expect(loaderElement).toHaveAttribute("type", "module");
@@ -146,9 +159,30 @@ export async function expectOnlySearchLoader(
   const audit = { url: script.url, raw: body.length, gzip: compressed.gzip(body) };
   expect(audit.gzip, "loader gzip bytes").toBeLessThanOrEqual(LOADER_MAX_GZIP_BYTES);
 
+  // The service worker's registration: one module file on every page (ADR 0052).
+  const registers = all.filter((s) => isServiceWorkerScript(s.url));
+  expect(
+    registers.map((s) => s.url),
+    "service worker registration scripts",
+  ).toHaveLength(1);
+  const [register] = registers;
+  if (!register) throw new Error("unreachable: the length was just asserted");
+  await expect(
+    page.locator('script[src*="ServiceWorker.astro_astro_type_script_"]'),
+  ).toHaveAttribute("type", "module");
+  const registerBody = await register.body();
+  const registerAudit = {
+    url: register.url,
+    raw: registerBody.length,
+    gzip: compressed.gzip(registerBody),
+  };
+  expect(registerAudit.gzip, "registration gzip bytes").toBeLessThanOrEqual(
+    REGISTER_MAX_GZIP_BYTES,
+  );
+
   // Nothing of search is fetched until intent: not the module, not the index.
   expect(requests.filter(isSearchRequest), "search requests before intent").toEqual([]);
-  return { loader: audit, analytics };
+  return { loader: audit, register: registerAudit, analytics };
 }
 
 /**

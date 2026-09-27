@@ -79,7 +79,7 @@ No AGPL, GPL, SSPL or non-commercial licenses, for code, fonts or AI models, wit
 
 ## Architecture principles
 
-- Static HTML first. JavaScript only inside islands, plus two scripts every page carries: the inline theme script and the deferred search loader (ADR 0046). Nothing of search loads until a visitor shows intent. A production build with analytics adds exactly two more deferred files (ADR 0051).
+- Static HTML first. JavaScript only inside islands, plus three scripts every page carries: the inline theme script, the deferred search loader (ADR 0046) and the deferred service worker registration (ADR 0052). Nothing of search loads until a visitor shows intent. A production build with analytics adds exactly two more deferred files (ADR 0051).
 - Tool logic is pure TypeScript with no UI or framework imports.
 - Three runtimes: browser, worker, server.
 - Process user files on the device whenever possible.
@@ -105,8 +105,13 @@ Run from the repo root:
 - `pnpm check:tools` — every tool gate on its own with a readable summary; `--tool <id>` checks one
   tool, `--json` prints JSON. Part of `pnpm check`
 - `pnpm check:budgets` — the JavaScript budget of every tool page, the size and behaviour of the
-  search loader every page carries, and the analytics files when the build has them, from the build
-  output; run after `pnpm build`. Runs in CI after the build (ADR 0037, ADR 0046, ADR 0051)
+  search loader every page carries, the analytics files when the build has them, and the installable
+  app (service worker, its registration script, manifest, icons), from the build output; run after
+  `pnpm build`. Runs in CI after the build (ADR 0037, ADR 0046, ADR 0051, ADR 0052)
+- `pnpm check:lighthouse` — Lighthouse on its mobile profile against the build (`astro preview`):
+  the home page, `/tools/`, one category page and every tool page, median of 3 runs, failing over
+  LCP 2.5 s, CLS 0.1 or TBT 200 ms. `--page <path>`, `--runs <n>`, `--out <folder>` for reports.
+  Run after `pnpm build`; needs Playwright's Chromium. CI job `lighthouse` runs it (ADR 0052)
 - `pnpm check:seo` — canonical links, Open Graph and Twitter/X tags, share images, structured data,
   robots.txt, sitemaps and llms.txt, from the build output; run after `pnpm build`. Runs in CI after
   the build (ADR 0038 to 0041)
@@ -127,7 +132,7 @@ Run from the repo root:
 
 Git hooks (husky, see ADR 0024): pre-commit runs Biome on staged files; pre-push runs `pnpm check`.
 
-CI (see ADR 0025): `.github/workflows/ci.yml` runs job `quality` (`pnpm check`, `pnpm test:slow`, `pnpm build`, `pnpm check:budgets`, `pnpm check:seo`), job `e2e` (`pnpm test:e2e`) and job `supply-chain` (`pnpm audit --audit-level moderate`, `pnpm audit signatures`, `pnpm check:licenses`) on every pull request to `main` and every push to `main`, and job `lockfile` on pull requests. `.github/workflows/supply-chain.yml` runs the supply-chain checks on `main` every Monday. Dependabot opens grouped weekly updates with a three-day cooldown (ADR 0049). Actions are pinned to full commit SHAs.
+CI (see ADR 0025): `.github/workflows/ci.yml` runs job `quality` (`pnpm check`, `pnpm test:slow`, `pnpm build`, `pnpm check:budgets`, `pnpm check:seo`), job `e2e` (`pnpm test:e2e`) job `supply-chain` (`pnpm audit --audit-level moderate`, `pnpm audit signatures`, `pnpm check:licenses`) and job `lighthouse` (`pnpm build`, `pnpm check:lighthouse`, reports kept as an artifact) on every pull request to `main` and every push to `main`, and job `lockfile` on pull requests. `.github/workflows/supply-chain.yml` runs the supply-chain checks on `main` every Monday. Dependabot opens grouped weekly updates with a three-day cooldown (ADR 0049). Actions are pinned to full commit SHAs.
 
 Tool gates (ADR 0035 to 0037, ADR 0047, ADR 0050): `pnpm build`, `pnpm check:tools` and CI fail on
 contract, purity and content quality problems; `pnpm check:tools` and CI also fail on unsafe rendering
@@ -135,7 +140,7 @@ and on a security override without an accepted ADR. In `pnpm dev` the content qu
 being written keeps rendering; contract violations stay hard. `quality` runs `pnpm check:budgets`
 right after `pnpm build`.
 
-Deploy (see ADR 0027): after `quality`, `e2e` and `supply-chain` pass, `ci.yml` job `preview` uploads a per-PR preview version and checks its headers, and job `deploy` deploys production on push to `main` (with the IndexNow steps around it) and job `verify-production` then checks the live site. `.github/workflows/rollback.yml` is a manual rollback, from `main` only. Wrangler is pinned in `apps/web`; it deploys only from CI, and runs locally only as `wrangler dev`, the E2E edge server, which touches no account. Runbook: `docs/runbooks/deploy-and-rollback.md`.
+Deploy (see ADR 0027): after `quality`, `e2e`, `supply-chain` and `lighthouse` pass, `ci.yml` job `preview` uploads a per-PR preview version and checks its headers, and job `deploy` deploys production on push to `main` (with the IndexNow steps around it) and job `verify-production` then checks the live site. `.github/workflows/rollback.yml` is a manual rollback, from `main` only. Wrangler is pinned in `apps/web`; it deploys only from CI, and runs locally only as `wrangler dev`, the E2E edge server, which touches no account. Runbook: `docs/runbooks/deploy-and-rollback.md`.
 
 ## Search and AI answers (SEO/GEO/AEO)
 
@@ -148,7 +153,7 @@ Deploy (see ADR 0027): after `quality`, `e2e` and `supply-chain` pass, `ci.yml` 
 
 - The search index is generated from the registry at build time (`apps/web/src/lib/search/`) and served as `/search-index.<hash>.json`. Only tools whose status is not `deprecated` are in it. Never edit it by hand and never link, preload or prefetch it.
 - The engine (`engine.ts`) is pure TypeScript with no dependency. Adding a search library needs an ADR that replaces ADR 0045.
-- Every page carries one search loader script, at most 2 KB gzip, whose only job is to listen for intent and `import()` the search module. Do not add code to it, and never import the engine or the index statically from a page, a layout or the loader. `pnpm check:budgets` and `budgets.spec.ts` fail if a page loads any other script or fetches search before intent.
+- Every page carries one search loader script, at most 2 KB gzip, whose only job is to listen for intent and `import()` the search module. Do not add code to it, and never import the engine or the index statically from a page, a layout or the loader. `pnpm check:budgets` and `budgets.spec.ts` fail if a page loads any other script (besides the service worker registration and the analytics files) or fetches search before intent.
 - Words from tools and from visitors reach the page as text nodes only. `innerHTML`, `insertAdjacentHTML`, `DOMParser` and `eval` are forbidden in `apps/web/src/lib/search/`; a test fails if one appears.
 - Search stores nothing and sends nothing: no recent searches, no query logging. Adding either needs an ADR and a line in the privacy page.
 - Synthetic tools (`synthetic.ts`, `corpus.ts`) exist for tests only. No page or build imports them.
@@ -162,6 +167,15 @@ Deploy (see ADR 0027): after `quality`, `e2e` and `supply-chain` pass, `ci.yml` 
 - The privacy page reads the same settings: never describe analytics there by hand.
 - `connect-src` names `https://gateway.umami.is` and no other third party; `script-src` stays `'self'`.
 
+## Installable app and offline (ADR 0052)
+
+- The manifest (`/manifest.webmanifest`), the app icons (`/icons/*.png`) and the favicons are generated from `config/site.ts`, `tokens.css` and the constellation mark (`lib/pwa/`). Never add an icon or a manifest by hand, and never put a favicon in `public/`.
+- The service worker is `apps/web/src/lib/pwa/service-worker.ts`, written in-house. It imports nothing; the build turns it into `dist/sw.js` with that build's settings. Never write `sw.js` by hand and never add a service worker library without an ADR.
+- Pages are network first, `/_astro/*` cache first. It never keeps non-GET, other origins, `/api/`, `no-store` answers, or search before intent. A server-runtime endpoint lives under `/api/` or answers `Cache-Control: no-store`.
+- `/sw.js` and the manifest must never be in `immutablePaths`; `pnpm check:production` fails if they are cached for long.
+- E2E tests block service workers (`playwright.config.ts`); only `pwa.spec.ts` turns them on.
+- The Play Store app (Trusted Web Activity) and `/.well-known/assetlinks.json` are added only when the app exists: `docs/runbooks/pwa-and-play-store.md`.
+
 ## Docs map
 
 - `docs/architecture.md` — goals, layout, runtimes, quality targets, mission table
@@ -170,7 +184,7 @@ Deploy (see ADR 0027): after `quality`, `e2e` and `supply-chain` pass, `ci.yml` 
 - `docs/design-system.md` — the Signal design system: how to use tokens and components
 - `docs/adr/` — one file per architecture decision
 - `docs/launch-checklist.md` — every owner input and step needed before launch
-- `docs/runbooks/` — step-by-step procedures (deploy and rollback, the redirect rule, IndexNow, security, analytics)
+- `docs/runbooks/` — step-by-step procedures (deploy and rollback, the redirect rule, IndexNow, security, analytics, the installable app and the Play Store)
 
 ## Changing a decision
 
@@ -178,4 +192,4 @@ A decision changes only through a new ADR that supersedes the old one. Update th
 
 ## Windows note
 
-The owner's machine is Windows 10. Shell commands run in Git Bash.
+The owner's machine is Windows 10. Shell commands run in Git Bash. Git Bash rewrites an argument that starts with `/` into a Windows path: run commands that take a URL path, such as `pnpm check:lighthouse --page /`, with `MSYS_NO_PATHCONV=1`.

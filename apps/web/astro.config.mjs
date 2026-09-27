@@ -7,6 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import { csp } from "./src/config/headers.ts";
 import { securityHeaders } from "./src/integrations/security-headers.ts";
+import { serviceWorker } from "./src/integrations/service-worker.ts";
 import { cspHash } from "./src/lib/security/hash.ts";
 import { themeScript } from "./src/lib/theme-script.ts";
 
@@ -26,7 +27,8 @@ export default defineConfig({
   // MDX renders every tool's content/en.mdx (ADR 0033). It is not used anywhere else: the site's
   // own pages are .astro, so no page gains JavaScript from this.
   // securityHeaders writes dist/_headers from the built pages' policy and config/headers.ts.
-  integrations: [react(), mdx(), securityHeaders()],
+  // serviceWorker writes dist/sw.js from the built files (ADR 0052).
+  integrations: [react(), mdx(), securityHeaders(), serviceWorker()],
   // Content-Security-Policy with hashes for every inline script and style (ADR 0047). Astro writes
   // it into each page as a <meta>; the integration above sends the same policy as a header.
   security: {
@@ -51,11 +53,12 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     build: {
-      // Astro inlines a small bundled script that imports nothing. The analytics script is one, and
-      // it must stay a file: pages carry no inline script but the theme script (ADR 0046, ADR 0051),
-      // and a file is cached across pages. Everything else keeps the default.
+      // Astro inlines a small bundled script that imports nothing. The analytics script and the
+      // service worker's registration are two, and they must stay files: pages carry no inline
+      // script but the theme script (ADR 0046, ADR 0051, ADR 0052), and a file is cached across
+      // pages. Everything else keeps the default.
       assetsInlineLimit: (path) =>
-        /Analytics\.astro_astro_type_script_/.test(path) ? false : undefined,
+        /(?:Analytics|ServiceWorker)\.astro_astro_type_script_/.test(path) ? false : undefined,
     },
     resolve: {
       alias: [

@@ -45,6 +45,7 @@ export const staticPagePaths = [
   "about",
   "contact",
   "design-system",
+  "offline",
   "privacy",
   "terms",
   "tools",

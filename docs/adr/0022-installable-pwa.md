@@ -13,7 +13,7 @@ Ship an installable PWA with offline support, built in Mission 17.
 
 ## Consequences
 
-None recorded.
+Built in Mission 17: [ADR 0052](0052-pwa-service-worker-and-lighthouse-budgets.md) records how.
 
 ## Revisit when
 

@@ -17,6 +17,10 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "on-first-retry",
+    // The service worker (ADR 0052) would answer requests that tests route or count themselves,
+    // and page.route() does not see requests a service worker handles. It is blocked everywhere
+    // but in pwa.spec.ts, which turns it back on to test it.
+    serviceWorkers: "block",
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

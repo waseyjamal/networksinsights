@@ -120,10 +120,23 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
     );
   }
 
-  // 7. Every security header, the preview-only noindex and the cache headers (ADR 0047, ADR 0048).
+  // 7. The installable app (ADR 0052): the service worker and the manifest answer, and neither is
+  // cached for good. A worker cached for a year would keep every visitor on an old build, which
+  // is exactly what the update flow must never do.
+  for (const path of ["/sw.js", "/manifest.webmanifest"]) {
+    const response = await get(fetchFn, `${base}${path}`);
+    const cache = response.headers.get("cache-control") ?? "";
+    add(
+      `${path} is served and revalidated on every visit`,
+      response.status === 200 && !/\bimmutable\b/.test(cache) && !/\bmax-age=[1-9]/.test(cache),
+      `answered ${response.status} with Cache-Control: ${cache || "(none)"}. Expected 200 and no long cache: neither may be in immutablePaths (apps/web/src/config/headers.ts).`,
+    );
+  }
+
+  // 8. Every security header, the preview-only noindex and the cache headers (ADR 0047, ADR 0048).
   checks.push(...(await headerChecks({ base, preview, home, get: (url) => get(fetchFn, url) })));
 
-  // 8. After launch the sitemap index and llms.txt exist.
+  // 9. After launch the sitemap index and llms.txt exist.
   if (launched) {
     for (const path of ["/sitemap-index.xml", "/llms.txt"]) {
       const response = await get(fetchFn, `${base}${path}`);

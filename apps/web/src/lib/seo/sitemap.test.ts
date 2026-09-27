@@ -57,9 +57,10 @@ describe("which pages are in the sitemaps", () => {
     expect(new Set(locs).size).toBe(locs.length);
   });
 
-  it("holds every static page file the site has, except the two that are not indexable", () => {
+  it("holds every static page file the site has, except the three that are not indexable", () => {
     const listed = groups.pages.map((page) => page.path.replaceAll("/", ""));
-    const expected = staticPagePaths.filter((path) => path !== "404" && path !== "design-system");
+    const notIndexable = ["404", "design-system", "offline"];
+    const expected = staticPagePaths.filter((path) => !notIndexable.includes(path));
     expect([...listed.filter(Boolean)].sort()).toEqual([...expected].sort());
   });
 });

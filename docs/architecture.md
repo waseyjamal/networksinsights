@@ -114,5 +114,5 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 14 | Reference tool: worker | Done |
 | 15 | Reference tool: server + AI | |
 | 16 | Observability | Done |
-| 17 | Offline + site-wide budgets | |
+| 17 | Offline + site-wide budgets | Done |
 | 18 | Launch audit | |
