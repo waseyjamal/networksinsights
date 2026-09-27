@@ -126,7 +126,9 @@ jobs:
     name: e2e
     needs: quality
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # The suite alone took 18 minutes after Mission 17 added the service worker tests (PR #23), so
+    # 20 no longer left room for setup and teardown.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
