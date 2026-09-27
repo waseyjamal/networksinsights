@@ -1,0 +1,36 @@
+Compress Image makes JPG, PNG and WebP pictures smaller by saving them again as JPG or WebP at the quality you choose, right in your browser. It suits anyone who needs a photo under an upload limit, a lighter image for a web page or an email that sends faster. Each result shows its size before and after, with a preview, so you can judge the trade between file size and detail before you download anything.
+
+## How to use
+
+1. Drop one or more images on the box, or click it to choose them. JPG, PNG and WebP files are taken; anything else is listed with the reason it was not added.
+2. Pick the format under Save as. WebP is usually smaller at the same quality; JPG opens everywhere. Browsers that cannot write WebP offer JPG only and say so.
+3. Pick a quality. High keeps the most detail, Smallest gives the lightest file. Changing either setting compresses every image again with the new choice.
+4. Check the preview and the two sizes on each row, then press Download for the files you want to keep. Cancel stops the work at any point, and Continue carries on.
+
+## Examples
+
+A test picture of 1,200 by 800 pixels, a gradient sky with soft shapes and a fine grain, saved as a PNG of 1.5 MB (1,578,522 bytes), became a WebP of 71 KB (72,340 bytes) at Balanced quality in Chromium. That is 95% smaller, and the preview looked the same at normal viewing size. The same picture as a JPG at Balanced came to 90 KB.
+
+Notice two things. A PNG screenshot with flat colours can come out larger as JPG or WebP; when that happens the row says so and the button reads Download anyway, because the original is the better file to keep. The exact bytes also differ a little from one browser to another, since each browser has its own encoder.
+
+## Limits
+
+Each image may be up to 25 MB, and 20 images can be in the list at once; both are shown in Quick facts. An image with more pixels than the browser can hold in memory is refused with a message. Transparent areas turn white in a JPG, which has no transparency. Animated WebP files keep only their first frame. Safari cannot write WebP, so it saves JPG only. Saving again drops the camera details stored in the file, such as the date, the camera model and the location.
+
+## FAQ
+
+### Are my images uploaded to a server?
+
+No. The pictures are decoded, compressed and saved by your browser, in a background worker on this page. Nothing is sent to us, and the page keeps working if you go offline after it has loaded.
+
+### Which quality should I pick?
+
+Start with Balanced. It usually cuts a photo to a fraction of its size with no difference you can see at normal viewing size. Choose High for pictures you will print or zoom into, and Smallest when the file size matters more than fine detail.
+
+### Why is WebP missing in my browser?
+
+Safari has no WebP encoder, so it hands back a PNG when a page asks for WebP. Compress Image checks this before it starts and offers JPG instead, rather than giving you a file with the wrong name.
+
+### Does it change the orientation of my photo?
+
+No. The browser applies the orientation the camera recorded before it compresses, so a portrait photo stays upright even though the orientation tag itself is not kept in the new file.

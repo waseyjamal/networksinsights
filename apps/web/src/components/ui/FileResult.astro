@@ -1,0 +1,40 @@
+---
+import { type FileResultState, fileResultAttrs } from "./attrs";
+import Icon from "./Icon.astro";
+
+// One file a tool worked on, as a row of a FileResultList: its preview, its name, one line of
+// facts (sizes), a status in the default slot (progress, a message) and its actions (download).
+// The preview is optional; without one, an image icon stands in.
+interface Props {
+  name: string;
+  /** One line of facts, such as "2.4 MB → 612 KB". Numbers are set in Geist Mono. */
+  meta?: string;
+  state?: FileResultState;
+  /** A blob: or same-origin URL of the preview image. */
+  previewSrc?: string;
+  /** Alternative text of the preview. Required with previewSrc. */
+  previewAlt?: string;
+}
+
+const { name, meta, state, previewSrc, previewAlt = "" } = Astro.props;
+---
+
+<li class="ni-fileresult" {...fileResultAttrs({ state })}>
+  <div class="ni-fileresult__preview">
+    {previewSrc ? (
+  <img src={previewSrc} alt={previewAlt} loading="lazy" decoding="async" />
+) : (
+  <Icon name="image" />
+)}
+  </div>
+  <div class="ni-fileresult__body">
+    <span class="ni-fileresult__name">{name}</span>
+    {meta && <span class="ni-fileresult__meta">{meta}</span>}
+    <slot />
+  </div>
+  {Astro.slots.has("actions") && (
+  <div class="ni-fileresult__actions">
+    <slot name="actions" />
+  </div>
+)}
+</li>

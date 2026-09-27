@@ -10,7 +10,7 @@ export const REQUIRED_FILES = [
   "logic.test.ts",
 ] as const;
 
-/** Files a tool may add. `worker.ts` is wired up in Mission 14. */
+/** Files a tool may add. `worker.ts` is the Web Worker of a `worker` tool (ADR 0051). */
 export const OPTIONAL_FILES = ["worker.ts"] as const;
 
 /**

@@ -165,13 +165,82 @@ it("has real tests", () => {
 }
 
 export function toolWorker(values: ToolValues): string {
-  return `import { type Input, type Result, run } from "./logic";
+  return `import { defineWorker } from "@networksinsights/tool-sdk/worker";
+import { type Input, type Result, run } from "./logic";
 
-// The worker runtime is wired up in Mission 14 (docs/tool-contract.md). Until then this file names
-// what the Web Worker will do for "${values.name}": take an input, call the pure logic, give back
-// the result. ${UNFINISHED_MARKER}: move the heavy work here once the runtime exists.
-export function handle(input: Input): Result {
-  return run(input);
+// The Web Worker of "${values.name}" (ADR 0051, docs/tool-contract.md "The worker runtime").
+// ui.tsx starts it on the first run and sends it jobs; defineWorker() answers each one with its
+// result, an error or "cancelled". ${UNFINISHED_MARKER}: do the heavy work here, report progress
+// between steps and check the signal, then delete this comment.
+defineWorker<Input, Result>(async (input, { progress, signal }) => {
+  signal.throwIfAborted();
+  const result = run(input);
+  progress({ done: 1, total: 1 });
+  return result;
+});
+`;
+}
+
+/** The workspace of a worker tool: the same skeleton, with the job sent to worker.ts. */
+export function toolWorkerUi(values: ToolValues): string {
+  return `import { Alert, Button, createWorkerClient, Textarea, WorkerJobError } from "@ui";
+import { useRef, useState } from "react";
+import type { Input, Result } from "./logic";
+
+// The worker starts on the first run, so its code is loaded on demand (ADR 0051).
+const client = createWorkerClient<Input, Result>(
+  () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
+);
+
+// ${UNFINISHED_MARKER}: replace this skeleton with the real workspace of "${values.name}". Use the
+// design-system components from "@ui" (docs/design-system.md); a new kind of component goes into the
+// design system first. The page already provides the workspace card and the privacy statement.
+export default function ToolUi() {
+  const [text, setText] = useState("");
+  const [output, setOutput] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const job = useRef<AbortController | null>(null);
+
+  const start = async () => {
+    const controller = new AbortController();
+    job.current = controller;
+    setBusy(true);
+    setError("");
+    try {
+      setOutput((await client.run({ text }, { signal: controller.signal })).output);
+    } catch (caught) {
+      if (controller.signal.aborted) return;
+      // A ToolError's message was written for the visitor; anything else is not shown as is.
+      const expected = caught instanceof WorkerJobError && caught.expected;
+      setError(expected ? caught.message : "Something went wrong. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <Textarea
+        id="input"
+        label="Input"
+        value={text}
+        onChange={(event) => setText(event.target.value)}
+      />
+      <div className="ni-workspace__actions">
+        <Button variant="primary" loading={busy} onClick={start}>
+          Run
+        </Button>
+        {busy && (
+          <Button variant="ghost" onClick={() => job.current?.abort()}>
+            Cancel
+          </Button>
+        )}
+      </div>
+      {error && <Alert tone="danger" title="It did not work">{error}</Alert>}
+      <Textarea id="output" label="Result" readOnly value={output} />
+    </>
+  );
 }
 `;
 }
@@ -181,7 +250,7 @@ export function toolFiles(values: ToolValues): Record<string, string> {
   return {
     "tool.config.ts": toolConfig(values),
     "logic.ts": toolLogic(values),
-    "ui.tsx": toolUi(values),
+    "ui.tsx": values.runtime === "worker" ? toolWorkerUi(values) : toolUi(values),
     "island.astro": toolIsland(),
     "content/en.mdx": toolContent(values),
     "logic.test.ts": toolTest(values),

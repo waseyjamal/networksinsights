@@ -90,6 +90,8 @@ test("counts an emoji as one character and splits text with no spaces", async ({
 });
 
 test("counts 1 MB of text without freezing the page", async ({ page }) => {
+  // WebKit's Intl.Segmenter is several times slower than the others on CI: allow for it.
+  test.slow();
   const errors = collectErrors(page);
   await open(page);
   const unit = "The quick brown fox jumps over the lazy dog. 👍🏽 你好世界。\n\n";
@@ -117,7 +119,7 @@ test("counts 1 MB of text without freezing the page", async ({ page }) => {
       area.dispatchEvent(new Event("input", { bubbles: true }));
       requestAnimationFrame(tick);
       const started = performance.now();
-      while (words.textContent === "0" && performance.now() - started < 20_000) {
+      while (words.textContent === "0" && performance.now() - started < 60_000) {
         await new Promise((resolve) => setTimeout(resolve, 20));
       }
       running = false;
@@ -127,7 +129,9 @@ test("counts 1 MB of text without freezing the page", async ({ page }) => {
   );
 
   // Two sentences and one paragraph per unit: the emoji and the Chinese text make the second.
-  await expect(stat(page, "paragraphs")).toHaveText(repeats.toLocaleString("en-US"));
+  await expect(stat(page, "paragraphs")).toHaveText(repeats.toLocaleString("en-US"), {
+    timeout: 30_000,
+  });
   await expect(stat(page, "sentences")).toHaveText((repeats * 2).toLocaleString("en-US"));
   const longest = Math.max(0, ...gaps.slice(1));
   console.log(

@@ -93,7 +93,10 @@ export interface Edges {
 // Built code quotes its strings with ", ' or a backtick, whichever the bundler chose.
 const IMPORT_STATIC = /(?:\bfrom|\bimport)\s*["'`]([^"'`]+\.m?js)["'`]/g;
 const IMPORT_DYNAMIC = /\bimport\(\s*["'`]([^"'`]+\.m?js)["'`]\s*\)/g;
-const URL_ASSET = /new URL\(\s*["'`]([^"'`]+\.(?:wasm|m?js))["'`]\s*,\s*import\.meta\.url\s*\)/g;
+// Vite writes a worker's URL as `new URL("/_astro/worker-x.js", "" + import.meta.url)`, with an
+// empty string added in front of import.meta.url; the pattern takes both forms.
+const URL_ASSET =
+  /new URL\(\s*["'`]([^"'`]+\.(?:wasm|m?js))["'`]\s*,\s*(?:(?:""|''|``)\s*\+\s*)?import\.meta\.url\s*\)/g;
 const BARE_ASSET = /["'`](\/[^"'`\s]+\.wasm)["'`]/g;
 
 export function edgesOf(distDir: string, file: string): Edges {

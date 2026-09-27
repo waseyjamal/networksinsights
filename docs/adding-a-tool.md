@@ -48,7 +48,7 @@ It writes `tools/<category>/<id>/`:
 | `island.astro` | The fixed contract source. Never edit it. |
 | `content/en.mdx` | The required headings in order, with `TODO(new-tool)` placeholders. |
 | `logic.test.ts` | One test that fails until you write real ones. |
-| `worker.ts` | Only for `runtime: worker`: a stub, wired up in Mission 14. |
+| `worker.ts` | Only for `runtime: worker`: calls `defineWorker`, and `ui.tsx` sends it jobs with `createWorkerClient` (ADR 0051). Marked `TODO(new-tool)`. |
 
 The commands to check the tool are printed at the end. Work on a branch named
 `tool/<tool-id>` (AGENTS.md), for example `tool/word-counter`, never on `main`. A mission that is not

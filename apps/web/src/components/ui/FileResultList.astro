@@ -1,0 +1,12 @@
+---
+// The list of files a tool worked on: FileResult rows. `label` names the list for screen readers.
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<ul class="ni-fileresults" aria-label={label}>
+  <slot />
+</ul>

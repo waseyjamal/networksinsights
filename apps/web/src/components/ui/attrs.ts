@@ -14,6 +14,8 @@ export type CardPadding = "none" | "sm" | "md" | "lg";
 export type SkeletonShape = "text" | "circle" | "rect";
 export type DropzoneState = "idle" | "active" | "error";
 export type TooltipSide = "top" | "bottom";
+/** Where a file is in a tool's work: waiting its turn, being worked on, finished, or failed. */
+export type FileResultState = "waiting" | "working" | "done" | "error";
 
 export const PRIVACY_TEXT = "Runs in your browser — files never leave your device";
 
@@ -140,6 +142,10 @@ export function dropzoneAttrs({
   disabled?: boolean | undefined;
 }) {
   return { "data-state": state, ...(disabled ? { "aria-disabled": "true" as const } : {}) };
+}
+
+export function fileResultAttrs({ state = "waiting" }: { state?: FileResultState | undefined }) {
+  return { "data-state": state, ...(state === "working" ? { "aria-busy": "true" as const } : {}) };
 }
 
 export function tooltipAttrs({ side = "top" }: { side?: TooltipSide | undefined }) {
