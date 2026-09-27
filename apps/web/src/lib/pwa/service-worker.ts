@@ -116,7 +116,10 @@ interface WorkerScope {
   registration: { navigationPreload?: { enable(): Promise<void> } };
   clients: {
     claim(): Promise<void>;
-    matchAll(options: { type: "window" }): Promise<ReadonlyArray<{ url: string }>>;
+    matchAll(options: {
+      type: "window";
+      includeUncontrolled: boolean;
+    }): Promise<ReadonlyArray<{ url: string }>>;
   };
   skipWaiting(): Promise<void>;
   addEventListener(type: string, listener: (event: never) => void): void;
@@ -169,7 +172,8 @@ export function start(scope: WorkerScope, config: SwConfig): void {
    * tool is enough for it to work offline.
    */
   const keepOpenPages = async () => {
-    const windows = await scope.clients.matchAll({ type: "window" });
+    // Uncontrolled too: the message can arrive before activation has claimed the page.
+    const windows = await scope.clients.matchAll({ type: "window", includeUncontrolled: true });
     await Promise.all(
       windows.map(async ({ url }) => {
         if (new URL(url).origin !== origin) return;
