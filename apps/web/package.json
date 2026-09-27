@@ -34,7 +34,7 @@
     "@playwright/test": "1.63.0",
     "@takumi-rs/core": "2.14.0",
     "@types/node": "26.6.2",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "wrangler": "4.133.0",
     "zod": "4.6.5"
   }
