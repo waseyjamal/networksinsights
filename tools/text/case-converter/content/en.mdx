@@ -1,0 +1,42 @@
+Case Converter changes the capitalization of any text to uppercase, lowercase, title case, sentence case, camelCase, PascalCase, snake_case or kebab-case, updating the result while you type. It helps writers fix a headline or a paragraph typed with Caps Lock on, editors tidy titles to one style, and developers rename variables, file names, CSS classes and URL slugs without retyping them letter by letter.
+
+## How to use
+
+1. Type into the Your text box, or paste a heading, a paragraph or a list of names.
+2. Pick a case with one of the eight buttons under the box. Each button is written in its own style, so you can see what you will get before you press it.
+3. Read the converted text in the second box. Switch buttons as often as you like: your original text stays untouched, so nothing is lost.
+4. Press Copy result to put the converted text on your clipboard, or Clear text to start again.
+
+## Examples
+
+Type this title, all in lowercase:
+
+```text
+the lord of the rings: the return of the king
+```
+
+Title Case gives `The Lord of the Rings: The Return of the King`. Notice that of and the stay lowercase in the middle, while The after the colon is capitalized. Sentence case gives `The lord of the rings: the return of the king`, and snake_case gives `the_lord_of_the_rings_the_return_of_the_king`, with the colon dropped.
+
+A programmer's name converts too: `getHTTPResponseCode` in snake_case becomes `get_http_response_code`, because a change from lowercase to capitals, or the end of a run of capitals, starts a new word.
+
+## Limits
+
+The short words that title case keeps lowercase (a, an, the, and, but, or, of, in, on, to and a few more) are English ones; other languages get every word capitalized. Title case and sentence case also lowercase the rest of each word, so acronyms and brand names such as NASA or iPhone need fixing by hand afterwards. Sentence case reads a full stop followed by a space as the end of a sentence, so it capitalizes the word after an abbreviation such as e.g. and it capitalizes the English pronoun I. Letters are changed by the standard Unicode rules, not by the rules of one language, so Turkish dotted and dotless i may come out wrong. Chinese, Japanese, Arabic and emoji have no case and pass through unchanged in the first four styles; camelCase, PascalCase, snake_case and kebab-case keep only letters and digits, so they drop emoji, symbols and punctuation.
+
+## FAQ
+
+### What is the difference between title case and sentence case?
+
+Title case capitalizes the first letter of nearly every word, the way book and film titles are written. Sentence case capitalizes only the first word of each sentence and of each line, the way ordinary prose is written, and lowercases every other word.
+
+### Can I convert a list of variable names at once?
+
+Yes. Put one name on each line, and camelCase, PascalCase, snake_case and kebab-case convert every line on its own and keep your line breaks, so a column copied from a spreadsheet or a code file comes back as a column.
+
+### Does it keep accented letters?
+
+Yes. Letters such as é, ü or ñ keep their accents in every style, and Greek or Cyrillic words are capitalized too. The German ß becomes SS in uppercase, which is the standard spelling.
+
+### Is the text I paste sent to a server?
+
+No. The conversion runs in JavaScript inside this page, and your text is never uploaded, saved or logged. Copy result writes only to the clipboard of your own device.
