@@ -1,0 +1,47 @@
+QR Code Generator turns any text or link you type into a scannable QR code, redrawn with every keystroke, and saves it as a PNG image. It suits anyone putting a web address on a poster, a menu, a business card or a slide, who wants a plain black and white code with no tracking redirect in between. The code holds your exact text, so a phone camera opens that address directly.
+
+## How to use
+
+1. Type or paste into the Text or link box. A web address, a phone number, a short note or a Wi-Fi string all work. The code appears below as soon as there is one character.
+2. Pick an Error correction level. M suits most screens and clean prints. Choose Q or H for a code that may get scratched, folded or partly covered by a logo sticker; the code grows denser as the level rises.
+3. Pick a Size, from 128 to 512 pixels square. Choose a larger size for print, and check the line under the code: it shows the version and how many modules make up each side.
+4. Scan the code on the screen with your phone before using it anywhere.
+5. Press Download PNG to save the image, named after its size, for example qr-code-256px.png.
+
+## Examples
+
+Typing the address below with level M and size 256 gives a version 2 code of 25 by 25 modules, each drawn 7 pixels wide:
+
+```text
+https://example.com/
+```
+
+Switch the level to H and the same address needs version 3, 29 by 29 modules at 6 pixels each: the extra error correction takes room. A Wi-Fi login string written in the format that phone cameras recognise makes a version 4 code at level M, and scanning it offers to join the network:
+
+```text
+WIFI:T:WPA;S:HomeNet;P:correct horse battery;;
+```
+
+Capital letters, digits and a few symbols such as space, colon and slash pack more tightly than lowercase text, so HELLO WORLD fits in the smallest version, 21 by 21 modules.
+
+## Limits
+
+The code stores text only. It cannot hold an image or a file, and it does not shorten links, so a long address makes a dense code. The largest code, version 40, holds at most 2,953 bytes at level L and 1,273 at level H; accented letters and other non-English characters take two to four bytes each. Each module must be at least 2 pixels wide, so a dense code refuses the smallest sizes and names one that works. Colours, logos and rounded dots are not offered. The image is a PNG; there is no SVG or PDF export.
+
+## FAQ
+
+### Is the text I type sent to a server?
+
+No. The encoder runs as JavaScript in this tab, and the PNG is made from the canvas on your own device. Nothing you type is uploaded or kept, and the page stores no history of past codes.
+
+### Will the QR code stop working after a while?
+
+No, it never expires. It holds the address or text itself rather than a link to a service that forwards visitors, so there is nothing that could be switched off later. If the website behind a link moves, though, you need a new code.
+
+### Which error correction level should I choose?
+
+M is a sensible default. Higher levels let a reader rebuild more of a damaged or dirty code, up to about 30% at H, at the cost of more modules and smaller dots at the same size. L makes the sparsest code and is easiest to scan from a distance on a clean screen.
+
+### How big should a printed QR code be?
+
+A common rule of thumb is a width of at least a tenth of the scanning distance, so about 2 cm across for a phone held 20 cm away. Download the 512 pixel image for print and let the printer scale it up; the square modules stay sharp at any whole-number enlargement.
