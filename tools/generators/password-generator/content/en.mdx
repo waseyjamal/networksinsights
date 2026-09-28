@@ -1,0 +1,47 @@
+Password Generator creates strong random passwords from uppercase letters, lowercase letters, numbers and symbols, and rates how hard each one is to guess. It is for anyone signing up for an account, rotating an old password or setting a Wi-Fi key, who wants a password nobody could predict rather than one made up on the spot. The randomness comes from your browser's cryptographic generator, the same source that encrypted connections rely on.
+
+## How to use
+
+1. A 16-character password using all four kinds of character appears as soon as the page loads.
+2. Change the Length to any whole number from 8 to 128. Longer passwords are harder to guess, so pick the longest one the site you are signing up for accepts.
+3. Tick or untick Uppercase, Lowercase, Numbers and Symbols. Keep at least one ticked. Some sites refuse symbols; untick them for those.
+4. Every change draws a fresh password straight away. Press Generate again for another one with the same settings.
+5. Press Copy password, then paste it into the sign-up form and into your password manager.
+
+## Examples
+
+With the settings as they start, 16 characters and every kind ticked, one draw gave the password below. It is printed on a public page now, so never use it for anything:
+
+```text
+vr4z6>X1/F_Eo!ld
+```
+
+The rating for those settings reads Very strong, about 103 bits of entropy. Change the length to 8 and it drops to Fair, about 50 bits. Untick everything except Numbers at length 8, which makes a PIN-like password, and it reads Weak, about 26 bits: ten digits in eight places give only 100,000,000 possibilities.
+
+## Limits
+
+The rating measures how the password was made, not how a website stores it: a site that leaks passwords or reuses them still puts the account at risk. The scale is the tool's own, from Weak below 40 bits through Fair and Strong to Very strong at 80 bits or more; it is not a standard, and it does not estimate how long cracking would take. The symbol set leaves out quotes, the backslash, the backtick and spaces, so a site that demands one of those needs a character added by hand. These are the symbols it uses:
+
+```text
+! # $ % & ( ) * + , - . / : ; < = > ? @ [ ] ^ _ { | } ~
+```
+
+Passwords are not remembered after you leave or reload, so save each one in a password manager before closing the page.
+
+## FAQ
+
+### Is the password sent anywhere or saved?
+
+No. It is drawn inside this page by JavaScript running on your device, and it is never uploaded, logged or stored. When you close or reload the tab it is gone, which is why copying it into a password manager first matters.
+
+### Why does every password contain each kind I ticked?
+
+Many sign-up forms reject a password that lacks a digit or a symbol, so a draw that misses a ticked kind is thrown away and a new one is drawn. The strength figure is calculated for that rule, not for the full pool.
+
+### Which symbols can appear?
+
+Only the ASCII punctuation marks listed under Limits can appear, and nothing outside plain ASCII. The set skips the characters that most often break when a password is pasted into a terminal, a configuration file or a web form.
+
+### What does bits of entropy mean?
+
+It is the number of yes-or-no questions needed to pin down the password when every possible one is equally likely. Each extra bit doubles how many passwords an attacker would have to try, so 80 bits means about 2 to the power of 80 possibilities.
