@@ -1,0 +1,62 @@
+JSON Formatter formats or minifies JSON as you paste it, and validates it with an error message that gives the line and column of the problem. It is for developers reading an API response squashed onto one line, testers comparing payloads, and anyone who needs to shrink a config file or find the stray comma that stops a parser. Numbers and strings are copied exactly as written, so nothing in your data changes except the whitespace.
+
+## How to use
+
+1. Paste your JSON into the Your JSON box, or type it. The tool reads it again after every change.
+2. Choose Format to spread it over indented lines, or Minify to remove every space and line break between the values.
+3. For Format, pick the indentation: 2 spaces, 4 spaces or a tab per level.
+4. Read the result below, with its number of lines and characters. If the JSON is not valid, a message names the line and column instead, and shows that line with a caret under the spot.
+5. Press Copy result to put the output on your clipboard, or Clear to start over.
+
+## Examples
+
+Paste this one-line object and keep Format with 2 spaces:
+
+```json
+{"name":"Ada","langs":["en","fr"],"active":true}
+```
+
+The result is eight lines long. Each property sits on its own line, the array opens a new level, and a space follows every colon:
+
+```json
+{
+  "name": "Ada",
+  "langs": [
+    "en",
+    "fr"
+  ],
+  "active": true
+}
+```
+
+Press Minify on that result and you get the first line back, 48 characters. Now paste an object that ends with a comma before its closing brace, on line 4:
+
+```text
+Line 4, column 1: Remove the comma before "}": JSON does not allow a trailing comma.
+```
+
+## Limits
+
+It accepts strict JSON only, as RFC 8259 defines it. Comments, trailing commas, single quotes, unquoted property names, NaN, Infinity and the other JSON5 or JavaScript extras are reported as errors, never repaired. It stops at the first error, so a text with several mistakes shows them one at a time as you fix each. Objects and arrays may nest up to 1,000 levels deep. It does not sort keys, remove duplicate keys or check your data against a schema. A very long text is formatted in the background in small steps, so the result can take a moment to appear, and a browser may scroll a huge result slowly. Output lines always end with a line feed, whatever the input used.
+
+## FAQ
+
+### Why does my JSON fail when JavaScript accepts it?
+
+JavaScript object literals allow things JSON forbids. Property names must be in double quotes, strings cannot use single quotes, and a comma after the last item is an error, even though a browser console or a Node.js script accepts all three without complaint.
+
+### Will formatting change my numbers?
+
+No. The tool never converts a number to a JavaScript value and back. A long ID such as 12345678901234567890 keeps every digit, 1.50 keeps its trailing zero, and 1E+5 keeps its exponent, where a round trip through JSON.parse would print 12345678901234567000, 1.5 and 100000.
+
+### How are the line and column counted?
+
+Both start at 1. The column counts characters from the start of that line, so a tab counts as one, and an emoji with a skin tone counts as two because it is made of two code points. Most code editors count a column the same way.
+
+### Can I format a large file such as a 1 MB API export?
+
+Yes. Open the file in any text editor, copy everything and paste it into the box. Text longer than about sixty thousand characters is read in steps with short pauses, so the page keeps responding while the result is built.
+
+### Is my JSON sent anywhere?
+
+No. The checking and formatting run in JavaScript on this page, and your JSON is never uploaded, stored or logged. Copy result writes to the clipboard of your own device only.
