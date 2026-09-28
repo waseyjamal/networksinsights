@@ -1,0 +1,43 @@
+Base64 Encoder / Decoder turns text or a file into Base64, and turns Base64 back into text or a downloadable file. It is for developers who meet Base64 in API payloads, email sources, data: URLs, JSON Web Tokens and configuration files, and need to read or produce it quickly. It handles both alphabets, standard Base64 and the URL-safe Base64URL, and when a string will not decode it names the character that breaks it and where that character sits.
+
+## How to use
+
+1. Choose **Encode** or **Decode** at the top. Each mode keeps its own input, so you can switch back and forth without losing what you typed.
+2. To encode, pick the alphabet: standard Base64 with `+`, `/` and `=` padding, or Base64URL with `-`, `_` and no padding. Then type or paste text, or drop one file on the drop zone (or click it to browse).
+3. To decode, paste the Base64 string. The alphabet is detected for you, and a `data:` URL is read from after its comma.
+4. Read the result as it updates. Press **Copy result** to put it on your clipboard. When the decoded bytes are not text, the tool says what kind of file they look like and offers a **Download** button instead; decoded text can be saved as a .txt file too.
+5. Press **Clear** to empty the current mode.
+
+## Examples
+
+Encoding the text `Hello, world!` with the standard alphabet gives:
+
+```text
+SGVsbG8sIHdvcmxkIQ==
+```
+
+The two `=` signs are padding: 13 bytes do not fill the last group of three, so the output is rounded up to a multiple of four characters. With Base64URL the same text gives `SGVsbG8sIHdvcmxkIQ`, with the padding left out.
+
+Text that is not plain English is encoded as UTF-8 first, so `café` becomes `Y2Fmw6k=`: the letter é takes two bytes. The two bytes 0xFB 0xFF show how the alphabets differ: standard Base64 writes them as `+/8=`, Base64URL as `-_8`, and the decoder reads either form.
+
+## Limits
+
+Input and output are capped at 5 MB, one file at a time. A decode that is not valid UTF-8 text, or that holds control characters other than tabs and line breaks, is offered as a download rather than shown. The file type is a guess from the first bytes and covers common formats only; anything else is saved as a .bin file. Base64 is about a third larger than the data it encodes, so a 5 MB file gives close to 7 MB of text.
+
+## FAQ
+
+### Is my text or file uploaded anywhere?
+
+No. The encoding and decoding run in the page itself, in the memory of your browser. A file you drop is read locally, and the download is created from that same memory, so nothing is sent to a server.
+
+### What is the difference between Base64 and Base64URL?
+
+They share 62 characters and differ in two. Standard Base64 uses plus and slash, which have special meanings inside web addresses; Base64URL replaces them with minus and underscore so the string can sit in a URL, a cookie or a file name unchanged. JSON Web Tokens use Base64URL without padding.
+
+### Why does decoding say the Base64 is cut short or the padding is wrong?
+
+A Base64 string is built from groups of four characters. A last group of a single character cannot hold a whole byte, which usually means a character was lost when the string was copied. Padding must bring the length to a multiple of four, so check that nothing was trimmed from either end.
+
+### Is Base64 a kind of encryption?
+
+No. Base64 only changes how bytes are written, and anyone can reverse it without a key. Never use it to hide a password or a secret; use it to carry binary data through places that accept only text.
