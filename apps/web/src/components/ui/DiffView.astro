@@ -1,0 +1,36 @@
+---
+import { type DiffRow, diffKind } from "./attrs";
+
+// Two texts compared, line by line: added, removed and unchanged lines, each with its sign and
+// numbers. Rows arrive in order, already compared.
+interface Props {
+  id: string;
+  label: string;
+  rows: readonly DiffRow[];
+}
+
+const { id, label, rows } = Astro.props;
+---
+
+<figure class="ni-diff">
+  <figcaption class="ni-diff__label">{label}</figcaption>
+  <ol class="ni-diff__body" id={id}>
+    {rows.map((row) => (
+  <li class="ni-diff__row" data-kind={row.kind}>
+    <span class="ni-diff__num" aria-hidden="true">
+      {row.oldLine}
+    </span>
+    <span class="ni-diff__num" aria-hidden="true">
+      {row.newLine}
+    </span>
+    <span class="ni-diff__sign" aria-hidden="true">
+      {diffKind[row.kind].sign}
+    </span>
+    <span class="ni-diff__text">
+      <span class="sr-only">{diffKind[row.kind].label}: </span>
+      {row.text}
+    </span>
+  </li>
+))}
+  </ol>
+</figure>

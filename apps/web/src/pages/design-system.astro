@@ -13,6 +13,7 @@ import Card from "../components/ui/Card.astro";
 import CategoryTile from "../components/ui/CategoryTile.astro";
 import Checkbox from "../components/ui/Checkbox.astro";
 import CommandBar from "../components/ui/CommandBar.astro";
+import DiffView from "../components/ui/DiffView.astro";
 import Dropzone from "../components/ui/Dropzone.astro";
 import EmptyState from "../components/ui/EmptyState.astro";
 import FactList from "../components/ui/FactList.astro";
@@ -531,6 +532,25 @@ const themes = ["light", "dark"] as const;
   { text: " shipped; " },
   { text: "C-9", match: 2 },
   { text: " is late." },
+]}
+          />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Diff view</h3>
+          <p class="max-w-2xl text-fg-muted">
+            Two texts compared line by line, for a tool that shows what changed. Added lines are
+            green, removed lines red and unchanged lines grey; each line also has a sign and a
+            hidden word for screen readers. The lines below are a sample.
+          </p>
+          <DiffView
+            id="sample-diff-view"
+            label="Differences (sample)"
+            rows={[
+  { kind: "same", text: "The river rose overnight.", oldLine: 1, newLine: 1 },
+  { kind: "removed", text: "By morning, the old bridge was gone.", oldLine: 2 },
+  { kind: "added", text: "By morning, the old bridge was closed.", newLine: 2 },
+  { kind: "same", text: "Nobody was hurt.", oldLine: 3, newLine: 3 },
 ]}
           />
         </div>
