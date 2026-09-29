@@ -1,0 +1,23 @@
+---
+import type { MatchSegment } from "./attrs";
+
+// Read-only text with its matched runs highlighted. Segments arrive in order, already split.
+interface Props {
+  id: string;
+  label: string;
+  segments: readonly MatchSegment[];
+}
+
+const { id, label, segments } = Astro.props;
+---
+
+<figure class="ni-match-text">
+  <figcaption class="ni-match-text__label">{label}</figcaption>
+  <pre class="ni-match-text__body" id={id}>{segments.map((segment) =>
+  segment.match === undefined ? (
+    segment.text
+  ) : (
+    <mark data-match={segment.match}>{segment.text}</mark>
+  ),
+)}</pre>
+</figure>

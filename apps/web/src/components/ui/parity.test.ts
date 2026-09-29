@@ -17,6 +17,7 @@ import FileResultList from "./FileResultList.astro";
 import Icon from "./Icon.astro";
 import Input from "./Input.astro";
 import Kbd from "./Kbd.astro";
+import MatchText from "./MatchText.astro";
 import Progress from "./Progress.astro";
 import {
   Alert as ReactAlert,
@@ -32,6 +33,7 @@ import {
   Icon as ReactIcon,
   Input as ReactInput,
   Kbd as ReactKbd,
+  MatchText as ReactMatchText,
   Progress as ReactProgress,
   Select as ReactSelect,
   Skeleton as ReactSkeleton,
@@ -311,6 +313,20 @@ describe("Astro and React components emit the same markup", () => {
       { label: "Reading time", value: "5 min 11 sec" },
     ];
     expect(await astro(StatGrid, { items })).toBe(react(createElement(ReactStatGrid, { items })));
+  });
+
+  it("MatchText", async () => {
+    const props = {
+      id: "m",
+      label: "Test string",
+      segments: [
+        { text: "one " },
+        { text: "two", match: 0 },
+        { text: "three", match: 1 },
+        { text: " <b>four</b>" },
+      ],
+    };
+    expect(await astro(MatchText, props)).toBe(react(createElement(ReactMatchText, props)));
   });
 
   it("ToolWorkspace", async () => {

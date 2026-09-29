@@ -23,6 +23,7 @@ import Icon from "../components/ui/Icon.astro";
 import Input from "../components/ui/Input.astro";
 import Kbd from "../components/ui/Kbd.astro";
 import LinkList from "../components/ui/LinkList.astro";
+import MatchText from "../components/ui/MatchText.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import Progress from "../components/ui/Progress.astro";
 import Select from "../components/ui/Select.astro";
@@ -508,6 +509,28 @@ const themes = ["light", "dark"] as const;
   { id: "words", label: "Words", value: "1,234" },
   { id: "characters", label: "Characters", value: "7,020" },
   { id: "reading", label: "Reading time", value: "5 min 11 sec" },
+]}
+          />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Match text</h3>
+          <p class="max-w-2xl text-fg-muted">
+            Read-only text with the matched runs highlighted, for a tool that shows where a pattern
+            hits. Neighbouring matches alternate tones and every match is underlined. The text is a
+            sample.
+          </p>
+          <MatchText
+            id="sample-match-text"
+            label="Text with matches (sample)"
+            segments={[
+  { text: "Order " },
+  { text: "A-104", match: 0 },
+  { text: " and " },
+  { text: "B-227", match: 1 },
+  { text: " shipped; " },
+  { text: "C-9", match: 2 },
+  { text: " is late." },
 ]}
           />
         </div>
