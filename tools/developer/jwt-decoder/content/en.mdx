@@ -1,0 +1,40 @@
+JWT Decoder splits a JSON Web Token into its header, payload and signature and shows the first two as readable JSON, as you paste it. It is for developers debugging a login, an API call or an OAuth flow who need to see which claims a token carries and whether its dates have passed. It reads the token's exp and nbf claims against your device's clock, and it never checks the signature.
+
+## How to use
+
+1. Paste a token into the Your token box. A leading `Bearer ` is ignored, and so are spaces and line breaks, so a token copied from an Authorization header or a wrapped log line works as it is.
+2. Read the three boxes below as they fill in: Header, Payload and Signature. The header hint names the signing algorithm.
+3. Look at the dates section. A badge says Expired, Not valid yet, Valid now or No expiry, followed by how long ago or how long from now that applies, and the issued, not-before and expiry moments in UTC.
+4. Press Copy header, Copy payload or Copy signature to put one part on your clipboard, or Clear to start again. If the token is broken, a message names the part and the character at fault.
+
+## Examples
+
+This token is the well-known HS256 sample used in many JWT guides:
+
+```text
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```
+
+The header shows `"alg": "HS256"` and `"typ": "JWT"`. The payload holds `"sub": "1234567890"`, `"name": "John Doe"` and `"iat": 1516239022`, which the dates section turns into 2018-01-18 01:30:22 UTC. The signature is 32 bytes. This token has no exp claim, so the badge reads No expiry. Add `"exp": 1516239022` to a payload and the badge would read Expired instead.
+
+## Limits
+
+The tool decodes tokens and nothing else. It cannot verify a signature, so it says nothing about whether a token is genuine. It reads signed tokens with three parts, and reports an encrypted token with five parts as unreadable without its key. A payload must be a JSON object, and text over 100,000 characters is refused. The dates come from your device's clock, which may be wrong.
+
+## FAQ
+
+### Does this JWT decoder verify the signature?
+
+No. Verifying needs the secret or public key that signed the token, and this page never asks for one. A decoded payload only shows what the token claims, so a forged token decodes just as easily as a real one.
+
+### Is it safe to paste a real token here?
+
+The decoding happens in your browser and the token is never uploaded, stored or logged. Even so, a live token is a credential until it expires, so prefer a test token or an expired one when you can, and never share a token you would not share a password.
+
+### Why does the tool say a token is expired when my server accepts it?
+
+The badge compares the exp claim with the clock of your device, and a clock that is minutes or hours off changes the answer. Servers usually also allow a few seconds of leeway. A token is treated as expired at the very second its exp names, which is how RFC 7519 defines it.
+
+### What do exp, nbf and iat mean?
+
+They are dates written as seconds since 1 January 1970 UTC. The exp claim is when the token stops being valid, nbf is when it starts, and iat is when it was issued. All three are optional, so a token may carry none of them.
