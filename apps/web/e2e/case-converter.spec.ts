@@ -108,7 +108,9 @@ test("copies the result to the clipboard", async ({ page, context, browserName }
 
 for (const theme of ["light", "dark"] as const) {
   test(`axe finds no violations, ${theme} theme`, async ({ page }) => {
-    await page.emulateMedia({ colorScheme: theme });
+    // Reduced motion switches the button colour transitions off, so axe never measures contrast
+    // halfway through one (as design-system.spec.ts does).
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
     await open(page);
     await box(page).fill(EXAMPLE);
     await modeButton(page, "Title Case").click();

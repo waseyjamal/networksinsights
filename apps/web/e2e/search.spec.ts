@@ -304,7 +304,10 @@ test.describe("using search", () => {
     await page.getByRole("button", { name: "Close search" }).click();
     await expect(dialogOf(page)).toBeHidden();
     await openByShortcut(page);
-    await page.mouse.click(4, 400);
+    // A click on the dialog itself, left of the panel, is a click on the backdrop. Clicking through
+    // the locator waits until the dialog is stable and checks that the point lands on it, where a
+    // raw mouse click could fire while the panel was still animating in.
+    await dialogOf(page).click({ position: { x: 4, y: 400 } });
     await expect(dialogOf(page)).toBeHidden();
   });
 
