@@ -99,6 +99,15 @@ export interface StatItem {
   id?: string | undefined;
 }
 
+/**
+ * One run of a MatchText. A segment with `match` is drawn as a highlighted match, and `match` is
+ * its number, set as data-match; a segment without it is plain text between matches.
+ */
+export interface MatchSegment {
+  text: string;
+  match?: number | undefined;
+}
+
 export const alertIcon: Record<AlertTone, IconName> = {
   info: "info",
   success: "check-circle",

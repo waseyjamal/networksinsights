@@ -25,6 +25,7 @@ export {
 export { Icon } from "./Icon";
 export { Input, type InputProps } from "./Input";
 export { Kbd } from "./Kbd";
+export { MatchText, type MatchTextProps } from "./MatchText";
 export { Progress, type ProgressProps } from "./Progress";
 export { Select, type SelectProps } from "./Select";
 export { Skeleton, type SkeletonProps } from "./Skeleton";

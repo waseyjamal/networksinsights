@@ -1,0 +1,46 @@
+Regex Tester runs a JavaScript regular expression against your text as you type and highlights every match inside the string. It is for developers who are writing or debugging a pattern and want to see exactly what it catches. Below the highlighted text, each match is listed with its position, its full text and what every capture group took, and a broken pattern is explained in plain words. It uses your browser's own regular expression engine, so the result is what your JavaScript code will get in that browser.
+
+## How to use
+
+1. Type a pattern into the Regular expression box, without the slashes that surround it in code. The flags box starts with g, which finds every match. Change it to any of g, i, m, s and u.
+2. Paste or type your text into the Test string box. The matches are highlighted in that text as soon as you type, and neighbouring matches alternate in tone.
+3. Read the Matches list under it. Each entry gives the index where the match starts and ends, the matched text, and every capture group, with its name if it has one.
+4. If the pattern or a flag is wrong, a message appears under that box. Press Copy pattern to put the pattern on your clipboard, or Clear to start again.
+
+## Examples
+
+Say a changelog holds two release dates and you want each part of the date. Enter this pattern with the flag g:
+
+```text
+(?<year>\d{4})-(?<month>\d\d)-(?<day>\d\d)
+```
+
+Use this test string:
+
+```text
+Released 2026-09-29, patched 2026-10-03.
+```
+
+Two matches are highlighted. The first is 2026-09-29 at index 9 to 19, with Group 1 (year) 2026, Group 2 (month) 09 and Group 3 (day) 29. The second is 2026-10-03 at index 29 to 39. Notice that the groups are numbered even though they are also named, so the same pattern works with `match[1]` in code.
+
+## Limits
+
+The tool tests JavaScript syntax only, so features that belong to other engines, such as inline flags or possessive quantifiers, are reported as invalid. It accepts the flags g, i, m, s and u, but not d, v or y. It reads a test string of up to 500,000 characters and a pattern of up to 5,000, and it lists the first 1,000 matches. A pattern with nested repetition can make some text take a very long time to match, and the tab may stop responding until it finishes.
+
+## FAQ
+
+### Does Regex Tester support the same syntax as my code?
+
+It supports JavaScript regular expressions as your browser implements them, including named groups, lookahead and the flags g, i, m, s and u. Newer features such as lookbehind depend on the browser version. A pattern written for Python, PCRE or another engine may need changes here.
+
+### Why does it show only one match?
+
+JavaScript finds only the first match unless the g flag is set. The page follows that rule on purpose, so what you see is what a call without g would return. Add g to the flags box and every match appears.
+
+### Why is a match listed but not highlighted?
+
+An empty match has no characters to highlight. Patterns such as `x*` can match nothing at a position and still count as a match. It stays in the list with its index and is marked as an empty match, and the summary says how many there are.
+
+### Is my text sent anywhere?
+
+No. The pattern and the text stay in your browser, and the matching runs there with the built-in engine. Nothing is uploaded, and Copy pattern writes only to your own clipboard when you press it.

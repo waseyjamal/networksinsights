@@ -1796,6 +1796,54 @@
     overflow-wrap: anywhere;
   }
 
+  /* Match text: a read-only block of text with the matched runs highlighted, for a tool that
+     shows where a pattern hits. Adjacent matches alternate tones so they stay apart. Both tones
+     keep the text at --fg (contrast pairs "fg on brand-soft" and "fg on info-soft"), and a match
+     also has an underline, so it is not told by color alone. */
+
+  .ni-match-text {
+    margin: 0;
+  }
+
+  .ni-match-text__label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .ni-match-text__body {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface-sunken);
+    box-shadow: var(--shadow-inset);
+    color: var(--fg);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    tab-size: 4;
+  }
+
+  .ni-match-text__body mark {
+    padding: 0 0.0625rem;
+    border-radius: var(--radius-xs);
+    background: var(--brand-soft);
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--brand-ui);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+
+  .ni-match-text__body mark:nth-of-type(even) {
+    background: var(--info-soft);
+    text-decoration-color: var(--info);
+  }
+
   /* Facts: a definition list in a grid of cells, the "Quick facts" of a tool page. */
 
   .ni-facts {
