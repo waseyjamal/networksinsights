@@ -108,6 +108,24 @@ export interface MatchSegment {
   match?: number | undefined;
 }
 
+/** What a line of a DiffView is: new in the second text, gone from the first, or in both. */
+export type DiffKind = "added" | "removed" | "same";
+
+/** One line of a DiffView. `oldLine` and `newLine` are 1-based; a line only one text has has one. */
+export interface DiffRow {
+  kind: DiffKind;
+  text: string;
+  oldLine?: number | undefined;
+  newLine?: number | undefined;
+}
+
+/** The sign drawn before a line, and the words a screen reader hears instead of the color. */
+export const diffKind: Record<DiffKind, { sign: string; label: string }> = {
+  added: { sign: "+", label: "Added" },
+  removed: { sign: "\u2212", label: "Removed" },
+  same: { sign: "", label: "Unchanged" },
+};
+
 export const alertIcon: Record<AlertTone, IconName> = {
   info: "info",
   success: "check-circle",

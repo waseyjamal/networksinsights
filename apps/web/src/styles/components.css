@@ -1844,6 +1844,81 @@
     text-decoration-color: var(--info);
   }
 
+  /* Diff: two texts compared line by line. An added line sits on --success-soft, a removed one on
+     --danger-soft and an unchanged one on the sunken surface in muted text. Every line also has a
+     sign and a hidden word for screen readers, so it is not told by color alone. Text stays at
+     --fg on the tints (contrast pairs "fg on success-soft" and "fg on danger-soft"). */
+
+  .ni-diff {
+    margin: 0;
+  }
+
+  .ni-diff__label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .ni-diff__body {
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface-sunken);
+    box-shadow: var(--shadow-inset);
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    list-style: none;
+    overflow: hidden;
+  }
+
+  .ni-diff__row {
+    display: grid;
+    grid-template-columns: 3rem 3rem 1.25rem minmax(0, 1fr);
+  }
+
+  .ni-diff__row[data-kind="added"] {
+    background: var(--success-soft);
+    color: var(--fg);
+  }
+
+  .ni-diff__row[data-kind="removed"] {
+    background: var(--danger-soft);
+    color: var(--fg);
+  }
+
+  .ni-diff__num {
+    padding: 0 0.5rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    user-select: none;
+  }
+
+  .ni-diff__sign {
+    font-weight: 700;
+    text-align: center;
+    user-select: none;
+  }
+
+  .ni-diff__row[data-kind="added"] .ni-diff__sign {
+    color: var(--success-text);
+  }
+
+  .ni-diff__row[data-kind="removed"] .ni-diff__sign {
+    color: var(--danger-text);
+  }
+
+  .ni-diff__text {
+    min-height: 1.5em;
+    padding-right: 0.75rem;
+    overflow-wrap: anywhere;
+    tab-size: 4;
+    white-space: pre-wrap;
+  }
+
   /* Facts: a definition list in a grid of cells, the "Quick facts" of a tool page. */
 
   .ni-facts {

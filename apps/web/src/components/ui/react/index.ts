@@ -14,6 +14,7 @@ export { Badge, type BadgeProps } from "./Badge";
 export { Button, ButtonLink, type ButtonLinkProps, type ButtonProps } from "./Button";
 export { Card, CardLink, type CardLinkProps, type CardProps } from "./Card";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
+export { DiffView, type DiffViewProps } from "./DiffView";
 export { Dropzone, type DropzoneProps } from "./Dropzone";
 export { Field, type FieldProps } from "./Field";
 export {

@@ -7,10 +7,12 @@ import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import Alert from "./Alert.astro";
+import type { DiffRow } from "./attrs";
 import Badge from "./Badge.astro";
 import Button from "./Button.astro";
 import Card from "./Card.astro";
 import Checkbox from "./Checkbox.astro";
+import DiffView from "./DiffView.astro";
 import Dropzone from "./Dropzone.astro";
 import FileResult from "./FileResult.astro";
 import FileResultList from "./FileResultList.astro";
@@ -27,6 +29,7 @@ import {
   Card as ReactCard,
   CardLink as ReactCardLink,
   Checkbox as ReactCheckbox,
+  DiffView as ReactDiffView,
   Dropzone as ReactDropzone,
   FileResult as ReactFileResult,
   FileResultList as ReactFileResultList,
@@ -327,6 +330,17 @@ describe("Astro and React components emit the same markup", () => {
       ],
     };
     expect(await astro(MatchText, props)).toBe(react(createElement(ReactMatchText, props)));
+  });
+
+  it("DiffView", async () => {
+    const rows: DiffRow[] = [
+      { kind: "same", text: "keep  this", oldLine: 1, newLine: 1 },
+      { kind: "removed", text: "<b>gone</b>", oldLine: 2 },
+      { kind: "added", text: "", newLine: 2 },
+      { kind: "added", text: "  new & indented", newLine: 3 },
+    ];
+    const props = { id: "d", label: "Differences", rows };
+    expect(await astro(DiffView, props)).toBe(react(createElement(ReactDiffView, props)));
   });
 
   it("ToolWorkspace", async () => {

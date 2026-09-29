@@ -1,0 +1,61 @@
+Text Diff Checker compares two blocks of text and highlights the added, removed and unchanged lines, live as you type. It is for anyone who needs to see exactly what changed between two versions: an edited contract clause, a revised paragraph, two copies of a config file or the output of a script before and after a fix. Nothing has to be saved or sent anywhere first, because the comparison happens as soon as you paste.
+
+## How to use
+
+1. Paste or type the first version into the Original box, and the changed version into the Modified box.
+2. Read the three counts under the boxes: how many lines were added, how many were removed and how many stayed the same.
+3. Scan the list of differences. Green lines with a plus are only in the Modified text, red lines with a minus are only in the Original, and grey lines are in both. Each line carries the number it has in each text.
+4. Tick Show only the changed lines to hide the grey ones, which helps with a long text.
+5. Press Copy diff to put the whole comparison on your clipboard, or Clear both to start again.
+
+## Examples
+
+Paste this shopping list into Original:
+
+```text
+Milk
+Eggs
+Bread
+Butter
+```
+
+Paste this one into Modified:
+
+```text
+Milk
+Bread
+Butter
+Jam
+```
+
+The counts read 1 added, 1 removed and 3 unchanged. Eggs is red and Jam is green, while Milk, Bread and Butter stay grey. Copy diff gives this text, with a space in front of each unchanged line:
+
+```text
+ Milk
+-Eggs
+ Bread
+ Butter
++Jam
+```
+
+## Limits
+
+The tool compares whole lines, so a line with one changed word is shown as one removed line and one added line, and it does not mark the word itself. White space and letter case count: a line with an extra space is a different line. The line break that ends the last line is ignored, and Windows, Unix and old Mac line breaks are treated alike. It was tested with texts of about 500 KB each. Two long texts that are very different from each other can take longer than the tool will spend, so it stops early, says so above the results, and may show lines as removed and added that match.
+
+## FAQ
+
+### Is my text uploaded anywhere?
+
+No. Both texts are compared by JavaScript inside this page and are never sent to a server, stored or logged. The only thing that leaves the page is what you choose to copy to your own clipboard.
+
+### Why is a changed line shown as removed and then added?
+
+The comparison works on whole lines, and a line that differs in any character is not the same line. The old version appears in red and the new version in green right below it, so you can read the two side by side.
+
+### Does it show a line that moved as moved?
+
+No. A line that changed place is shown as removed from the old position and added at the new one. The counts then include that line once as removed and once as added.
+
+### Can I paste code or a configuration file?
+
+Yes. Any plain text works, and tabs and indentation are kept as they are. Long lines wrap inside the results so nothing scrolls sideways.
