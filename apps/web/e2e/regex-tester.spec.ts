@@ -56,11 +56,22 @@ async function watchViolations(page: Page) {
   return () => page.evaluate(() => (window as unknown as { __csp: string[] }).__csp);
 }
 
-/** Opens the page and waits until the island has hydrated (Astro drops `ssr` when it has). */
+/**
+ * Opens the page and waits until the island answers. Astro drops `ssr` when React starts to
+ * hydrate, not when it has finished: a fill in between is lost, and in WebKit on CI the pattern box
+ * then stays empty. So a pattern is typed, again if need be, until the page reacts, then cleared.
+ */
 async function open(page: Page) {
   await page.goto(PATH);
   await expect(page.locator("astro-island")).toHaveCount(1);
   await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  const copy = page.getByRole("button", { name: "Copy pattern" });
+  await expect(async () => {
+    await pattern(page).fill("a");
+    await expect(copy).toBeEnabled({ timeout: 1_000 });
+  }).toPass();
+  await pattern(page).fill("");
+  await expect(copy).toBeDisabled();
 }
 
 test("hydrates, starts with the g flag, and tests the sample of its page", async ({ page }) => {

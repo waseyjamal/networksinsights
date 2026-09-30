@@ -336,7 +336,8 @@ function visibleTrigger(): HTMLElement | undefined {
   );
 }
 
-function onClose(v: View) {
+/** Empties the field and the results, and cancels a search still running. */
+function reset(v: View) {
   v.token++;
   clearTimeout(v.timer);
   v.input.value = "";
@@ -344,6 +345,14 @@ function onClose(v: View) {
   show(v, "idle");
   v.count.textContent = "";
   v.live.textContent = "";
+}
+
+function onClose(v: View) {
+  // The close event is queued as a task, and a browser may handle input first: Ctrl+K right after
+  // Esc or the close button reopens the dialog before the event arrives. The reopened dialog has
+  // focus in its field and is already reset (open), so the late event must not move focus away.
+  if (v.dialog.open) return;
+  reset(v);
   // Back to what had focus, which is the trigger when the visitor clicked it. When nothing had
   // focus (a shortcut on a bare page) or it is gone, to the trigger, so focus is never lost.
   const target =
@@ -361,6 +370,8 @@ export function open(opener?: Element | null): void {
     return;
   }
   v.opener = opener instanceof HTMLElement && opener !== document.body ? opener : null;
+  // Normally the close event has reset it already; not when the dialog is reopened before it came.
+  reset(v);
   v.dialog.showModal();
   v.input.focus();
   refresh(v);

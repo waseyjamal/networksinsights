@@ -48,11 +48,21 @@ async function watchViolations(page: Page) {
   return () => page.evaluate(() => (window as unknown as { __csp: string[] }).__csp);
 }
 
-/** Opens the page and waits until the island has hydrated (Astro drops `ssr` when it has). */
+/**
+ * Opens the page and waits until the island answers. Astro drops `ssr` when React starts to
+ * hydrate, not when it has finished: input in between is lost, as a 1 MB paste was in WebKit on CI.
+ * So a small JSON is typed, again if need be, until the page reacts, then cleared.
+ */
 async function open(page: Page) {
   await page.goto(PATH);
   await expect(page.locator("astro-island")).toHaveCount(1);
   await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  await expect(async () => {
+    await box(page).fill("[]");
+    await expect(stat(page, "lines")).toHaveText("1", { timeout: 1_000 });
+  }).toPass();
+  await box(page).fill("");
+  await expect(stat(page, "lines")).toHaveText("0");
 }
 
 test("hydrates, formats and minifies the example of its page, and clears", async ({ page }) => {
@@ -107,9 +117,26 @@ test("names the line and column of an error and points at it", async ({ page }) 
   await expect(result(page)).toHaveValue('{\n  "name": "Ada",\n  "age": 36\n}');
 });
 
-test("formats 1 MB of JSON and keeps the page responsive", async ({ page }) => {
+test("formats 1 MB of JSON and keeps the page responsive", async ({ page, browserName }) => {
+  // WebKit formats 1 MB several times slower than the others on CI: allow for it.
+  test.slow(browserName === "webkit", "WebKit is slow on 1 MB of JSON on CI");
+  const timeout = browserName === "webkit" ? 45_000 : 15_000;
   await open(page);
   const size = await page.evaluate(() => {
+    // Watch the status line from before the paste, so the message counts even when the steps run
+    // faster than a poll from the test could see it.
+    const seen = { formatting: false };
+    (window as unknown as { __formatting: typeof seen }).__formatting = seen;
+    const regions = [...document.querySelectorAll('astro-island [aria-live="polite"]')];
+    const observer = new MutationObserver(() => {
+      if (regions.some((region) => region.textContent === "Formatting a long text…")) {
+        seen.formatting = true;
+      }
+    });
+    for (const region of regions) {
+      observer.observe(region, { childList: true, characterData: true, subtree: true });
+    }
+
     const record = { id: 12345, name: "Ada Lovelace", tags: ["math", "engines"], active: true };
     const text = JSON.stringify(Array.from({ length: 16_000 }, () => record));
     const box = document.querySelector<HTMLTextAreaElement>("#json-formatter-text");
@@ -121,14 +148,19 @@ test("formats 1 MB of JSON and keeps the page responsive", async ({ page }) => {
     return text.length;
   });
   expect(size).toBeGreaterThan(1_000_000);
-  // A long text is formatted in steps, with a message while they run.
-  await expect(page.getByText("Formatting a long text…")).toBeVisible();
-  await expect(stat(page, "lines")).toHaveText("144,002", { timeout: 15_000 });
+  await expect(stat(page, "lines")).toHaveText("144,002", { timeout });
   await expect(stat(page, "characters")).toHaveText("1,984,002");
   await expect(page.getByText("Formatting a long text…")).toHaveCount(0);
+  // A long text is formatted in steps, with a message while they run: the page never froze on it.
+  expect(
+    await page.evaluate(
+      () =>
+        (window as unknown as { __formatting: { formatting: boolean } }).__formatting.formatting,
+    ),
+  ).toBe(true);
 
   await modeButton(page, "Minify").click();
-  await expect(stat(page, "characters")).toHaveText("1,200,001", { timeout: 15_000 });
+  await expect(stat(page, "characters")).toHaveText("1,200,001", { timeout });
 });
 
 test("copies the result to the clipboard", async ({ page, context, browserName }) => {

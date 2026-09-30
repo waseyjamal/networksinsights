@@ -301,9 +301,13 @@ test.describe("using search", () => {
   });
 
   test("the close button and a click on the backdrop close it", async ({ page }) => {
+    await inputOf(page).fill("compress");
     await page.getByRole("button", { name: "Close search" }).click();
     await expect(dialogOf(page)).toBeHidden();
+    // Reopened at once, before the dialog's close event has run: it opens empty, focus stays in the
+    // field and is not sent back to the page by that late event.
     await openByShortcut(page);
+    await expect(inputOf(page)).toHaveValue("");
     // A click on the dialog itself, left of the panel, is a click on the backdrop. Clicking through
     // the locator waits until the dialog is stable and checks that the point lands on it, where a
     // raw mouse click could fire while the panel was still animating in.
