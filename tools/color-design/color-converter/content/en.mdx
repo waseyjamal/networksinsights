@@ -1,0 +1,42 @@
+Color Converter turns a color written as HEX, RGB or HSL into the other two formats as you type, with a live preview swatch. Web designers and front-end developers use it when a style guide gives `#3b82f6` but a stylesheet wants `hsl()`, or when a design app shows three numbers and CSS needs a hex code. Because every field is editable, you can start from whichever notation you already have in hand.
+
+## How to use
+
+1. Type or paste a color into the **HEX**, **RGB** or **HSL** field. The field you are typing in stays exactly as you wrote it, and the other two are rewritten on every keystroke.
+2. Or click the **Picker** square to choose a color with your browser's own color dialog; all three fields follow it.
+3. Watch the large swatch: it always shows the last color that could be read, so a half-typed code never makes it flicker.
+4. If a field turns red, read the message under it. It says what is wrong, such as a hue over 360 or a code with five digits.
+5. Press **Copy** beside a format to put that value on your clipboard, ready to paste into CSS.
+
+## Examples
+
+Typing `#3b82f6` into the HEX field fills the other two:
+
+```text
+RGB  rgb(59, 130, 246)
+HSL  hsl(217, 91%, 60%)
+```
+
+The short form `#f80` doubles each digit, so it reads as `#ff8800`, which is `rgb(255, 136, 0)` and `hsl(32, 100%, 50%)`. Now type `hsl(217, 91%, 60%)` into the HSL field: the HEX field shows `#3c83f6`, not `#3b82f6`, because whole-number HSL cannot land on every one of the 16.7 million RGB colors exactly.
+
+## Limits
+
+It reads only HEX, RGB and HSL. Named colors such as `rebeccapurple`, CMYK, HWB, LAB and OKLCH are not supported, and neither is transparency: four- and eight-digit HEX codes, `rgba()` and `hsla()` are refused. RGB values given as percentages are refused too. HEX output is always lowercase, and HSL output is rounded to whole degrees and percentages. The picker looks different in each browser.
+
+## FAQ
+
+### Why does converting HSL to HEX and back change the numbers?
+
+HEX and RGB store each channel as a whole number from 0 to 255, while HSL rounded to whole numbers describes a slightly different grid of colors. A trip from one to the other snaps to the nearest point, so a difference of one in a channel is normal and invisible to the eye.
+
+### Which formats can I paste into the RGB and HSL fields?
+
+Both fields take the CSS function with commas or with spaces, such as `rgb(255 136 0)`, or just the three bare numbers. The percent signs in HSL are optional, and a hue may end in `deg`. Decimals are accepted; RGB channels are rounded to whole numbers.
+
+### What happens to the other fields while I type something invalid?
+
+They keep the last color that was valid, and so do the swatch and the Copy buttons. Only the field you are editing shows the error, and it clears as soon as the text reads as a color again.
+
+### Does it send my colors anywhere?
+
+No. The conversion is a few lines of arithmetic that run in this page, and Copy writes only to your own clipboard.
