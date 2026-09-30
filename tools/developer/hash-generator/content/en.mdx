@@ -1,0 +1,43 @@
+Hash Generator computes the MD5, SHA-1, SHA-256 and SHA-512 hashes of any text or file, all four at once, in lowercase hex. It is for developers, system administrators and anyone who downloads software and wants to check a published checksum, compare two files without opening them, or produce a fingerprint for a test fixture. Seeing the four digests side by side saves running four commands when you do not know which algorithm a vendor used.
+
+## How to use
+
+1. Choose the **Text** tab or the **File** tab at the top of the workspace.
+2. On the Text tab, type or paste into the box. The four hashes change with every keystroke, so you can watch a single added space alter every digest completely.
+3. On the File tab, drop one file on the drop zone, or click it to browse. A progress bar shows how much of the file has been read; the hashes appear when it reaches the end.
+4. Press **Copy** next to any hash to put that digest on your clipboard, then paste it wherever you compare checksums.
+5. Press **Clear** to empty the text, or **Remove file** to start over with another file.
+
+## Examples
+
+Typing the five letters `hello` gives:
+
+```text
+MD5      5d41402abc4b2a76b9719d911017c592
+SHA-1    aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
+SHA-256  2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+```
+
+The SHA-512 digest of the same word is 128 hex characters long, starting with `9b71d224bd62f378`. Notice how sensitive a hash is: `Hello` with a capital H gives the MD5 `8b1a9953c4611296a827abf8c47804d7`, which shares nothing visible with the first. Adding a line break after `hello` changes the MD5 to `b1946ac92492d2347c6235b4d2611184`, the value the command `echo hello | md5sum` prints on Linux.
+
+## Limits
+
+A text or a file can be at most 50 MB, and the File tab takes one file at a time. The whole file is held in memory while the SHA digests are computed, so a phone with little free memory may struggle near that limit. Output is always lowercase hexadecimal; there is no Base64 or uppercase form. It does not compute keyed hashes such as HMAC, and it has no SHA-3, BLAKE or CRC32.
+
+## FAQ
+
+### Is my file uploaded to a server?
+
+No. The page reads the file in your browser, a few megabytes at a time, and computes every digest there. Copy writes only to your own clipboard, and closing the tab discards everything.
+
+### Why does my hash not match the one from the command line?
+
+Most often a line ending is the difference. Commands like `echo` add a newline to the end, and text copied from Windows may carry carriage returns. The text box hashes exactly the characters it holds, encoded as UTF-8, so check for a trailing newline or hash the file itself on the File tab.
+
+### Is MD5 or SHA-1 safe to use?
+
+Neither is safe where an attacker could craft a collision, such as digital signatures or certificates, because practical collisions are known for both. They still work for spotting accidental corruption in a download. Prefer SHA-256 or SHA-512 for anything security-related.
+
+### Can I use this to store passwords?
+
+No. Plain MD5 and SHA hashes are fast to compute, which makes guessing passwords against them cheap. Store passwords with a slow, salted function designed for the job, such as Argon2, scrypt or bcrypt.
