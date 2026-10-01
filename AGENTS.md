@@ -142,6 +142,8 @@ right after `pnpm build`.
 
 Deploy (see ADR 0027): after `quality`, `e2e`, `supply-chain` and `lighthouse` pass, `ci.yml` job `preview` uploads a per-PR preview version and checks its headers, and job `deploy` deploys production on push to `main` (with the IndexNow steps around it) and job `verify-production` then checks the live site. `.github/workflows/rollback.yml` is a manual rollback, from `main` only. Wrangler is pinned in `apps/web`; it deploys only from CI, and runs locally only as `wrangler dev`, the E2E edge server, which touches no account. Runbook: `docs/runbooks/deploy-and-rollback.md`.
 
+CI scope (ADR 0054): the `scope` job (`scripts/ci-scope.ts`) cuts billed minutes without removing a test or a browser. On a tool-only pull request Lighthouse measures only the changed tool pages; on a push to `main`, E2E is skipped only when an `e2e-passed-<tree hash>` artifact from this repository proves that exact tree already passed. Anything unknown runs the full suite, and `deploy` accepts a skipped `e2e` only when `scope` succeeded and decided the skip. Never write the skip decision by hand in a workflow.
+
 ## Search and AI answers (SEO/GEO/AEO)
 
 - Every page's canonical URL, share tags and JSON-LD come from `apps/web/src/lib/seo/`. Never write a canonical link, an Open Graph tag or a JSON-LD block by hand in a page.

@@ -49,6 +49,37 @@ jobs:
       # What search engines and share previews will read, on the build just made (ADR 0038 to 0041).
       - run: pnpm check:seo
 
+  # What this run needs (ADR 0054). On a pull request it asks the GitHub files API whether only tool
+  # folders changed, so Lighthouse can measure just those pages. On main it asks whether the same
+  # tree already passed E2E in a run of this repository. Anything unknown means the full suite: the
+  # script answers "everything" on any error, and the jobs below run everything when this one fails.
+  scope:
+    name: scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      lighthouse_pages: ${{ steps.scope.outputs.lighthouse_pages }}
+      skip_e2e: ${{ steps.scope.outputs.skip_e2e }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+      - id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          GITHUB_REPOSITORY_ID: ${{ github.repository_id }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT: ${{ github.event_name }}
+        run: node scripts/ci-scope.ts "$([ "$EVENT" = pull_request ] && echo pr || echo main)"
+
   # Known vulnerabilities, registry signatures and licences of every installed package, direct or
   # transitive, dev or not (ADR 0049). It gates preview and deploy like quality and e2e do, and
   # .github/workflows/supply-chain.yml runs the same checks on main every week.
@@ -122,9 +153,12 @@ jobs:
             gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" -F body=@"$RUNNER_TEMP/lockfile.md" > /dev/null
           fi
 
+  # Every test in every browser, always. The only skip: a push to main whose tree already passed this
+  # job (scope decides, ADR 0054). It also runs when scope fails.
   e2e:
     name: e2e
-    needs: quality
+    needs: [quality, scope]
+    if: ${{ !cancelled() && needs.quality.result == 'success' && needs.scope.outputs.skip_e2e != 'true' }}
     runs-on: ubuntu-24.04
     # The suite alone took 18 minutes after Mission 17 added the service worker tests (PR #23), so
     # 20 no longer left room for setup and teardown.
@@ -145,6 +179,20 @@ jobs:
       - run: pnpm test:e2e
         env:
           UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
+      # Proof that this exact tree passed. Artifacts are readable from every branch, unlike caches,
+      # which a pull request run keeps to itself. Only reached when the tests passed.
+      - name: Record that this tree passed E2E
+        run: |
+          tree=$(git rev-parse 'HEAD^{tree}')
+          echo "$tree" > e2e-passed.txt
+          echo "tree=$tree" >> "$GITHUB_OUTPUT"
+        id: tree
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-passed-${{ steps.tree.outputs.tree }}
+          path: e2e-passed.txt
+          retention-days: 30
+          if-no-files-found: error
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -157,9 +205,12 @@ jobs:
   # The site-wide performance budgets (ADR 0052): Lighthouse on its mobile profile, on the home page,
   # /tools/, one category page and every tool page, median of three runs each. The reports are kept
   # as an artifact, pass or fail, so the numbers can be read without running it again.
+  # On a pull request that changes only tool folders, only those tools' pages are measured; every
+  # other run, and any doubt, measures every page (ADR 0054).
   lighthouse:
     name: lighthouse
-    needs: quality
+    needs: [quality, scope]
+    if: ${{ !cancelled() && needs.quality.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -177,7 +228,19 @@ jobs:
       - run: pnpm build
         env:
           UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
-      - run: pnpm check:lighthouse --out lighthouse-report
+      - name: Run Lighthouse
+        env:
+          PAGES: ${{ needs.scope.outputs.lighthouse_pages }}
+        run: |
+          if [ -z "$PAGES" ]; then
+            pnpm check:lighthouse --out lighthouse-report
+          else
+            status=0
+            for page in $PAGES; do
+              pnpm check:lighthouse --page "$page" --out lighthouse-report || status=1
+            done
+            exit $status
+          fi
       - name: Upload Lighthouse reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -257,10 +320,19 @@ jobs:
           PREVIEW_URL: ${{ steps.upload.outputs.url }}
         run: pnpm check:production --url "$PREVIEW_URL" --preview --attempts 6
 
+  # E2E may be skipped here only when scope succeeded and itself decided the tree already passed.
+  # If scope failed or was skipped, a skipped E2E does not count and nothing deploys (ADR 0054).
   deploy:
     name: deploy
-    needs: [quality, e2e, supply-chain, lighthouse]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [scope, quality, e2e, supply-chain, lighthouse]
+    if: >-
+      ${{ !cancelled() &&
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.quality.result == 'success' &&
+      needs.supply-chain.result == 'success' &&
+      needs.lighthouse.result == 'success' &&
+      (needs.e2e.result == 'success' ||
+      (needs.e2e.result == 'skipped' && needs.scope.result == 'success' && needs.scope.outputs.skip_e2e == 'true')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
