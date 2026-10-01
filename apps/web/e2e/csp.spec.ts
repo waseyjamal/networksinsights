@@ -57,10 +57,16 @@ function watchPolicyConsole(page: Page): string[] {
 }
 
 async function openSearch(page: Page) {
-  await page.keyboard.press("Control+K");
   const dialog = page.getByRole("dialog", { name: "Search tools" });
-  await expect(dialog).toBeVisible();
-  await page.getByRole("combobox", { name: "Search tools" }).fill("pdf");
+  const field = page.getByRole("combobox", { name: "Search tools" });
+  // Press again if the first press came before the loader listened, until the dialog is open with
+  // focus in its field.
+  await expect(async () => {
+    await page.keyboard.press("Control+K");
+    await expect(dialog).toBeVisible({ timeout: 1_000 });
+    await expect(field).toBeFocused({ timeout: 1_000 });
+  }).toPass();
+  await field.fill("pdf");
   // The module and the index both loaded: the dialog answers the query. With the real index that
   // is "No tools yet" when it is empty and "No results" when it has tools; the other stays hidden.
   await expect(
@@ -83,7 +89,10 @@ for (const theme of ["light", "dark"] as const) {
           } catch {}
         }, theme);
 
-        const response = await page.goto(sitePage.path);
+        // Not "load": it waits for every file, and in Firefox on CI one could hang past the test
+        // timeout. The assertions below wait for what the test needs: the theme, the islands and
+        // search.
+        const response = await page.goto(sitePage.path, { waitUntil: "domcontentloaded" });
         expect(response?.status()).toBe(sitePage.status);
         expect(response?.headers()["content-security-policy"]).toContain("default-src 'none'");
         // The inline theme script ran: its hash is in the policy.
@@ -94,6 +103,8 @@ for (const theme of ["light", "dark"] as const) {
           await expect(island).not.toHaveAttribute("ssr");
         }
         await openSearch(page);
+        // Opening search leaves the theme as it was.
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
 
         expect(await violations(), "CSP violations").toEqual([]);
         expect(consoleLines, "policy messages in the console").toEqual([]);
