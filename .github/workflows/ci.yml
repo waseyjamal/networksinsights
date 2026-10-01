@@ -20,6 +20,42 @@ env:
   HUSKY: "0"
 
 jobs:
+  # Decides, on a pull request only, whether the diff touches nothing but tool folders, their own
+  # e2e spec and docs. Mission: reduce CI minutes (ADR 0053) — a plain `git diff`, no third-party
+  # action, so `quality`, `supply-chain`, `lockfile`, `lighthouse` and `preview` are unaffected and
+  # only `e2e`'s browser matrix reads the result. A push to main never counts as tool-only.
+  changes:
+    name: changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      tool_only: ${{ steps.classify.outputs.tool_only }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Classify the diff
+        id: classify
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          files=$(git diff --name-only "$BASE_SHA" HEAD)
+          echo "Changed files:"
+          echo "$files"
+          # Tool-only: every changed file is under tools/, docs/, or is an e2e spec for a tool
+          # that the diff also touches (apps/web/e2e/<tool-id>.spec.ts). Anything else (shared
+          # components, security, PWA, runtime, config, CI, dependencies) forces all 3 browsers.
+          other=$(echo "$files" | grep -vE '^(tools/|docs/)' | grep -vE '^apps/web/e2e/[^/]+\.spec\.ts$' || true)
+          if [ -z "$other" ] && echo "$files" | grep -q '^tools/'; then
+            echo "tool_only=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tool_only=false" >> "$GITHUB_OUTPUT"
+          fi
+
   quality:
     name: quality
     runs-on: ubuntu-24.04
@@ -124,7 +160,10 @@ jobs:
 
   e2e:
     name: e2e
-    needs: quality
+    needs: [quality, changes]
+    # `needs.changes` is skipped on a push to main, which `always()` still lets this job run after;
+    # its result is only ever read on a pull request (ADR 0053).
+    if: always() && needs.quality.result == 'success'
     runs-on: ubuntu-24.04
     # The suite alone took 18 minutes after Mission 17 added the service worker tests (PR #23), so
     # 20 no longer left room for setup and teardown.
@@ -139,12 +178,26 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter web exec playwright install --with-deps
+      # A tool-only pull request (ADR 0053) installs and runs Chromium only; every push to main,
+      # and any pull request that touches shared code, still exercises all 3 browsers.
+      - name: Install Playwright browsers
+        run: |
+          if [ "${{ github.event_name == 'pull_request' && needs.changes.outputs.tool_only == 'true' }}" = "true" ]; then
+            pnpm --filter web exec playwright install --with-deps chromium
+          else
+            pnpm --filter web exec playwright install --with-deps
+          fi
       # The same test website id as quality: the E2E tests check the analytics scripts, and answer
       # Umami's endpoint themselves (e2e/analytics.spec.ts, ADR 0051).
-      - run: pnpm test:e2e
+      - name: Run Playwright tests
         env:
           UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
+        run: |
+          if [ "${{ github.event_name == 'pull_request' && needs.changes.outputs.tool_only == 'true' }}" = "true" ]; then
+            pnpm test:e2e -- --project chromium
+          else
+            pnpm test:e2e
+          fi
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

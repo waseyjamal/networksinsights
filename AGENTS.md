@@ -184,7 +184,7 @@ Deploy (see ADR 0027): after `quality`, `e2e`, `supply-chain` and `lighthouse` p
 - `docs/design-system.md` — the Signal design system: how to use tokens and components
 - `docs/adr/` — one file per architecture decision
 - `docs/launch-checklist.md` — every owner input and step needed before launch
-- `docs/runbooks/` — step-by-step procedures (deploy and rollback, the redirect rule, IndexNow, security, analytics, the installable app and the Play Store)
+- `docs/runbooks/` — step-by-step procedures (deploy and rollback, the redirect rule, IndexNow, security, analytics, the installable app and the Play Store, CI minutes)
 
 ## Changing a decision
 
