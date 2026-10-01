@@ -1,9 +1,9 @@
 # 0054. CI scope: Lighthouse on changed tool pages, and no repeat E2E for a tree that already passed
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-01
 
-Amends [ADR 0025](0025-ci-pipeline.md) (what CI runs) and [ADR 0027](0027-deployment.md) (what gates a deploy). Does not change [ADR 0052](0052-pwa-service-worker-and-lighthouse-budgets.md): the budgets, the page list and the three runs per page stay.
+Amended by [ADR 0055](0055-scoped-e2e-and-per-browser-jobs.md) (decisions 3 and 5: labelled artifacts, one E2E job per browser, scoped E2E). Amends [ADR 0025](0025-ci-pipeline.md) (what CI runs) and [ADR 0027](0027-deployment.md) (what gates a deploy). Does not change [ADR 0052](0052-pwa-service-worker-and-lighthouse-budgets.md): the budgets, the page list and the three runs per page stay.
 
 ## Context
 

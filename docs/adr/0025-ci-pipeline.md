@@ -26,6 +26,7 @@ Use GitHub Actions. The workflow is `.github/workflows/ci.yml`.
 - Runner: `ubuntu-24.04`, pinned so the image does not change under us.
 - Job `quality` (10-minute timeout): `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build`.
 - Job `e2e` (20-minute timeout, `needs: quality`): install, `playwright install --with-deps`, `pnpm test:e2e` (ADR 0026). The Playwright report is uploaded as an artifact when the job fails.
+- Since ADR 0055, `e2e` is a gate over three parallel browser jobs (`e2e-chromium`, `e2e-firefox`, `e2e-webkit`), 40 minutes each, and can be scoped to the changed tools; see `docs/runbooks/ci.md`.
 - The job names `quality` and `e2e` are fixed, because branch protection matches on them.
 - Checkout uses `persist-credentials: false`, so the token is not left in the workspace.
 

@@ -6,14 +6,19 @@
 // - `pr`: asks the GitHub pull request files API what the pull request changes. If every file is
 //   inside one or more tool folders (plus each tool's own E2E spec), `lighthouse_pages` lists only
 //   those tools' pages. Otherwise it is empty, and Lighthouse measures every page.
-// - `main`: `skip_e2e=true` only when the same tree already passed E2E in a run of this repository,
-//   proven by an `e2e-passed-<tree hash>` artifact that only a passing E2E job uploads.
+// - `main`: asks the same question of the pushed commit's files, and skips E2E only when the same
+//   tree already passed it in a run of this repository, proven by an `e2e-passed-<kind>-<tree hash>`
+//   artifact that only a passing E2E gate uploads. A full run is skipped only for a "full" artifact;
+//   a scoped run is skipped for a "scoped" or a "full" one.
+// - `dispatch`: a manual run is always the full suite and never skipped.
 //
-// Fail safe: anything unknown, empty, truncated or failing gives the full suite. It has no
-// dependencies and imports only Node built-ins, so CI runs it with plain `node` and no install.
+// It writes `e2e_mode` (`full`, `scoped` or `skip`), `e2e_specs` (the spec files of a scoped run),
+// `skip_e2e` and `lighthouse_pages`. Fail safe: anything unknown, empty, truncated or failing gives
+// the full suite. It has no dependencies and imports only Node built-ins, so CI runs it with plain
+// `node` and no install.
 
 import { execFileSync } from "node:child_process";
-import { appendFileSync } from "node:fs";
+import { appendFileSync, existsSync, readdirSync } from "node:fs";
 
 export interface ChangedFile {
   filename: string;
@@ -80,7 +85,35 @@ export function lighthousePages(scope: Scope): string[] {
   return scope.full ? [] : scope.tools.map((id) => `/${id}/`);
 }
 
-export const e2eArtifactName = (tree: string) => `e2e-passed-${tree}`;
+/** What an E2E run proved: every spec ("full"), or the changed tools' specs and the shared ones. */
+export type E2eKind = "full" | "scoped";
+
+export const e2eArtifactName = (tree: string, kind: E2eKind = "full") =>
+  `e2e-passed-${kind}-${tree}`;
+
+/** The artifact kinds that let a run of this size be skipped: a full run needs a full artifact. */
+export const acceptedKinds = (scope: Scope): E2eKind[] =>
+  scope.full ? ["full"] : ["full", "scoped"];
+
+const SPEC_SUFFIX = ".spec.ts";
+
+/**
+ * The spec files (paths from apps/web) a scoped run executes: every shared spec, meaning one that is
+ * not named after a tool folder, plus the spec of each changed tool that has one. A spec with an
+ * unknown name counts as shared, so it always runs. Empty means "run everything".
+ */
+export function scopedSpecs(scope: Scope, specFiles: string[], toolIds: string[]): string[] {
+  if (scope.full || scope.tools.length === 0 || toolIds.length === 0) return [];
+  const known = new Set(toolIds);
+  const changed = new Set(scope.tools);
+  return specFiles
+    .filter((file) => {
+      const id = file.endsWith(SPEC_SUFFIX) ? file.slice(0, -SPEC_SUFFIX.length) : file;
+      return !known.has(id) || changed.has(id);
+    })
+    .sort()
+    .map((file) => `e2e/${file}`);
+}
 
 interface Artifact {
   name?: unknown;
@@ -92,13 +125,18 @@ interface Artifact {
  * True only when the artifacts listing holds a live `e2e-passed-<tree>` artifact made by a run of
  * this very repository (not a fork's). Anything else, including a bad listing, is false.
  */
-export function e2eAlreadyPassed(tree: string, listing: unknown, repositoryId: string): boolean {
+export function e2eAlreadyPassed(
+  tree: string,
+  listing: unknown,
+  repositoryId: string,
+  kinds: E2eKind[] = ["full"],
+): boolean {
   if (!/^[0-9a-f]{40}$/.test(tree) || !/^\d+$/.test(repositoryId)) return false;
   const artifacts = (listing as { artifacts?: unknown } | null)?.artifacts;
   if (!Array.isArray(artifacts)) return false;
   return (artifacts as Artifact[]).some(
     (artifact) =>
-      artifact?.name === e2eArtifactName(tree) &&
+      kinds.some((kind) => artifact?.name === e2eArtifactName(tree, kind)) &&
       artifact.expired === false &&
       String(artifact.workflow_run?.repository_id) === repositoryId &&
       String(artifact.workflow_run?.head_repository_id) === repositoryId,
@@ -114,59 +152,135 @@ const env = (name: string): string => {
 const gh = (args: string[]): string =>
   execFileSync("gh", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 
-function output(values: Record<string, string>): void {
-  const lines = Object.entries(values).map(([key, value]) => `${key}=${value}`);
-  console.log(lines.join("\n"));
-  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join("\n")}\n`);
-}
+const NL = String.fromCharCode(10);
+
+const fileLines = (text: string): unknown[] =>
+  text
+    .split(NL)
+    .filter((line) => line.trim() !== "")
+    .map((line) => JSON.parse(line) as unknown);
 
 function pullRequestScope(): Scope {
-  const lines = gh([
-    "api",
-    `repos/${env("REPO")}/pulls/${env("PR_NUMBER")}/files`,
-    "--paginate",
-    "--jq",
-    ".[] | {filename, status}",
-  ])
-    .split("\n")
-    .filter((line) => line.trim() !== "");
-  return selectScope(lines.map((line) => JSON.parse(line) as unknown));
+  return selectScope(
+    fileLines(
+      gh([
+        "api",
+        `repos/${env("REPO")}/pulls/${env("PR_NUMBER")}/files`,
+        "--paginate",
+        "--jq",
+        ".[] | {filename, status}",
+      ]),
+    ),
+  );
 }
 
-function mainSkipsE2e(): boolean {
+/** The pushed commit's own files. A merge commit has two parents, so it is never tool-only. */
+function commitScope(): Scope {
+  const commit = `repos/${env("REPO")}/commits/${env("GITHUB_SHA")}`;
+  if (gh(["api", commit, "--jq", ".parents | length"]).trim() !== "1") {
+    return full("the commit does not have exactly one parent");
+  }
+  return selectScope(
+    fileLines(
+      gh(["api", `${commit}?per_page=100`, "--paginate", "--jq", ".files[] | {filename, status}"]),
+    ),
+  );
+}
+
+/** Spec files and tool ids as they are on disk now. */
+function specsOnDisk(): { specFiles: string[]; toolIds: string[] } {
+  const specFiles = readdirSync("apps/web/e2e").filter((name) => name.endsWith(".spec.ts"));
+  const toolIds = readdirSync("tools", { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name !== "node_modules")
+    .flatMap((category) =>
+      readdirSync(`tools/${category.name}`, { withFileTypes: true })
+        .filter(
+          (tool) =>
+            tool.isDirectory() && existsSync(`tools/${category.name}/${tool.name}/tool.config.ts`),
+        )
+        .map((tool) => tool.name),
+    );
+  return { specFiles, toolIds };
+}
+
+function treeAlreadyPassed(kinds: E2eKind[]): boolean {
   const tree = execFileSync("git", ["rev-parse", "HEAD^{tree}"], { encoding: "utf8" }).trim();
-  const listing = JSON.parse(
-    gh([
-      "api",
-      `repos/${env("REPO")}/actions/artifacts?name=${e2eArtifactName(tree)}&per_page=100`,
-    ]),
-  ) as unknown;
-  return e2eAlreadyPassed(tree, listing, env("GITHUB_REPOSITORY_ID"));
+  // The artifacts API filters by exact name, so each kind is its own listing.
+  return kinds.some((kind) => {
+    const listing = JSON.parse(
+      gh([
+        "api",
+        `repos/${env("REPO")}/actions/artifacts?name=${e2eArtifactName(tree, kind)}&per_page=100`,
+      ]),
+    ) as unknown;
+    return e2eAlreadyPassed(tree, listing, env("GITHUB_REPOSITORY_ID"), [kind]);
+  });
+}
+
+interface Decision {
+  mode: "full" | "scoped" | "skip";
+  specs: string[];
+  lighthousePages: string[];
+}
+
+const EVERYTHING: Decision = { mode: "full", specs: [], lighthousePages: [] };
+
+/** Turns a scope into a decision; a scoped run without a spec list becomes a full run. */
+function decide(scope: Scope, lighthouse: boolean): Decision {
+  if (scope.full) return EVERYTHING;
+  const disk = specsOnDisk();
+  const specs = scopedSpecs(scope, disk.specFiles, disk.toolIds);
+  if (specs.length === 0) return EVERYTHING;
+  return { mode: "scoped", specs, lighthousePages: lighthouse ? lighthousePages(scope) : [] };
+}
+
+function output(decision: Decision): void {
+  const lines = [
+    `e2e_mode=${decision.mode}`,
+    `e2e_specs=${decision.specs.join(" ")}`,
+    `skip_e2e=${decision.mode === "skip"}`,
+    `lighthouse_pages=${decision.lighthousePages.join(" ")}`,
+  ];
+  console.log(lines.join(NL));
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, lines.join(NL) + NL);
+}
+
+/** Runs `run`; anything that throws gives `fallback`, which is always the safe side. */
+function attempt<T>(what: string, fallback: T, run: () => T): T {
+  try {
+    return run();
+  } catch (error) {
+    console.error(
+      `scope: ${what}: ${error instanceof Error ? error.message : String(error)}; running everything`,
+    );
+    return fallback;
+  }
 }
 
 function main(mode: string | undefined): number {
-  try {
-    if (mode === "pr") {
-      const scope = pullRequestScope();
-      console.log(`scope: ${scope.reason}`);
-      output({ lighthouse_pages: lighthousePages(scope).join(" "), skip_e2e: "false" });
-      return 0;
-    }
-    if (mode === "main") {
-      const skip = mainSkipsE2e();
-      output({ lighthouse_pages: "", skip_e2e: String(skip) });
-      return 0;
-    }
-    console.error("Usage: node scripts/ci-scope.ts pr|main");
+  if (mode !== "pr" && mode !== "main" && mode !== "dispatch") {
+    console.error("Usage: node scripts/ci-scope.ts pr|main|dispatch");
     return 2;
-  } catch (error) {
-    // Unknown means the full suite: every page, and E2E.
-    console.error(
-      `scope: ${error instanceof Error ? error.message : String(error)}; running everything`,
-    );
-    output({ lighthouse_pages: "", skip_e2e: "false" });
+  }
+  if (mode === "dispatch") {
+    output(EVERYTHING);
     return 0;
   }
+  // Lighthouse narrows only on a pull request; E2E narrows on a pull request and on main.
+  const scope = attempt("changed files", full("the changed files could not be read"), () =>
+    mode === "pr" ? pullRequestScope() : commitScope(),
+  );
+  console.log(`scope: ${scope.reason}`);
+  const decision = attempt("spec list", EVERYTHING, () => decide(scope, mode === "pr"));
+  if (mode === "main") {
+    const kinds = acceptedKinds(scope);
+    if (attempt("artifact lookup", false, () => treeAlreadyPassed(kinds))) {
+      output({ mode: "skip", specs: [], lighthousePages: [] });
+      return 0;
+    }
+  }
+  output(decision);
+  return 0;
 }
 
 if (import.meta.main) process.exit(main(process.argv[2]));
