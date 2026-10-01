@@ -5,6 +5,8 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # The full suite by hand: every spec, every browser, every page. Never deploys (ADR 0055).
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -49,9 +51,10 @@ jobs:
       # What search engines and share previews will read, on the build just made (ADR 0038 to 0041).
       - run: pnpm check:seo
 
-  # What this run needs (ADR 0054). On a pull request it asks the GitHub files API whether only tool
-  # folders changed, so Lighthouse can measure just those pages. On main it asks whether the same
-  # tree already passed E2E in a run of this repository. Anything unknown means the full suite: the
+  # What this run needs (ADR 0054, ADR 0055). On a pull request and on main it asks the GitHub files
+  # API whether only tool folders changed, so E2E can run just those tools' specs plus the shared ones,
+  # and Lighthouse can measure just those pages. On main it also asks whether the same tree already
+  # passed E2E. A manual run is always the full suite. Anything unknown means the full suite: the
   # script answers "everything" on any error, and the jobs below run everything when this one fails.
   scope:
     name: scope
@@ -64,6 +67,8 @@ jobs:
     outputs:
       lighthouse_pages: ${{ steps.scope.outputs.lighthouse_pages }}
       skip_e2e: ${{ steps.scope.outputs.skip_e2e }}
+      e2e_mode: ${{ steps.scope.outputs.e2e_mode }}
+      e2e_specs: ${{ steps.scope.outputs.e2e_specs }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -78,7 +83,13 @@ jobs:
           GITHUB_REPOSITORY_ID: ${{ github.repository_id }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           EVENT: ${{ github.event_name }}
-        run: node scripts/ci-scope.ts "$([ "$EVENT" = pull_request ] && echo pr || echo main)"
+        run: |
+          case "$EVENT" in
+            pull_request) mode=pr ;;
+            push) mode=main ;;
+            *) mode=dispatch ;;
+          esac
+          node scripts/ci-scope.ts "$mode"
 
   # Known vulnerabilities, registry signatures and licences of every installed package, direct or
   # transitive, dev or not (ADR 0049). It gates preview and deploy like quality and e2e do, and
@@ -153,16 +164,22 @@ jobs:
             gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" -F body=@"$RUNNER_TEMP/lockfile.md" > /dev/null
           fi
 
-  # Every test in every browser, always. The only skip: a push to main whose tree already passed this
-  # job (scope decides, ADR 0054). It also runs when scope fails.
-  e2e:
-    name: e2e
+  # E2E in three parallel jobs, one per browser (ADR 0055). Each runs the spec files `scope` chose:
+  # the whole suite, or on a tool-only change the changed tools' specs plus every shared spec. The only
+  # skip is a push to main whose tree already passed (scope decides, ADR 0054). It also runs when
+  # scope fails, and then runs everything: an empty spec list means every spec.
+  e2e-browser:
+    name: e2e-${{ matrix.browser }}
     needs: [quality, scope]
     if: ${{ !cancelled() && needs.quality.result == 'success' && needs.scope.outputs.skip_e2e != 'true' }}
     runs-on: ubuntu-24.04
-    # The suite alone took 18 minutes after Mission 17 added the service worker tests (PR #23), so
-    # 20 no longer left room for setup and teardown.
-    timeout-minutes: 35
+    # One browser took about 10 minutes at 12 tools, setup included. 40 leaves room for the catalog to
+    # grow. Shard or raise it when a measured browser job passes 25 minutes (docs/runbooks/ci.md).
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -173,34 +190,68 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter web exec playwright install --with-deps
+      - run: pnpm --filter web exec playwright install --with-deps ${{ matrix.browser }}
       # The same test website id as quality: the E2E tests check the analytics scripts, and answer
       # Umami's endpoint themselves (e2e/analytics.spec.ts, ADR 0051).
-      - run: pnpm test:e2e
+      - run: pnpm build
         env:
           UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
-      # Proof that this exact tree passed. Artifacts are readable from every branch, unlike caches,
-      # which a pull request run keeps to itself. Only reached when the tests passed.
-      - name: Record that this tree passed E2E
-        run: |
-          tree=$(git rev-parse 'HEAD^{tree}')
-          echo "$tree" > e2e-passed.txt
-          echo "tree=$tree" >> "$GITHUB_OUTPUT"
-        id: tree
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: e2e-passed-${{ steps.tree.outputs.tree }}
-          path: e2e-passed.txt
-          retention-days: 30
-          if-no-files-found: error
+      - name: Run the E2E tests
+        env:
+          UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
+          BROWSER: ${{ matrix.browser }}
+          # Spec files of a scoped run, from scope; empty runs every spec.
+          E2E_SPECS: ${{ needs.scope.outputs.e2e_specs }}
+        # $E2E_SPECS is deliberately unquoted: it is a list of paths from scope, made only of
+        # letters, digits, dots, dashes and slashes.
+        run: pnpm --filter web exec playwright test --project="$BROWSER" $E2E_SPECS
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: apps/web/playwright-report
           retention-days: 7
           if-no-files-found: ignore
+
+  # The one gate the rest of the workflow reads (the name `e2e` is fixed, ADR 0025). It passes only
+  # when all three browser jobs passed, and then records that this exact tree passed, labelled with
+  # what was run: "full" for every spec, "scoped" for a tool-only selection. Main skips a full run only
+  # for a "full" artifact and a scoped run for either (ADR 0055). It is skipped when scope skips E2E.
+  e2e:
+    name: e2e
+    needs: [quality, scope, e2e-browser]
+    if: ${{ !cancelled() && needs.quality.result == 'success' && needs.scope.outputs.skip_e2e != 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fail unless every browser passed
+        env:
+          BROWSERS: ${{ needs.e2e-browser.result }}
+        run: |
+          if [ "$BROWSERS" != success ]; then
+            echo "The browser jobs finished with: $BROWSERS" >&2
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Proof that this exact tree passed. Artifacts are readable from every branch, unlike caches,
+      # which a pull request run keeps to itself. Only reached when every browser passed.
+      - name: Record that this tree passed E2E
+        id: tree
+        env:
+          KIND: ${{ needs.scope.outputs.e2e_mode == 'scoped' && 'scoped' || 'full' }}
+        run: |
+          tree=$(git rev-parse 'HEAD^{tree}')
+          echo "$KIND $tree" > e2e-passed.txt
+          echo "name=e2e-passed-${KIND}-${tree}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.tree.outputs.name }}
+          path: e2e-passed.txt
+          retention-days: 30
+          if-no-files-found: error
 
   # The site-wide performance budgets (ADR 0052): Lighthouse on its mobile profile, on the home page,
   # /tools/, one category page and every tool page, median of three runs each. The reports are kept
@@ -212,7 +263,8 @@ jobs:
     needs: [quality, scope]
     if: ${{ !cancelled() && needs.quality.result == 'success' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # 30 minutes: a full run measures every page, about 19 seconds each, and the catalog grows (ADR 0055).
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -379,12 +431,18 @@ jobs:
           INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
         run: pnpm indexnow submit --previous "$RUNNER_TEMP/sitemaps-before"
 
-  # Requests the live site after a deploy. It fails until the redirect rule of
+  # Requests the live site after every successful deploy. It fails until the redirect rule of
   # docs/runbooks/seo-redirects.md exists in the Cloudflare dashboard, and nothing depends on it.
+  # The status function matters: without one GitHub adds an implicit success(), which is false when
+  # an ancestor of deploy was skipped, so a deploy after a skipped e2e was never verified (run #87,
+  # ADR 0055). It still does not run when deploy failed, was skipped or was cancelled.
   verify-production:
     name: verify-production
     needs: deploy
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      ${{ !cancelled() &&
+      needs.deploy.result == 'success' &&
+      github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
