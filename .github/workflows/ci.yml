@@ -2,7 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # TEMP for ADR 0053 verification only: also trigger against mission/ci-minutes so the scratch
+    # PR (#39) can be checked before merge. Revert to [main] before this mission is done.
+    branches: [main, mission/ci-minutes]
   push:
     branches: [main]
 
