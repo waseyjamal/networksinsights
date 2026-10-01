@@ -39,6 +39,12 @@ describe("routeOf", () => {
     expect(routeOf(req("/_astro/video.mp4", { range: true }), ORIGIN)).toBe("none");
     expect(routeOf(req("/sw.js"), ORIGIN)).toBe("none");
   });
+
+  it("never answers for AI models and WebAssembly (ADR 0057)", () => {
+    expect(routeOf(req("/_astro/u2netp.Ab12.onnx"), ORIGIN)).toBe("none");
+    expect(routeOf(req("/_astro/ort-wasm-simd-threaded.Cd34.wasm"), ORIGIN)).toBe("none");
+    expect(routeOf(req("/_astro/codec.H.WASM"), ORIGIN)).toBe("none");
+  });
 });
 
 describe("pageKey", () => {
@@ -82,6 +88,16 @@ describe("filesOfPage and closure", () => {
     const graph = { "ui.C.js": ["react.E.js", "worker-F.js"], "react.E.js": ["ui.C.js"] };
     expect(closure(["ui.C.js"], graph).sort()).toEqual(
       ["/_astro/react.E.js", "/_astro/ui.C.js", "/_astro/worker-F.js"].sort(),
+    );
+  });
+
+  it("never fetches a model or a .wasm file ahead, even when the graph names it", () => {
+    const graph = {
+      "ui.C.js": ["worker-F.js"],
+      "worker-F.js": ["u2netp.G.onnx", "ort.H.wasm", "glue.I.js"],
+    };
+    expect(closure(["ui.C.js"], graph).sort()).toEqual(
+      ["/_astro/glue.I.js", "/_astro/ui.C.js", "/_astro/worker-F.js"].sort(),
     );
   });
 });
@@ -322,6 +338,43 @@ describe("the worker", () => {
     );
     // A built file the page needs comes from the device.
     expect((await request("/_astro/react.E.js"))?.status).toBe(200);
+  });
+
+  it("never fetches, keeps or answers for an AI model or a .wasm file (ADR 0057)", async () => {
+    site["/background-remover/"] = {
+      body: `<astro-island component-url="/_astro/ui.M.js" renderer-url="/_astro/client.D.js">`,
+      type: "text/html",
+    };
+    site["/_astro/ui.M.js"] = { body: "", type: "text/javascript" };
+    site["/_astro/worker-M.js"] = { body: "", type: "text/javascript" };
+    site["/_astro/u2netp.M.onnx"] = { body: "model", type: "application/octet-stream" };
+    site["/_astro/ort.M.wasm"] = { body: "wasm", type: "application/wasm" };
+    config.graph["ui.M.js"] = ["worker-M.js"];
+    config.graph["worker-M.js"] = ["u2netp.M.onnx", "ort.M.wasm"];
+    try {
+      await lifecycle("install");
+      await request("/background-remover/", { mode: "navigate" });
+      expect(storage.urls(FILES_CACHE)).toContain("/_astro/worker-M.js");
+      expect(fetched).not.toContain("/_astro/u2netp.M.onnx");
+      expect(fetched).not.toContain("/_astro/ort.M.wasm");
+
+      expect(await request("/_astro/u2netp.M.onnx")).toBeUndefined();
+      expect(await request("/_astro/ort.M.wasm")).toBeUndefined();
+      const kept = storage.urls(FILES_CACHE);
+      expect(kept.filter((url) => /\.(onnx|wasm)$/.test(url))).toEqual([]);
+    } finally {
+      for (const path of [
+        "/background-remover/",
+        "/_astro/ui.M.js",
+        "/_astro/worker-M.js",
+        "/_astro/u2netp.M.onnx",
+        "/_astro/ort.M.wasm",
+      ]) {
+        delete site[path];
+      }
+      delete config.graph["ui.M.js"];
+      delete config.graph["worker-M.js"];
+    }
   });
 
   it("online, never answers a kept copy when the network answers", async () => {

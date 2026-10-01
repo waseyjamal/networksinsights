@@ -160,6 +160,12 @@ CI scope (ADR 0054, ADR 0055): the `scope` job (`scripts/ci-scope.ts`) cuts bill
 - Search stores nothing and sends nothing: no recent searches, no query logging. Adding either needs an ADR and a line in the privacy page.
 - Synthetic tools (`synthetic.ts`, `corpus.ts`) exist for tests only. No page or build imports them.
 
+## On-device AI models (ADR 0057)
+
+- A model is used only when the licence of its weights and of its runtime allows commercial use; check the weights where their authors publish them. Each model folder has its licence text and a `VENDOR.md` (source, size, SHA-256), checked by `scripts/vendored-models.test.ts`.
+- Models and runtimes are served from our own domain as hashed files, at most 25 MiB each, loaded only after a visitor acts, with progress and Cancel. Never load one from a CDN.
+- ONNX Runtime Web runs on one thread, WebAssembly only; no cross-origin isolation headers. The page states the real download size and never an accuracy figure.
+
 ## Analytics and error reports (ADR 0051)
 
 - Umami Cloud, cookie-free. It is on only when the build has `UMAMI_WEBSITE_ID`, a repository variable that only the production deploy passes (`docs/runbooks/analytics.md`). Without it no page carries analytics.
@@ -173,7 +179,7 @@ CI scope (ADR 0054, ADR 0055): the `scope` job (`scripts/ci-scope.ts`) cuts bill
 
 - The manifest (`/manifest.webmanifest`), the app icons (`/icons/*.png`) and the favicons are generated from `config/site.ts`, `tokens.css` and the constellation mark (`lib/pwa/`). Never add an icon or a manifest by hand, and never put a favicon in `public/`.
 - The service worker is `apps/web/src/lib/pwa/service-worker.ts`, written in-house. It imports nothing; the build turns it into `dist/sw.js` with that build's settings. Never write `sw.js` by hand and never add a service worker library without an ADR.
-- Pages are network first, `/_astro/*` cache first. It never keeps non-GET, other origins, `/api/`, `no-store` answers, or search before intent. A server-runtime endpoint lives under `/api/` or answers `Cache-Control: no-store`.
+- Pages are network first, `/_astro/*` cache first. It never keeps non-GET, other origins, `/api/`, `no-store` answers, search before intent, or `.onnx` and `.wasm` files (ADR 0057). A server-runtime endpoint lives under `/api/` or answers `Cache-Control: no-store`.
 - `/sw.js` and the manifest must never be in `immutablePaths`; `pnpm check:production` fails if they are cached for long.
 - E2E tests block service workers (`playwright.config.ts`); only `pwa.spec.ts` turns them on.
 - The Play Store app (Trusted Web Activity) and `/.well-known/assetlinks.json` are added only when the app exists: `docs/runbooks/pwa-and-play-store.md`.

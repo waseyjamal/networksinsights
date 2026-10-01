@@ -9,6 +9,7 @@ engineStrict: true
 minimumReleaseAge: 4320
 allowBuilds:
   esbuild: false
+  protobufjs: false
   workerd: false
 overrides:
   # GHSA-3wwx-pv8p-q78v: wrangler > miniflare pins undici 7.29.0; remove once miniflare ships 7.29.1.

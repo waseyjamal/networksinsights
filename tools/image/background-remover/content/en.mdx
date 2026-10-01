@@ -1,0 +1,36 @@
+Background Remover cuts the main subject out of a photo with an AI model that runs in your browser, and gives you a PNG with a transparent background. It suits product shots, profile pictures and quick cutouts for slides or posts. The photo is never uploaded: the model is downloaded to your device once, and the work happens there, in a background worker on this page.
+
+## How to use
+
+1. Drop one photo on the box, or click it to choose one. JPG, PNG and WebP files are taken, one at a time, up to 20 MB.
+2. The first time, the page downloads the model and its runtime, about 18 MB, from this site. The bar shows how far the download is. This needs an internet connection.
+3. The model then finds the subject and removes the rest. Cancel stops at any point; Try again starts the same photo again.
+4. Compare Before and After side by side, then press Download PNG. Drop another photo to start over, or press Clear.
+
+## Examples
+
+A test picture of 320 by 240 pixels, a dark red disc in the middle of a plain white background, saved as a PNG, gives a PNG of the same size in which the disc keeps its colour and stays opaque, while the white corners become transparent. The automated test of this page checks exactly that, in Chromium, Firefox and WebKit.
+
+Notice that the result always has the size of the photo you dropped. The model itself looks at a 320 by 320 copy, and its mask is scaled back up, so the edge of the cutout is softer than the photo on large images.
+
+## Limits
+
+The first use needs an internet connection and downloads about 18 MB. One photo at a time, up to 20 MB and 25 megapixels. The model is small, so it works best on one clear subject against a background that differs from it. Fine hair and fur come out blocky or with the background still between strands. Soft shadows may be cut away or kept in part. A subject close in colour to its background, glass, smoke and see-through fabric often leak. Phones are slower than computers. Without a connection the first use cannot start.
+
+## FAQ
+
+### Is my photo uploaded to a server?
+
+No. The photo is decoded, cut out and saved as a PNG by your browser, in a background worker on this page. The only download is the model and its runtime, which come from this site; nothing about your photo is sent anywhere.
+
+### Why does the first use take longer?
+
+The first photo has to download the AI model and ONNX Runtime, the program that runs it, about 18 MB in all. Later photos in the same visit reuse them at once. Your browser may keep the files for a later visit, but that is up to the browser, so a later visit can download them again.
+
+### Which AI model does it use?
+
+U²-Netp, the small version of U²-Net by Xuebin Qin, Zichen Zhang, Chenyang Huang, Masood Dehghan, Osmar R. Zaiane and Martin Jagersand (Pattern Recognition, 2020), released under the Apache License 2.0. It is run by ONNX Runtime Web from Microsoft, under the MIT licence.
+
+### Why are the edges of hair rough?
+
+The model looks at a 320 by 320 copy of the photo, and it is a small model chosen so that the download stays near 18 MB. Fine strands are thinner than what it can see at that size, so they are kept or dropped in blocks.

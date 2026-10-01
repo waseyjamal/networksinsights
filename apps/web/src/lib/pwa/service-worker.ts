@@ -5,13 +5,15 @@
 //
 // What it does, and nothing more:
 //   - Pages: network first, so a visitor online always gets the current page. A page that answered
-//     is kept on the device, with every file it needs (its island, its chunks, a tool's worker
-//     and .wasm), so a tool that runs in the browser works offline after one visit. The page of
+//     is kept on the device, with every file it needs (its island, its chunks, a tool's worker),
+//     so a tool that runs in the browser works offline after one visit. The page of
 //     that first visit loaded before the worker existed; it asks the worker to keep it. Offline, the
 //     kept copy answers; a page never kept gets the offline page.
 //   - Hashed files (/_astro/*): cache first. Their names change when their content does.
 //   - Never kept: anything but GET, other origins (the analytics endpoint), /api/, range requests,
-//     and any response that says `no-store`.
+//     any response that says `no-store`, and .onnx models and .wasm files (ADR 0057). Those are
+//     megabytes each and load only when a visitor starts a tool: keeping them would fetch them with
+//     the page and push every other file out of the cache. The worker does not answer for them.
 //   - Search stays out of the page until intent (ADR 0046): its module and index are never fetched
 //     ahead; they are kept only after a visitor has opened search.
 //   - Updates: a new build is a new sw.js. It installs its shell next to the old one, takes over
@@ -45,6 +47,9 @@ export const KEEP_OPEN_PAGES = "ni-keep-open-pages";
 /** With a kept copy at hand, a page waits this long for the network before the copy answers. */
 export const NETWORK_TIMEOUT_MS = 4000;
 
+/** Files the worker never keeps, fetches ahead or answers for: AI models and WebAssembly. */
+export const NEVER_KEPT = /\.(?:onnx|wasm)$/i;
+
 export type Route = "page" | "file" | "other" | "none";
 
 /** How the worker treats a request. "none" means it does not answer: the browser fetches as usual. */
@@ -56,6 +61,7 @@ export function routeOf(
   const url = new URL(request.url);
   if (url.origin !== origin) return "none";
   if (url.pathname.startsWith("/api/") || url.pathname === "/sw.js") return "none";
+  if (NEVER_KEPT.test(url.pathname)) return "none";
   if (request.mode === "navigate") return "page";
   if (url.pathname.startsWith(ASSET_PREFIX)) return "file";
   return "other";
@@ -89,7 +95,10 @@ export function filesOfPage(html: string): string[] {
   return [...found];
 }
 
-/** Every file reachable from `entries` through the graph, `entries` included, as /_astro/ URLs. */
+/**
+ * Every file reachable from `entries` through the graph, `entries` included, as /_astro/ URLs.
+ * Models and .wasm files are left out (NEVER_KEPT).
+ */
 export function closure(entries: readonly string[], graph: Readonly<SwConfig["graph"]>): string[] {
   const seen = new Set<string>();
   const stack = [...entries];
@@ -98,7 +107,7 @@ export function closure(entries: readonly string[], graph: Readonly<SwConfig["gr
     seen.add(file);
     stack.push(...(graph[file] ?? []));
   }
-  return [...seen].map((file) => `${ASSET_PREFIX}${file}`);
+  return [...seen].filter((file) => !NEVER_KEPT.test(file)).map((file) => `${ASSET_PREFIX}${file}`);
 }
 
 // The parts of the service worker scope this file uses. The web app's type checker has the DOM

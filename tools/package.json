@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@networksinsights/tool-sdk": "workspace:*",
+    "onnxruntime-web": "1.30.0",
     "react": "19.3.0",
     "zod": "4.6.5"
   },
