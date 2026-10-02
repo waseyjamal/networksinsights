@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { PDFJS_ASSETS } from "../../../../tools/pdf/pdf-to-jpg/logic";
 import { credits, ZLIB_NOTICE } from "./credits";
 import { PDFJS_BASE, PDFJS_VENDOR_FOLDERS, PDFJS_VERSION } from "./pdfjs";
 
@@ -17,6 +18,8 @@ describe("credits", () => {
     expect(version("pdfjs-dist")).toBe(toolsPackage.dependencies["pdfjs-dist"]);
     expect(version("pako")).toBe("1.0.11");
     expect(PDFJS_VERSION).toBe(toolsPackage.dependencies["pdfjs-dist"]);
+    // PDF to JPG fetches the data files from the path this site serves them at.
+    expect(PDFJS_ASSETS).toBe(PDFJS_BASE);
   });
 
   it("keeps pako's zlib notice word for word", () => {

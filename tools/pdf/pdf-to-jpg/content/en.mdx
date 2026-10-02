@@ -1,0 +1,30 @@
+PDF to JPG turns the pages of a PDF into JPG pictures in your browser, at the resolution and quality you choose. It helps when a website accepts only pictures, when you want to post one page of a brochure, or when someone needs to see a page on a device that has no PDF reader. Pick all pages or just a few, preview each picture, and download the ones you need.
+
+## How to use
+
+1. Drop one PDF on the box, or click it to choose it. Its page count appears under the box.
+2. Under Pages, keep All pages, or pick Only the pages I choose and type them, such as 1, 3-4, or 7- for page 7 to the end.
+3. Pick a Resolution: Screen for viewing, Standard for most uses, Print for paper. Then pick a JPG quality.
+4. Press Convert. Each page appears with a preview, its pixel size and its file size; press Download on the ones you want.
+
+## Examples
+
+A test PDF with A4 pages, converted at Standard (150 dpi), gives pictures of exactly 1,240 by 1,753 pixels named report-page-1.jpg, report-page-2.jpg and so on. At Print (300 dpi) the same page is 2,480 by 3,507 pixels. Notice that a large poster page at Print stops at 4,096 pixels on its longer side, so its picture is smaller than 300 dpi would make it.
+
+## Limits
+
+One PDF at a time, up to 50 MB, as Quick facts shows, and up to 50 pages at a time; for more, run again with the next pages. Each picture is at most 4,096 pixels on its longer side, which keeps it within what Safari on iPhone and iPad can draw. Password-protected PDFs are refused with a note, and damaged files are refused too. Pictures are downloaded one by one, as there is no single archive. Transparent areas become white, because JPG has no transparency. Forms, comments and scripts in the PDF are not run. Phones have less memory than computers, so a large PDF may fail on a phone before these limits.
+
+## FAQ
+
+### Is my PDF uploaded to turn it into pictures?
+
+No. A background worker in your browser reads the PDF and draws each page on this page, using the PDF.js library from this site. Nothing is sent to a server.
+
+### Which resolution should I choose?
+
+Standard suits most screens, emails and upload forms. Choose Print when the picture will be printed or zoomed into, and Screen when a small file matters most.
+
+### Can I get PNG pictures instead of JPG?
+
+No. This tool writes JPG only. If you need PNG, convert the downloaded JPG with Image Converter, keeping in mind that it will not regain any detail.
