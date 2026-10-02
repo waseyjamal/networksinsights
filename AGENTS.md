@@ -47,6 +47,9 @@ Tools:
   that order, with no H1. The first sentence of the intro is at most 30 words (ADR 0044). The FAQ is `###` questions ending in `?`. Minimum prose words: intro 40,
   How to use 50, Examples 40, Limits 30, FAQ 60 (two pairs). No placeholder text, no copied page
   (ADR 0036). A tool is not done until `pnpm check:tools --tool <id>` passes.
+- PDF tools use `pdf-lib` 1.17.1 and `pdfjs-dist` only, from `worker.ts` or a dynamic `import()`
+  in `ui.tsx`, never from `logic.ts` (ADR 0057). PDF.js data files come from `/vendor/pdfjs/<version>/`;
+  every library a tool ships is credited in `apps/web/src/config/credits.ts`.
 - A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.
 - Files go to the visitor only through `saveFile` from `@ui`. Visitor text is rendered as text
   (`{value}`, `setText`), and a visitor's URL becomes a link only through `safeUrl`. Never
