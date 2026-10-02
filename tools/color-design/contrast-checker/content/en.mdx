@@ -1,0 +1,37 @@
+Contrast Checker measures the WCAG 2.2 contrast ratio between a text color and a background color, and shows pass or fail for AA and AAA. It covers normal text, large text and UI components. Designers and developers use it to test a palette before it ships, and the result updates as you type. Colors are HEX codes without transparency, the same as in Color Converter.
+
+## How to use
+
+1. Type the **Text color** and the **Background color** as HEX codes with 3 or 6 digits, or use the **Pick** squares. The preview shows both text sizes on that background.
+2. Read the **Contrast ratio**, which runs from 1:1 for two equal colors to 21:1 for black on white. The order of the two colors makes no difference to the ratio.
+3. Read the table. Each row names a criterion, the ratio it needs and whether your colors pass or fail.
+4. Press **Swap colors** to reverse text and background, for example to check a light-on-dark version.
+5. If a code cannot be read, a message under its box says what to change.
+
+## Examples
+
+Text `#767676` on a `#ffffff` background gives a ratio of 4.54:1. That passes AA for normal text (4.5:1), AA for large text (3:1), AAA for large text (4.5:1) and UI components (3:1), and fails AAA for normal text (7:1). Notice how close it sits to the 4.5 line.
+
+A slightly lighter `#777777` on white gives 4.47:1, and fails AA for normal text even though it looks almost the same. Black on white gives 21.00:1 and passes every row.
+
+## Limits
+
+The ratio is shown rounded down to two decimals, and the pass or fail uses the exact ratio, never a rounded one, as WCAG asks, so 4.499:1 fails 4.5:1. Large text means at least 18 point, or 14 point bold, which is about 24 px, or about 18.7 px bold. UI components and graphics are checked against 3:1 at level AA only. Transparency, color names, RGB and HSL are not accepted, and contrast of text over images or gradients is not measured.
+
+## FAQ
+
+### What contrast ratio does WCAG 2.2 require for text?
+
+Level AA asks for at least 4.5:1 for normal text and 3:1 for large text. Level AAA asks for 7:1 for normal text and 4.5:1 for large text. This tool checks all four and shows each one.
+
+### What counts as large text?
+
+Text of at least 18 point, or at least 14 point if it is bold. In CSS pixels that is about 24 px, or about 18.7 px bold. Anything smaller is normal text and needs the higher ratio.
+
+### What about buttons, icons and form borders?
+
+Success criterion 1.4.11 asks for at least 3:1 against the adjacent color for parts of controls and graphics needed to understand the page. The UI components row checks that ratio for the two colors you enter.
+
+### Are my colors uploaded?
+
+No. The contrast is calculated in this page on your device, and the colors you type are never sent anywhere.
