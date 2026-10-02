@@ -236,6 +236,19 @@
     resize: vertical;
   }
 
+  /* DrawPad: a sunken sheet; the ink takes the theme's text colour, so it shows in both themes. */
+  .ni-drawpad__canvas {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface-sunken);
+    box-shadow: var(--shadow-inset);
+    color: var(--fg);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
   @media (hover: hover) {
     .ni-input:hover:not(:disabled),
     .ni-textarea:hover:not(:disabled),

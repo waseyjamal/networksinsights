@@ -164,22 +164,28 @@ jobs:
             gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" -F body=@"$RUNNER_TEMP/lockfile.md" > /dev/null
           fi
 
-  # E2E in three parallel jobs, one per browser (ADR 0055). Each runs the spec files `scope` chose:
-  # the whole suite, or on a tool-only change the changed tools' specs plus every shared spec. The only
+  # E2E per browser (ADR 0055), and per shard (ADR 0058). Each runs the spec files `scope` chose: the
+  # whole suite, or on a tool-only change the changed tools' specs plus every shared spec. A full run
+  # splits each browser into 3 Playwright shards (9 jobs); a scoped run is 1 job per browser. The only
   # skip is a push to main whose tree already passed (scope decides, ADR 0054). It also runs when
-  # scope fails, and then runs everything: an empty spec list means every spec.
+  # scope fails, and then runs everything in 3 shards: an empty spec list means every spec, and an
+  # empty e2e_mode is not "scoped".
   e2e-browser:
-    name: e2e-${{ matrix.browser }}
+    name: e2e-${{ matrix.browser }}-${{ matrix.shard }}
     needs: [quality, scope]
     if: ${{ !cancelled() && needs.quality.result == 'success' && needs.scope.outputs.skip_e2e != 'true' }}
     runs-on: ubuntu-24.04
-    # One browser took about 10 minutes at 12 tools, setup included. 40 leaves room for the catalog to
-    # grow. Shard or raise it when a measured browser job passes 25 minutes (docs/runbooks/ci.md).
+    # Run 37000596636 (32 tools, one job per browser) took 33 to 40 minutes per browser, slowed by
+    # failing tests. A shard aims under 25 minutes; 40 stays as the backstop. Add a shard when a
+    # measured job passes 25 minutes (docs/runbooks/ci.md).
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         browser: [chromium, firefox, webkit]
+        shard: ${{ fromJSON(needs.scope.outputs.e2e_mode == 'scoped' && '[1]' || '[1,2,3]') }}
+    env:
+      SHARDS: ${{ needs.scope.outputs.e2e_mode == 'scoped' && '1' || '3' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -200,22 +206,24 @@ jobs:
         env:
           UMAMI_WEBSITE_ID: 00000000-0000-4000-8000-000000000000
           BROWSER: ${{ matrix.browser }}
+          SHARD: ${{ matrix.shard }}
           # Spec files of a scoped run, from scope; empty runs every spec.
           E2E_SPECS: ${{ needs.scope.outputs.e2e_specs }}
         # $E2E_SPECS is deliberately unquoted: it is a list of paths from scope, made only of
         # letters, digits, dots, dashes and slashes.
-        run: pnpm --filter web exec playwright test --project="$BROWSER" $E2E_SPECS
+        run: pnpm --filter web exec playwright test --project="$BROWSER" --shard="$SHARD/$SHARDS" $E2E_SPECS
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: playwright-report-${{ matrix.browser }}-${{ matrix.shard }}
           path: apps/web/playwright-report
           retention-days: 7
           if-no-files-found: ignore
 
   # The one gate the rest of the workflow reads (the name `e2e` is fixed, ADR 0025). It passes only
-  # when all three browser jobs passed, and then records that this exact tree passed, labelled with
+  # when every browser job that ran passed, every shard of a full run included (the matrix result is
+  # success only when all of its jobs succeeded), and then records that this exact tree passed, labelled with
   # what was run: "full" for every spec, "scoped" for a tool-only selection. Main skips a full run only
   # for a "full" artifact and a scoped run for either (ADR 0055). It is skipped when scope skips E2E.
   e2e:

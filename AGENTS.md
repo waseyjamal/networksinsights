@@ -47,6 +47,10 @@ Tools:
   that order, with no H1. The first sentence of the intro is at most 30 words (ADR 0044). The FAQ is `###` questions ending in `?`. Minimum prose words: intro 40,
   How to use 50, Examples 40, Limits 30, FAQ 60 (two pairs). No placeholder text, no copied page
   (ADR 0036). A tool is not done until `pnpm check:tools --tool <id>` passes.
+- PDF tools use `pdf-lib` 1.17.1 and `pdfjs-dist` only from `worker.ts`, never from `ui.tsx` or
+  `logic.ts` (ADR 0057). A dynamic `import()` in a `ui.tsx` makes Vite share its preload helper with
+  the search loader, which `pnpm check:budgets` then fails. PDF.js data files come from `/vendor/pdfjs/<version>/`;
+  every library a tool ships is credited in `apps/web/src/config/credits.ts`.
 - A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.
 - Files go to the visitor only through `saveFile` from `@ui`. Visitor text is rendered as text
   (`{value}`, `setText`), and a visitor's URL becomes a link only through `safeUrl`. Never
@@ -142,7 +146,7 @@ right after `pnpm build`.
 
 Deploy (see ADR 0027): after `quality`, `e2e`, `supply-chain` and `lighthouse` pass, `ci.yml` job `preview` uploads a per-PR preview version and checks its headers, and job `deploy` deploys production on push to `main` (with the IndexNow steps around it) and job `verify-production` then checks the live site. `.github/workflows/rollback.yml` is a manual rollback, from `main` only. Wrangler is pinned in `apps/web`; it deploys only from CI, and runs locally only as `wrangler dev`, the E2E edge server, which touches no account. Runbook: `docs/runbooks/deploy-and-rollback.md`.
 
-CI scope (ADR 0054, ADR 0055): the `scope` job (`scripts/ci-scope.ts`) cuts billed minutes without removing a test or a browser. A pull request or a push to `main` that changes only tool folders (plus each tool's own E2E spec) runs only those tools' specs plus every shared spec, in all three browsers, and Lighthouse measures only those pages; any other change, any unknown file and any error runs the full suite. E2E is three parallel browser jobs behind one `e2e` gate, which uploads an `e2e-passed-full-<tree hash>` or `e2e-passed-scoped-<tree hash>` artifact. On `main`, a full run is skipped only for a "full" artifact of the same tree, and a scoped run for a "scoped" or a "full" one; `deploy` accepts a skipped `e2e` only when `scope` succeeded and decided the skip, and `verify-production` runs after every successful deploy. `workflow_dispatch` runs the full suite by hand (`docs/runbooks/ci.md`). Never write the skip decision by hand in a workflow.
+CI scope (ADR 0054, ADR 0055, ADR 0058): the `scope` job (`scripts/ci-scope.ts`) cuts billed minutes without removing a test or a browser. A pull request or a push to `main` that changes only tool folders (plus each tool's own E2E spec) runs only those tools' specs plus every shared spec, in all three browsers, and Lighthouse measures only those pages; any other change, any unknown file and any error runs the full suite. E2E runs per browser behind one `e2e` gate: 3 Playwright shards per browser on a full run (9 jobs), 1 job per browser on a scoped run; when any measured E2E job passes 25 minutes, add a shard in a new ADR. The gate needs every job that ran and uploads an `e2e-passed-full-<tree hash>` or `e2e-passed-scoped-<tree hash>` artifact. On `main`, a full run is skipped only for a "full" artifact of the same tree, and a scoped run for a "scoped" or a "full" one; `deploy` accepts a skipped `e2e` only when `scope` succeeded and decided the skip, and `verify-production` runs after every successful deploy. `workflow_dispatch` runs the full suite by hand (`docs/runbooks/ci.md`). Never write the skip decision by hand in a workflow.
 
 ## Search and AI answers (SEO/GEO/AEO)
 

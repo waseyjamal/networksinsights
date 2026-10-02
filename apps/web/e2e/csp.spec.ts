@@ -67,11 +67,21 @@ async function openSearch(page: Page) {
     await expect(field).toBeFocused({ timeout: 1_000 });
   }).toPass();
   await field.fill("pdf");
-  // The module and the index both loaded: the dialog answers the query. With the real index that
-  // is "No tools yet" when it is empty and "No results" when it has tools; the other stays hidden.
+  // The module and the index both loaded: the dialog answers the query. Any answer counts, and the
+  // test waits for one: results (the PDF tools match "pdf"), "No results", or "No tools yet" for an
+  // empty index. The loading state and the error message are not answers.
   await expect(
-    dialog.locator("[data-ni-search-empty]:not([hidden]), [data-ni-search-none]:not([hidden])"),
+    dialog
+      .locator(
+        [
+          "[data-ni-search-results]:not([hidden]) [role='option']",
+          "[data-ni-search-none]:not([hidden])",
+          "[data-ni-search-empty]:not([hidden])",
+        ].join(", "),
+      )
+      .first(),
   ).toBeVisible();
+  await expect(dialog.locator("[data-ni-search-error]")).toBeHidden();
 }
 
 for (const theme of ["light", "dark"] as const) {

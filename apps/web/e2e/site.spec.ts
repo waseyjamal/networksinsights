@@ -67,3 +67,22 @@ for (const scheme of ["light", "dark"] as const) {
     }
   });
 }
+
+// ADR 0057: the minifier drops licence comments from the bundles, so the notices of the libraries
+// the tools ship live on the About page. The built page must still carry them, and the licence
+// files of PDF.js's data files must be served.
+test("the About page keeps the open-source notices", async ({ page, request }) => {
+  await page.goto("/about/");
+  const pako = page.locator('[data-credit-notice="pako"]');
+  await expect(pako).toContainText("Jean-loup Gailly and Mark Adler");
+  await expect(pako).toContainText("This notice may not be removed or altered");
+  await expect(page.locator('[data-credit-notice="pdf-lib"]')).toContainText("Andrew Dillon");
+  await expect(page.locator('[data-credit-notice="PDF.js (pdfjs-dist)"]')).toContainText(
+    "Mozilla Foundation",
+  );
+  const links = await page
+    .locator('a[href^="/vendor/pdfjs/"]')
+    .evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute("href") ?? ""));
+  expect(links.length).toBeGreaterThan(0);
+  for (const href of links) expect((await request.get(href)).status(), href).toBe(200);
+});

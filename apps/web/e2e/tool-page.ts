@@ -44,9 +44,13 @@ export async function waitForHydration(page: Page) {
   });
 }
 
-/** Opens the page and waits until the island has hydrated. */
+/**
+ * Opens the page and waits until the island has hydrated. Not "load": it waits for every file, and
+ * in Firefox one could hang past the test timeout (as csp.spec found); the island is what a test
+ * needs, and waitForHydration waits for it.
+ */
 export async function openTool(page: Page, path: string) {
-  await page.goto(path);
+  await page.goto(path, { waitUntil: "domcontentloaded" });
   await waitForHydration(page);
 }
 

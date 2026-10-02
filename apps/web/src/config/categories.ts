@@ -60,7 +60,7 @@ export const categories = [
     intro:
       "For the small jobs PDFs always need: merging files, splitting out pages, shrinking a large document, rotating or editing. Where the browser can do the work, your file is processed on your device and never uploaded.",
     metaDescription:
-      "Free PDF tools for merging, splitting, compressing and editing PDF files. Coming soon to NetworksInsights.",
+      "Free PDF tools for merging, splitting, rotating, signing and converting PDF files, right in your browser on NetworksInsights.",
   },
   {
     id: "image",
@@ -73,7 +73,7 @@ export const categories = [
     intro:
       "Resize, crop, convert and compress pictures for the web, email or print. Most of these jobs are one file and a few settings, so they belong in a tab, not an installer. Where possible, images are processed on your device.",
     metaDescription:
-      "Free image tools for resizing, cropping, converting and compressing pictures. Coming soon to NetworksInsights.",
+      "Free image tools for resizing, cropping, converting and compressing pictures, right in your browser on NetworksInsights.",
   },
   {
     id: "video-audio",

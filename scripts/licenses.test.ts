@@ -89,6 +89,27 @@ describe("checkLicenses", () => {
   it("does not let the sharp exception allow GPL", () => {
     expect(checkLicenses([pkg("@img/sharp-x", "GPL-3.0-only")])).toHaveLength(1);
   });
+
+  it("allows Zlib for pako 1.0.11 only", () => {
+    const pako = (versions: string[], license = "(MIT AND Zlib)") => ({
+      name: "pako",
+      versions,
+      license,
+    });
+    expect(checkLicenses([pako(["1.0.11"])])).toEqual([]);
+    expect(checkLicenses([pako(["2.1.0"])])).toHaveLength(1);
+    expect(checkLicenses([pako(["1.0.11", "2.1.0"])])).toHaveLength(1);
+    expect(checkLicenses([pako(["1.0.11"], "GPL-3.0-only")])).toHaveLength(1);
+    expect(ALLOWED_LICENSES.has("Zlib")).toBe(false);
+  });
+
+  it("still rejects Zlib for every other package", () => {
+    expect(checkLicenses([pkg("zlib-port", "Zlib")])).toHaveLength(1);
+    expect(checkLicenses([pkg("pako-lookalike", "(MIT AND Zlib)")])).toHaveLength(1);
+    expect(checkLicenses([{ name: "other", versions: ["1.0.11"], license: "Zlib" }])).toHaveLength(
+      1,
+    );
+  });
 });
 
 describe("parsePnpmLicenses and the report", () => {

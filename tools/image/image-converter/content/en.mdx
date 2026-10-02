@@ -1,0 +1,29 @@
+Image Converter changes pictures from JPG, PNG or WebP into any of those three formats, right in your browser. It helps when a website refuses WebP, when a form wants a JPG, or when you need a PNG to keep sharp edges. Add several files at once, pick one target format, and every picture is converted and listed with a preview, its new size and its pixel dimensions.
+
+## How to use
+
+1. Drop your pictures on the box, or click it to choose them. Files that are not JPG, PNG or WebP are listed with the reason they were not added.
+2. Choose the target under Convert to. JPG and WebP are saved at 92% quality; PNG keeps every pixel as it is.
+3. Wait for each row to finish, check the preview, then press Download on the files you want. Changing the target format converts the whole list again, and Remove or Clear all takes files out.
+
+## Examples
+
+A test picture of 1,200 by 800 pixels, saved as PNG with a transparent square in its top left corner, converted to JPG, comes back as a JPG of exactly 1,200 by 800 pixels. Notice the corner: JPG cannot store transparency, so that square is white in the result rather than black. Converted to PNG or WebP instead, the corner stays transparent.
+
+## Limits
+
+Each picture may be up to 25 MB, and 20 pictures can be in the list at once, as Quick facts shows. A picture with more than 50 megapixels is refused, because the browser would need too much memory to hold it. Animated WebP files keep only their first frame. Safari cannot write WebP, so in Safari the WebP choice is switched off with a note. Converting drops camera details stored in the file, such as the date and the location. Phones have less memory than computers, so very large pictures may fail on a phone before they reach these limits.
+
+## FAQ
+
+### Are my pictures uploaded anywhere?
+
+No. Your browser decodes and encodes every picture in a background worker on this page. Nothing is sent to a server, so private photos stay on your device.
+
+### Does converting JPG to PNG improve the quality?
+
+No. PNG stores exactly the pixels it is given, so the JPG compression marks already in the picture remain. The file usually gets larger too. Convert to PNG when a program needs that format, not to recover detail.
+
+### Why is WebP greyed out in Safari?
+
+Safari can show WebP pictures but has no WebP encoder, so a page cannot save one there. The tool tests this when it opens and switches the choice off instead of handing you a mislabelled file.

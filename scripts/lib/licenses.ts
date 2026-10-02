@@ -27,6 +27,8 @@ export const ALLOWED_LICENSES: ReadonlySet<string> = new Set([
 export interface LicenseException {
   /** Package names this applies to. */
   packages: RegExp;
+  /** When set, only these exact versions; any other installed version is checked as usual. */
+  versions?: readonly string[];
   licenses: readonly string[];
   /** Where the owner approved it. */
   approved: string;
@@ -40,6 +42,14 @@ export const LICENSE_EXCEPTIONS: readonly LicenseException[] = [
     packages: /^@img\/sharp-/,
     licenses: ["LGPL-3.0-or-later"],
     approved: "ADR 0049, owner approval in Mission 12",
+  },
+  {
+    // pdf-lib 1.17.1 compresses PDF streams with pako 1.0.11, part of the zlib port, which keeps
+    // the zlib licence notice. Zlib is permissive; it is allowed for this package and version only.
+    packages: /^pako$/,
+    versions: ["1.0.11"],
+    licenses: ["Zlib"],
+    approved: "ADR 0057, owner approval in Tools batch 2",
   },
 ];
 
@@ -135,7 +145,13 @@ export function checkLicenses(
   const problems: LicenseProblem[] = [];
   for (const pkg of packages) {
     const extra = exceptions
-      .filter((exception) => exception.packages.test(pkg.name))
+      .filter(
+        (exception) =>
+          exception.packages.test(pkg.name) &&
+          (exception.versions === undefined ||
+            (pkg.versions.length > 0 &&
+              pkg.versions.every((version) => exception.versions?.includes(version)))),
+      )
       .flatMap((exception) => exception.licenses);
     const allowed = (id: string) => allowedLicenses.has(id) || extra.includes(id);
     const license = pkg.license.trim();

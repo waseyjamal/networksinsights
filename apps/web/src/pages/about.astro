@@ -2,6 +2,7 @@
 import Alert from "../components/ui/Alert.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
+import { credits } from "../config/credits";
 import { pageTitle, site } from "../config/site";
 import Page from "../layouts/Page.astro";
 
@@ -58,5 +59,33 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
 
     <h2>Who runs it</h2>
     <p>[The public name of the person or organization behind {site.name}: to be provided.]</p>
+
+    <h2 id="open-source">Open-source credits</h2>
+    <p>
+      Some tools run open-source code in your browser. It is the work of its authors, used under
+      their licences, which are kept here in full.
+    </p>
+    {credits.map((credit) => (
+  <section aria-labelledby={`credit-${credit.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
+    <h3 id={`credit-${credit.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
+      {credit.name} {credit.version}
+    </h3>
+    <p>
+      {credit.usedFor}. Licence: {credit.license}. Source: <a href={credit.url}>{credit.url}</a>
+    </p>
+    <p class="text-sm" data-credit-notice={credit.name}>
+      {credit.notice}
+    </p>
+    {credit.licenseFiles && (
+      <ul>
+        {credit.licenseFiles.map((file) => (
+          <li>
+            <a href={file}>{file.split("/").slice(-2).join("/")}</a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+))}
   </div>
 </Page>

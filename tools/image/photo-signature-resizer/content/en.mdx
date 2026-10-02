@@ -1,0 +1,30 @@
+Photo and Signature Resizer makes a JPG of the exact width, height and maximum KB that an exam or application form asks for, right in your browser. Online forms often refuse a photo or a scanned signature that is a few pixels or a few KB off. Type the numbers from the form, and the tool finds the best JPG quality that fits them, or tells you plainly when the numbers cannot be met.
+
+## How to use
+
+1. Drop your photo or signature on the box, or click it to choose one. JPG, PNG and WebP are taken.
+2. Type the width and height in pixels, and the maximum size in KB, exactly as the form states them.
+3. Choose what happens when the shape differs. Crop to fill cuts the edges so the picture fills the frame; Fit inside keeps the whole picture and adds white bands.
+4. Press Make the file. The result shows its pixels and its size in KB and bytes; press Download to save it.
+
+## Examples
+
+A test picture of 1,200 by 800 pixels, set to 200 by 230 pixels with a maximum of 20 KB and Crop to fill, gives a JPG of exactly 200 by 230 pixels marked Under 20 KB. The exact byte count differs a little between browsers, because each has its own JPG encoder. With a width and height of 4,000 pixels and a maximum of 1 KB, the tool makes no file and says how small it could get instead.
+
+## Limits
+
+One picture at a time, up to 25 MB, as Quick facts shows, with at most 50 megapixels. Width and height can be 1 to 4,000 pixels and the maximum 1 to 5,000 KB. The result is always a JPG on a white background, so a transparent signature gets white paper. A KB here means 1,000 bytes, so the file is also under the limit if the form counts 1,024 bytes. The tool does not make a file larger to reach a minimum size, and it cannot check other form rules such as the background colour or the face position. Phones have less memory than computers, so a very large picture may fail on a phone before these limits.
+
+## FAQ
+
+### What happens if my numbers cannot be met?
+
+The tool makes no file. It tells you the smallest size it reached at those pixels, so you can allow more KB or choose fewer pixels. It never hands you a file that breaks the limit.
+
+### Is my photo or signature uploaded?
+
+No. A background worker on this page draws the picture and writes the JPG. Nothing leaves your device, which matters for identity photos and signatures.
+
+### Will the result pass my form?
+
+It will match the pixels and stay under the KB you typed. Forms can have other rules, such as a plain background, a recent photo or ink colour, so read the form instructions too.

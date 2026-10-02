@@ -14,6 +14,7 @@ import Card from "./Card.astro";
 import Checkbox from "./Checkbox.astro";
 import DataTable from "./DataTable.astro";
 import DiffView from "./DiffView.astro";
+import DrawPad from "./DrawPad.astro";
 import Dropzone from "./Dropzone.astro";
 import FileResult from "./FileResult.astro";
 import FileResultList from "./FileResultList.astro";
@@ -32,6 +33,7 @@ import {
   Checkbox as ReactCheckbox,
   DataTable as ReactDataTable,
   DiffView as ReactDiffView,
+  DrawPad as ReactDrawPad,
   Dropzone as ReactDropzone,
   FileResult as ReactFileResult,
   FileResultList as ReactFileResultList,
@@ -193,6 +195,13 @@ describe("Astro and React components emit the same markup", () => {
     expect(await astro(Input, props)).toBe(react(createElement(ReactInput, props)));
   });
 
+  it("DrawPad", async () => {
+    const props = { id: "sig", label: "Draw your signature", hint: "Use a mouse or a finger." };
+    expect(await astro(DrawPad, props)).toBe(react(createElement(ReactDrawPad, props)));
+    const bare = { id: "pad", label: "Draw", height: 120 };
+    expect(await astro(DrawPad, bare)).toBe(react(createElement(ReactDrawPad, bare)));
+  });
+
   it("Textarea", async () => {
     const props = { id: "t", label: "Note", hint: "Optional", rows: 3 };
     expect(await astro(Textarea, props)).toBe(react(createElement(ReactTextarea, props)));
@@ -264,6 +273,9 @@ describe("Astro and React components emit the same markup", () => {
     );
     expect(await astro(FileResult, { name: "a.png", state: "working" })).toBe(
       react(createElement(ReactFileResult, { name: "a.png", state: "working" })),
+    );
+    expect(await astro(FileResult, { name: "report.pdf", icon: "pdf" })).toBe(
+      react(createElement(ReactFileResult, { name: "report.pdf", icon: "pdf" })),
     );
     expect(await astro(FileResultList, { label: "Results" }, { default: "" })).toBe(
       react(createElement(ReactFileResultList, { label: "Results" })),
