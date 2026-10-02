@@ -54,3 +54,16 @@ export async function makeTestPng(
   }, size);
   return { name, mimeType: "image/png", buffer: Buffer.from(base64, "base64") };
 }
+
+/**
+ * The same file, made exactly `bytes` long with zeros after its end. Image decoders stop at the end
+ * marker (PNG IEND, JPEG EOI), so the picture still reads: it tests a size limit with a file that
+ * is really at the limit, not only a number.
+ */
+export function padTo<T extends { buffer: Buffer }>(file: T, bytes: number): T {
+  if (bytes < file.buffer.length) throw new Error("the file is already larger");
+  return {
+    ...file,
+    buffer: Buffer.concat([file.buffer, Buffer.alloc(bytes - file.buffer.length)]),
+  };
+}
