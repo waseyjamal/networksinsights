@@ -13,3 +13,8 @@ export const PDFJS_VENDOR_FOLDERS = [
   { folder: "cmaps", include: /^([A-Za-z0-9-]+\.bcmap|LICENSE)$/ },
   { folder: "iccs", include: /^([A-Za-z0-9-]+\.icc|LICENSE)$/ },
 ] as const;
+
+/** The name a file is served under: LICENSE files get `.txt`, so a browser shows them as text. */
+export function publishedName(name: string): string {
+  return /(^|\/)LICENSE[A-Z0-9_]*$/.test(name) ? `${name}.txt` : name;
+}

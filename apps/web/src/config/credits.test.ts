@@ -52,7 +52,9 @@ describe("credits", () => {
     expect(files.length).toBeGreaterThan(0);
     for (const url of files) {
       expect(url.startsWith(PDFJS_BASE)).toBe(true);
-      const [folder, name] = url.slice(PDFJS_BASE.length).split("/");
+      const [folder, published] = url.slice(PDFJS_BASE.length).split("/");
+      expect(published?.endsWith(".txt"), url).toBe(true);
+      const name = published?.replace(/\.txt$/, "");
       const rule = PDFJS_VENDOR_FOLDERS.find((entry) => entry.folder === folder);
       expect(rule?.include.test(name ?? ""), url).toBe(true);
       expect(existsSync(join(installed("pdfjs-dist"), folder ?? "", name ?? "")), url).toBe(true);

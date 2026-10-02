@@ -2,7 +2,7 @@
 // The About page shows this list. Keeping a notice is a condition of these licences (ADR 0057):
 // never remove an entry while the library is used, and never present the code as ours.
 
-import { PDFJS_BASE } from "./pdfjs";
+import { PDFJS_BASE, publishedName } from "./pdfjs";
 
 export interface Credit {
   /** The package as a developer finds it. */
@@ -62,7 +62,7 @@ export const credits: readonly Credit[] = [
       "standard_fonts/LICENSE_LIBERATION",
       "cmaps/LICENSE",
       "iccs/LICENSE",
-    ].map((file) => `${PDFJS_BASE}${file}`),
+    ].map((file) => `${PDFJS_BASE}${publishedName(file)}`),
     notice:
       'Copyright 2024 Mozilla Foundation. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.',
   },
