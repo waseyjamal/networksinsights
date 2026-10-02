@@ -1,0 +1,36 @@
+URL Encode Decode turns text into percent-encoded form and back, as you type, using either the whole-URL rules of encodeURI or the component rules of encodeURIComponent. Developers use it to build query strings, read a link copied from a log, or find out why an address breaks. A clear message points to any bad percent sequence in text you decode.
+
+## How to use
+
+1. Choose **Encode** or **Decode** under Action.
+2. Choose how to treat the text. **Whole URL (encodeURI)** is for a full address, and **Component (encodeURIComponent)** is for one piece, such as a query value or a path segment.
+3. Type or paste the text. The result updates on every change, and each action keeps its own text, so you can switch back and forth.
+4. Press **Copy result** to put the result on your clipboard. If decoding fails, a message under the text box says where and why.
+
+## Examples
+
+Encoding `https://example.com/search?q=café & tea` as a whole URL gives `https://example.com/search?q=caf%C3%A9%20&%20tea`. The `?`, `=` and `&` are kept so the address still works, while the space and the accented letter are encoded.
+
+Encoding `café & tea` as a component gives `caf%C3%A9%20%26%20tea`, because the `&` is now encoded too. Decoding that same text as a whole URL gives `café %26 tea`, since `%26` stands for a reserved character, but decoding it as a component gives `café & tea`.
+
+## Limits
+
+Whole URL encoding leaves letters, digits and `- _ . ! ~ * ' ( ) ; / ? : @ & = + $ , #` as they are. Component encoding leaves only letters, digits and `- _ . ! ~ * ' ( )`. Both encode a space as `%20`, never as a plus sign, and a plus sign is never decoded to a space. Both encode the percent sign itself, so encoding already encoded text encodes it twice. Decoding a whole URL keeps `%3B %2F %3F %3A %40 %26 %3D %2B %24 %2C %23` encoded. Text is limited to 1,000,000 characters.
+
+## FAQ
+
+### What is the difference between encodeURI and encodeURIComponent?
+
+encodeURI keeps the characters that give a URL its structure, such as the slash, the question mark and the ampersand. encodeURIComponent encodes them as well, so use it for a value that is going inside a URL.
+
+### Why does decoding say a percent sign is not followed by two hex digits?
+
+Every percent sign in encoded text must be followed by two hexadecimal digits, like %20. A bare percent sign, as in 50% off, is not valid, so write it as %25 first.
+
+### Does a plus sign mean a space?
+
+Not here. In the query strings of HTML forms a plus sign is read as a space, but percent-encoding itself uses %20. This tool never changes a plus sign when decoding, so replace it yourself if you need that.
+
+### Is my text uploaded?
+
+No. Encoding and decoding run in this page on your device, and the text is never sent anywhere.
