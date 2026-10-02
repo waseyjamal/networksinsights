@@ -1,0 +1,36 @@
+UUID Generator creates version 4 (random) or version 7 (time-ordered) UUIDs from your browser's secure random numbers, from 1 up to 1,000 at a time. Developers use it for database keys, test data, file names and request ids. You can write them in uppercase, without hyphens or in braces, and copy the whole list with one button.
+
+## How to use
+
+1. Choose the **Version**: 4 for a fully random UUID, or 7 for one that starts with the current time and so sorts in the order it was made.
+2. Type **How many** you want, from 1 to 1,000. A new set is drawn each time the version or the count changes.
+3. Tick **Uppercase**, **No hyphens** or **Braces** to change how each UUID is written. These options only rewrite the UUIDs already on screen and do not draw new ones.
+4. Press **Generate again** for a fresh set, and **Copy all** to put the list, one UUID per line, on your clipboard.
+
+## Examples
+
+A version 4 UUID looks like `3b241101-e2bb-4255-8caf-4136c566a962`. The first digit of the third group is always 4, and the first digit of the fourth group is 8, 9, a or b.
+
+A version 7 UUID looks like `018bcfe5-6800-7000-8000-000000000000`. The first 12 digits are the time in milliseconds since 1970, and the first digit of the third group is 7. With Uppercase and Braces ticked, the first example becomes `{3B241101-E2BB-4255-8CAF-4136C566A962}`.
+
+## Limits
+
+The tool follows RFC 9562 for versions 4 and 7 only; it does not make versions 1, 3, 5, 6 or 8. You can ask for 1 to 1,000 UUIDs at once. Version 7 UUIDs drawn together share one reading of your device clock and use a counter to stay in order, so their time part is only as accurate as that clock. The list is not stored, and a new draw replaces the old one.
+
+## FAQ
+
+### What is the difference between version 4 and version 7?
+
+Version 4 is made almost entirely of random bits, so it reveals nothing about when it was created. Version 7 begins with the time in milliseconds, so UUIDs made later sort after earlier ones, which can help database indexes, but the creation time can be read from it.
+
+### Are these UUIDs random enough to be unique?
+
+They use the secure random number generator built into your browser. A version 4 UUID has 122 random bits, so a repeat is extremely unlikely. A UUID is an identifier and not a secret, so do not use one as a password or access token.
+
+### Does Braces or No hyphens change the UUID itself?
+
+No. They only change how the same 128 bits are written. Removing the hyphens leaves 32 hexadecimal digits, and Braces wraps the text in curly brackets, as some Microsoft tools write a GUID.
+
+### Are my UUIDs sent anywhere?
+
+No. They are created in this page on your device and are never uploaded or stored.
