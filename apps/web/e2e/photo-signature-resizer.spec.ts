@@ -47,7 +47,15 @@ test("makes a 200 by 230 JPG under 20 KB, as the page example says", async ({
   const size = await result(page)
     .locator("img")
     .evaluate(async (img: HTMLImageElement) => {
-      await img.decode();
+      // The preview is loading="lazy": bring it into view and wait for it to load. Firefox
+      // refuses decode() on a lazy image that is off screen.
+      img.scrollIntoView();
+      if (!img.complete || img.naturalWidth === 0) {
+        await new Promise((resolve, reject) => {
+          img.addEventListener("load", resolve, { once: true });
+          img.addEventListener("error", reject, { once: true });
+        });
+      }
       return [img.naturalWidth, img.naturalHeight];
     });
   expect(size).toEqual([200, 230]);
@@ -99,7 +107,15 @@ test("Fit inside keeps the whole picture with white bands", async ({ page }) => 
   const top = await result(page)
     .locator("img")
     .evaluate(async (img: HTMLImageElement) => {
-      await img.decode();
+      // The preview is loading="lazy": bring it into view and wait for it to load. Firefox
+      // refuses decode() on a lazy image that is off screen.
+      img.scrollIntoView();
+      if (!img.complete || img.naturalWidth === 0) {
+        await new Promise((resolve, reject) => {
+          img.addEventListener("load", resolve, { once: true });
+          img.addEventListener("error", reject, { once: true });
+        });
+      }
       const canvas = document.createElement("canvas");
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;

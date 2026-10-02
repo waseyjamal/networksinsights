@@ -31,7 +31,15 @@ const pixel = (page: Page, x: number, y: number) =>
     .locator("img")
     .evaluate(
       async (img: HTMLImageElement, at) => {
-        await img.decode();
+        // The preview is loading="lazy": bring it into view and wait for it to load. Firefox
+        // refuses decode() on a lazy image that is off screen.
+        img.scrollIntoView();
+        if (!img.complete || img.naturalWidth === 0) {
+          await new Promise((resolve, reject) => {
+            img.addEventListener("load", resolve, { once: true });
+            img.addEventListener("error", reject, { once: true });
+          });
+        }
         const canvas = document.createElement("canvas");
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;

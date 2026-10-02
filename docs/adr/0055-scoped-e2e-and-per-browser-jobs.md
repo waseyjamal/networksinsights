@@ -1,6 +1,6 @@
 # 0055. Scoped E2E, one job per browser, and verify-production after every deploy
 
-Status: Accepted
+Status: Accepted; decision 2 amended by [ADR 0058](0058-sharded-full-e2e-runs.md) (full runs in three shards per browser)
 Date: 2026-10-01
 
 Amends [ADR 0054](0054-ci-scope-and-tree-skip.md) (decisions 3 and 5) and [ADR 0025](0025-ci-pipeline.md) (the `e2e` job). Does not change [ADR 0026](0026-e2e-testing.md): every test still runs in Chromium, Firefox and WebKit whenever the full suite runs, and no test is removed or weakened.

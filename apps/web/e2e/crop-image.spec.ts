@@ -42,7 +42,15 @@ test("a square crop is the centred 800 by 800, as the page example says, and dow
   const size = await result(page)
     .locator("img")
     .evaluate(async (img: HTMLImageElement) => {
-      await img.decode();
+      // The preview is loading="lazy": bring it into view and wait for it to load. Firefox
+      // refuses decode() on a lazy image that is off screen.
+      img.scrollIntoView();
+      if (!img.complete || img.naturalWidth === 0) {
+        await new Promise((resolve, reject) => {
+          img.addEventListener("load", resolve, { once: true });
+          img.addEventListener("error", reject, { once: true });
+        });
+      }
       return [img.naturalWidth, img.naturalHeight];
     });
   expect(size).toEqual([800, 800]);
@@ -80,7 +88,15 @@ test("16:9 gives 1,200 by 675 from 62 pixels down; free crop keeps the transpare
   const alpha = await result(page)
     .locator("img")
     .evaluate(async (img: HTMLImageElement) => {
-      await img.decode();
+      // The preview is loading="lazy": bring it into view and wait for it to load. Firefox
+      // refuses decode() on a lazy image that is off screen.
+      img.scrollIntoView();
+      if (!img.complete || img.naturalWidth === 0) {
+        await new Promise((resolve, reject) => {
+          img.addEventListener("load", resolve, { once: true });
+          img.addEventListener("error", reject, { once: true });
+        });
+      }
       const canvas = document.createElement("canvas");
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
@@ -119,8 +135,11 @@ for (const theme of ["light", "dark"] as const) {
     await useTheme(page, theme);
     await openTool(page, PATH);
     await file(page).setInputFiles(await makeTestPng(page, "photo.png"));
+    // The picture is decoded before Crop is pressed, and encoding the crop takes as long as in the
+    // other image specs.
+    await expect(page.locator("#crop-image-original")).toContainText("1200 × 800 pixels");
     await page.getByRole("button", { name: "Crop" }).click();
-    await expect(result(page)).toBeVisible();
+    await expect(result(page)).toBeVisible({ timeout: 30_000 });
     await expectNoAxeViolations(page);
   });
 }

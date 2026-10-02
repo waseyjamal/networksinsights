@@ -1,6 +1,6 @@
 # CI: what runs where
 
-Workflow: `.github/workflows/ci.yml`. Decisions: ADR 0025, 0027, 0054, 0055.
+Workflow: `.github/workflows/ci.yml`. Decisions: ADR 0025, 0027, 0054, 0055, 0058.
 
 ## What runs where
 
@@ -17,7 +17,9 @@ A shared spec is a spec in `apps/web/e2e/` that is not named after a tool id (`s
 
 ## E2E jobs
 
-`e2e-chromium`, `e2e-firefox` and `e2e-webkit` run in parallel, 40 minutes each. The `e2e` job is the gate: it passes only when all three did, and then uploads `e2e-passed-full-<tree>` or `e2e-passed-scoped-<tree>`.
+A full run splits each browser into 3 Playwright shards: `e2e-chromium-1` to `e2e-webkit-3`, 9 jobs, each `--shard=<n>/3` (ADR 0058). A scoped run is 1 job per browser: `e2e-chromium-1`, `e2e-firefox-1`, `e2e-webkit-1`. The shard count comes from `scope`'s `e2e_mode`; when `scope` fails, the run is full, in 3 shards. Every job has a 40-minute timeout as a backstop. The `e2e` job is the gate: it passes only when every job that ran passed, and then uploads `e2e-passed-full-<tree>` or `e2e-passed-scoped-<tree>`.
+
+To check locally that the shards cover every test once: `pnpm --filter web exec playwright test --list --project=chromium --shard=1/3` (then 2/3 and 3/3) and compare with the list without `--shard`.
 
 On `main`:
 
@@ -25,7 +27,7 @@ On `main`:
 - a scoped run is skipped for a `scoped` or a `full` artifact of the same tree;
 - `deploy` accepts a skipped `e2e` only when `scope` succeeded and said so.
 
-Shard the browser jobs when a measured browser job passes 25 minutes. The numbers are in the job summaries of the Actions tab.
+**Rule:** when any measured E2E job, sharded or scoped, passes 25 minutes, add one shard to that run type (a new ADR). The durations are on the run page of the Actions tab.
 
 ## Run the full suite by hand
 
@@ -39,12 +41,17 @@ Locally, from the repo root: `pnpm test:e2e` (all specs, all browsers). One tool
 
 ## Billed minutes
 
-Measured: run 36675813325 (a tool pull request, one `e2e` job of 33 minutes, 46 in all). Everything else is ESTIMATED, from about 3 minutes of setup per browser job, about 10 minutes of tests per browser at 12 tools (shared 5.8 + 0.1 per tool, tool specs 0.25 per tool), and Lighthouse of (110 s + 19 s per page) / 60.
+GitHub bills each job rounded up to the whole minute.
 
-| Run | 12 tools | 50 tools | 100 tools |
+MEASURED, run 37000596636 (pull request #46, 32 tools, full suite, one job per browser, before sharding; the e2e jobs were slowed by about 20 minutes each by one failing `csp.spec` assumption, and WebKit was cancelled at its 40-minute timeout): lockfile 1, scope 1, supply-chain 1, quality 3, lighthouse 14, e2e-chromium 34, e2e-firefox 40, e2e-webkit 41, e2e gate 1: **136 minutes**. Test minutes per browser in that run: shared specs other than `csp.spec` 4.1 / 4.7 / 2.2 (Chromium / Firefox / WebKit, partial), tool specs 5.4 / 6.0 / 12.1 (WebKit partial). Job setup before the first test: about 1.2 minutes.
+
+ESTIMATED, with sharding (ADR 0058): fixed jobs 7 (measured), Lighthouse 14 for a full run at 32 tools (measured) plus about 0.4 per tool, about 2 for one tool page; E2E per browser about 1.5 setup per job, `csp.spec` about 3.5 when passing, and per added tool about 0.33 (Chromium), 0.35 (Firefox) and 0.66 (WebKit) minutes.
+
+| Run | 32 tools | 50 tools | 100 tools |
 | --- | --- | --- | --- |
-| Tool-only pull request | 43 | 52 | 67 |
-| Non-tool pull request | 54 | 106 | 173 |
-| Full run on `main` | 54 | 106 | 173 |
+| Tool-only pull request (scoped, 1 job per browser) | 40 ESTIMATED | 49 ESTIMATED | 73 ESTIMATED |
+| Non-tool pull request (full, 3 shards per browser) | 86 ESTIMATED | 117 ESTIMATED | 202 ESTIMATED |
+| Full run on `main` (3 shards per browser) | 86 ESTIMATED | 117 ESTIMATED | 202 ESTIMATED |
+| Full run, before sharding (run 37000596636) | 136 MEASURED | | |
 
-Replace these with measured numbers as runs happen. Lighthouse's 30-minute timeout is estimated to be reached at about 90 tools on a full run.
+Replace the estimates with measured numbers as runs happen. At about 100 tools a WebKit shard is estimated near 22 minutes, and Lighthouse near its 30-minute timeout: check both against the rule above.
