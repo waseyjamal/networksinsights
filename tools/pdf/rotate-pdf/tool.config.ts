@@ -11,7 +11,7 @@ export default defineTool({
   tags: ["pdf", "rotate", "orientation", "pages"],
   accepts: ["PDF"],
   produces: ["PDF"],
-  runtime: "client",
+  runtime: "worker",
   status: "beta",
   input: z.object({
     turn: z.enum(["90", "180", "270"]),

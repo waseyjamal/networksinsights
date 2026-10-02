@@ -8,8 +8,10 @@ Date: 2026-10-02
 Tools batch 2 adds PDF tools that run on the visitor's device: image-to-pdf, merge-pdf, split-pdf,
 rotate-pdf, sign-pdf (writing PDFs) and pdf-to-jpg (drawing PDF pages). Writing a PDF by hand is not
 realistic, so the tools need a library to write PDFs and a library to render them. `logic.ts` stays
-pure: the libraries are used only from `worker.ts` and `ui.tsx`, behind a dynamic `import()`, so
-they are on-demand JavaScript (ADR 0037) and nothing of them loads with the page.
+pure: the libraries are used only from each tool's `worker.ts`, which starts on the visitor's first
+job, so they are on-demand JavaScript (ADR 0037) and nothing of them loads with the page. Not from
+`ui.tsx` behind a dynamic `import()`: that makes Vite move its preload helper into a chunk the
+search loader shares, so every page would load it, and `pnpm check:budgets` fails (ADR 0046).
 
 Facts were checked on 2026-10-02 on the npm registry, GitHub and the GitHub advisory database.
 

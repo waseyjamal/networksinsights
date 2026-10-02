@@ -1,6 +1,7 @@
 // Pure logic of "Sign PDF": the file rules, the signature's box on the page and the trimming of
 // the ink, with no DOM, no network and no top-level statements (docs/tool-contract.md, "logic.ts:
-// what pure means"). ui.tsx draws the signature and puts it in the PDF with pdf-lib (ADR 0057).
+// what pure means"). ui.tsx makes the signature picture; worker.ts puts it in the PDF with pdf-lib
+// (ADR 0057).
 // The result is a picture of a signature, not a certificate-based digital signature.
 
 export const LIMITS = {
@@ -50,6 +51,23 @@ export interface Input {
   position: Position;
   width: Width;
 }
+
+/** What the page sends the worker: count the pages, or put the signature on one. */
+export type Job =
+  | { kind: "count"; file: Blob }
+  | {
+      kind: "sign";
+      file: Blob;
+      /** The signature as PNG bytes, and its size in pixels. */
+      png: Uint8Array;
+      size: { width: number; height: number };
+      page: number;
+      position: Position;
+      width: Width;
+    };
+
+/** What the worker sends back. */
+export type JobResult = { kind: "count"; pages: number } | { kind: "sign"; blob: Blob };
 
 export const MESSAGES = {
   notAPdf: "This file is not a PDF.",

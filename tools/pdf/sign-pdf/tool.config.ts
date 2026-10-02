@@ -11,7 +11,7 @@ export default defineTool({
   tags: ["pdf", "signature", "sign", "e-sign"],
   accepts: ["PDF", "PNG", "JPG"],
   produces: ["PDF"],
-  runtime: "client",
+  runtime: "worker",
   status: "beta",
   input: z.object({
     source: z.enum(["draw", "type", "upload"]),

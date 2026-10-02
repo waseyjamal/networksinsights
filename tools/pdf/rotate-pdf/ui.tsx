@@ -1,9 +1,22 @@
-import { Alert, Button, Dropzone, FileResult, FileResultList, Input, Select, saveFile } from "@ui";
+import {
+  Alert,
+  Button,
+  createWorkerClient,
+  Dropzone,
+  FileResult,
+  FileResultList,
+  Input,
+  Select,
+  saveFile,
+  WorkerJobError,
+} from "@ui";
 import { useState } from "react";
 import {
   allPages,
   checkFile,
   formatSize,
+  type Job,
+  type JobResult,
   LIMITS,
   MESSAGES,
   outputName,
@@ -11,19 +24,19 @@ import {
   parsePages,
   TURNS,
   type Turn,
-  turned,
   type Which,
 } from "./logic";
 
-// The workspace of Rotate PDF. Turning a page only changes a number in the PDF, so the job is
-// light and runs on this page; pdf-lib is imported when the visitor chooses a PDF, so its code is
-// not part of the page load (ADR 0057).
+// The workspace of Rotate PDF. Choosing a PDF starts worker.ts, which counts its pages with
+// pdf-lib; Rotate sends it the pages and the turn. The PDF code loads only with the worker, after
+// the visitor chooses a PDF (ADR 0057).
 
-type PdfLib = typeof import("pdf-lib");
+const client = createWorkerClient<Job, JobResult>(
+  () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
+);
 
 interface Source {
   file: File;
-  bytes: ArrayBuffer;
   pages: number;
 }
 
@@ -33,24 +46,8 @@ interface Output {
   turnedPages: number;
 }
 
-/** A message of this tool, never a library's own words. */
-class Refusal extends Error {}
-
-/** Opens a PDF with pdf-lib, refusing what it cannot work on with a message for the visitor. */
-async function load(lib: PdfLib, bytes: ArrayBuffer) {
-  let document: Awaited<ReturnType<PdfLib["PDFDocument"]["load"]>>;
-  let pages: number;
-  try {
-    document = await lib.PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
-    if (document.isEncrypted) throw new Refusal(MESSAGES.encrypted);
-    // A damaged file can load and still have no page tree: counting the pages finds out.
-    pages = document.getPageCount();
-  } catch (caught) {
-    throw caught instanceof Refusal ? caught : new Refusal(MESSAGES.unreadable);
-  }
-  if (pages === 0) throw new Refusal(MESSAGES.noPages);
-  return document;
-}
+const failure = (caught: unknown, fallback: string) =>
+  caught instanceof WorkerJobError && caught.expected ? caught.message : fallback;
 
 export default function ToolUi() {
   const [source, setSource] = useState<Source | null>(null);
@@ -74,16 +71,12 @@ export default function ToolUi() {
     }
     setBusy(true);
     try {
-      const lib = await import("pdf-lib");
-      const bytes = await file.arrayBuffer();
-      const document = await load(lib, bytes.slice(0));
-      setSource({ file, bytes, pages: document.getPageCount() });
+      const result = await client.run({ kind: "count", file });
+      if (result.kind === "count") setSource({ file, pages: result.pages });
       setFileError("");
     } catch (caught) {
       setSource(null);
-      setFileError(
-        `${file.name}: ${caught instanceof Refusal ? caught.message : MESSAGES.unreadable}`,
-      );
+      setFileError(`${file.name}: ${failure(caught, MESSAGES.unreadable)}`);
     } finally {
       setBusy(false);
     }
@@ -104,21 +97,16 @@ export default function ToolUi() {
     setError("");
     setBusy(true);
     try {
-      const lib = await import("pdf-lib");
-      const document = await load(lib, source.bytes.slice(0));
-      const all = document.getPages();
-      for (const number of pages) {
-        const page = all[number - 1];
-        if (page) page.setRotation(lib.degrees(turned(page.getRotation().angle, turn)));
+      const result = await client.run({ kind: "rotate", file: source.file, pages, turn });
+      if (result.kind === "rotate") {
+        setOutput({
+          blob: result.blob,
+          name: outputName(source.file.name),
+          turnedPages: pages.length,
+        });
       }
-      const bytes = await document.save();
-      setOutput({
-        blob: new Blob([bytes as Uint8Array<ArrayBuffer>], { type: "application/pdf" }),
-        name: outputName(source.file.name),
-        turnedPages: pages.length,
-      });
     } catch (caught) {
-      setError(caught instanceof Refusal ? caught.message : MESSAGES.failed);
+      setError(failure(caught, MESSAGES.failed));
     } finally {
       setBusy(false);
     }

@@ -78,11 +78,18 @@ sinks fail the `safe-rendering` gate ([tool-contract.md](tool-contract.md), "Sec
 
 Keep the island small. The budget is 40 KB of gzip for the tool's own code that loads with the
 page. **Heavy code loaded after a user action does not count against that number**: put a PDF
-engine, a codec or a WebAssembly module behind a dynamic import.
+engine, a codec or a WebAssembly module in the tool's `worker.ts` (runtime `worker`), which starts
+on the visitor's first job.
 
 ```tsx
-const engine = await import("./engine"); // in the click handler, not at the top of the file
+// worker.ts imports the library; ui.tsx only starts the worker (docs/tool-contract.md).
+const client = createWorkerClient<Job, Result>(
+  () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
+);
 ```
+
+Do not use a dynamic `import()` in `ui.tsx` for it: Vite then moves its preload helper into a chunk
+the search loader shares, so every page loads it and `pnpm check:budgets` fails (ADR 0057).
 
 See "The JavaScript budget" below.
 
@@ -264,7 +271,7 @@ HOW TO WORK
 1. Use the branch tool/<tool-id>. Never commit to main. Never merge.
 2. Create the folder with `pnpm new:tool`, giving every input as a flag. Never write the folder by hand.
 3. Write logic.ts (pure), real tests in logic.test.ts, and the workspace in ui.tsx with components
-   imported from "@ui". Heavy code goes behind a dynamic import() so the initial JavaScript stays
+   imported from "@ui". Heavy code goes in worker.ts (runtime worker) so the initial JavaScript stays
    under 40 KB gzip. Add no dependency without telling me why, its size and its license first.
    Give files back only with saveFile from "@ui", show visitor text as text ({value}), and never
    use innerHTML, dangerouslySetInnerHTML, eval or any other HTML or code sink. Never add a header,

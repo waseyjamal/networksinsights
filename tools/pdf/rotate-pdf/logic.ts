@@ -1,6 +1,6 @@
 // Pure logic of "Rotate PDF": the file rules, which pages turn and by how much, with no DOM, no
 // network and no top-level statements (docs/tool-contract.md, "logic.ts: what pure means").
-// ui.tsx loads pdf-lib when a PDF is chosen and sets each page's rotation (ADR 0057).
+// worker.ts opens the PDF with pdf-lib and sets each page's rotation (ADR 0057).
 
 export const LIMITS = {
   /** 50 MB, one PDF at a time. */
@@ -25,6 +25,14 @@ export interface Input {
   which: Which;
   pages: string;
 }
+
+/** What the page sends the worker: count the pages, or turn some of them. */
+export type Job =
+  | { kind: "count"; file: Blob }
+  | { kind: "rotate"; file: Blob; pages: number[]; turn: Turn };
+
+/** What the worker sends back. */
+export type JobResult = { kind: "count"; pages: number } | { kind: "rotate"; blob: Blob };
 
 export const MESSAGES = {
   notAPdf: "This file is not a PDF.",

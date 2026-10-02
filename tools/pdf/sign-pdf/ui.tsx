@@ -1,6 +1,7 @@
 import {
   Alert,
   Button,
+  createWorkerClient,
   DrawPad,
   type DrawPadHandle,
   Dropzone,
@@ -9,6 +10,7 @@ import {
   Input,
   Select,
   saveFile,
+  WorkerJobError,
 } from "@ui";
 import { useRef, useState } from "react";
 import {
@@ -17,30 +19,31 @@ import {
   checkPicture,
   formatSize,
   inkBox,
+  type Job,
+  type JobResult,
   LIMITS,
   MESSAGES,
   outputName,
   POSITIONS,
   type Position,
   parseNumber,
-  placeOnPage,
   SOURCES,
   type Source,
-  seenSize,
-  signatureBox,
   WIDTHS,
   type Width,
 } from "./logic";
 
 // The workspace of Sign PDF. The signature is drawn on the DrawPad, typed and drawn as text, or
-// uploaded; it becomes a PNG on a transparent background. pdf-lib, imported when the visitor
-// chooses a PDF, puts that picture on the chosen page (ADR 0057). It is a visual signature only.
+// uploaded; it becomes a PNG on a transparent background, here on the page. worker.ts, with
+// pdf-lib, counts the pages and puts that picture on the chosen page; the PDF code loads only with
+// the worker, after the visitor chooses a PDF (ADR 0057). It is a visual signature only.
 
-type PdfLib = typeof import("pdf-lib");
+const client = createWorkerClient<Job, JobResult>(
+  () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
+);
 
 interface Pdf {
   file: File;
-  bytes: ArrayBuffer;
   pages: number;
 }
 
@@ -50,24 +53,18 @@ interface Output {
   page: number;
 }
 
-/** A message of this tool, never a library's own words. */
+/** A message of this tool about the signature, raised on the page. */
 class Refusal extends Error {}
 
-async function load(lib: PdfLib, bytes: ArrayBuffer) {
-  let document: Awaited<ReturnType<PdfLib["PDFDocument"]["load"]>>;
-  let pages: number;
-  try {
-    document = await lib.PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
-    if (document.isEncrypted) throw new Refusal(MESSAGES.encrypted);
-    pages = document.getPageCount();
-  } catch (caught) {
-    throw caught instanceof Refusal ? caught : new Refusal(MESSAGES.unreadable);
-  }
-  if (pages === 0) throw new Refusal(MESSAGES.noPages);
-  return document;
-}
+const failure = (caught: unknown, fallback: string) =>
+  caught instanceof Refusal || (caught instanceof WorkerJobError && caught.expected)
+    ? caught.message
+    : fallback;
 
-/** A canvas cut down to its ink, as PNG bytes and size, or nothing when it is empty. */
+/**
+ * A canvas cut down to its ink, in black, as PNG bytes and size, or nothing when it is empty. The
+ * DrawPad draws in the theme's text colour (light in the dark theme); a signature on paper is dark.
+ */
 async function trimmed(canvas: HTMLCanvasElement) {
   const context = canvas.getContext("2d");
   if (!context || canvas.width === 0 || canvas.height === 0) return;
@@ -77,9 +74,13 @@ async function trimmed(canvas: HTMLCanvasElement) {
   const out = document.createElement("canvas");
   out.width = box.width;
   out.height = box.height;
-  out
-    .getContext("2d")
-    ?.drawImage(canvas, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height);
+  const ink = out.getContext("2d");
+  if (!ink) return;
+  ink.drawImage(canvas, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height);
+  // Keep the shape of the ink and make it black.
+  ink.globalCompositeOperation = "source-in";
+  ink.fillStyle = "#000000";
+  ink.fillRect(0, 0, box.width, box.height);
   const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, "image/png"));
   if (!blob) return;
   return { bytes: new Uint8Array(await blob.arrayBuffer()), width: box.width, height: box.height };
@@ -143,17 +144,15 @@ export default function ToolUi() {
     }
     setBusy(true);
     try {
-      const lib = await import("pdf-lib");
-      const bytes = await file.arrayBuffer();
-      const document = await load(lib, bytes.slice(0));
-      setPdf({ file, bytes, pages: document.getPageCount() });
-      setPageText(String(document.getPageCount()));
+      const result = await client.run({ kind: "count", file });
+      if (result.kind === "count") {
+        setPdf({ file, pages: result.pages });
+        setPageText(String(result.pages));
+      }
       setPdfError("");
     } catch (caught) {
       setPdf(null);
-      setPdfError(
-        `${file.name}: ${caught instanceof Refusal ? caught.message : MESSAGES.unreadable}`,
-      );
+      setPdfError(`${file.name}: ${failure(caught, MESSAGES.unreadable)}`);
     } finally {
       setBusy(false);
     }
@@ -205,30 +204,20 @@ export default function ToolUi() {
     try {
       const mark = await signature();
       if (!mark) throw new Refusal(MESSAGES.noSignature);
-      const lib = await import("pdf-lib");
-      const document = await load(lib, pdf.bytes.slice(0));
-      const target = document.getPage(page - 1);
-      const own = target.getSize();
-      const rotation = target.getRotation().angle;
-      const seen = seenSize(own.width, own.height, rotation);
-      const box = signatureBox(seen, mark, position, width);
-      const place = placeOnPage(box, own, rotation);
-      const image = await document.embedPng(mark.bytes);
-      target.drawImage(image, {
-        x: place.x,
-        y: place.y,
-        width: place.width,
-        height: place.height,
-        rotate: lib.degrees(place.rotate),
-      });
-      const bytes = await document.save();
-      setOutput({
-        blob: new Blob([bytes as Uint8Array<ArrayBuffer>], { type: "application/pdf" }),
-        name: outputName(pdf.file.name),
+      const result = await client.run({
+        kind: "sign",
+        file: pdf.file,
+        png: mark.bytes,
+        size: { width: mark.width, height: mark.height },
         page,
+        position,
+        width,
       });
+      if (result.kind === "sign") {
+        setOutput({ blob: result.blob, name: outputName(pdf.file.name), page });
+      }
     } catch (caught) {
-      setError(caught instanceof Refusal ? caught.message : MESSAGES.failed);
+      setError(failure(caught, MESSAGES.failed));
     } finally {
       setBusy(false);
     }
