@@ -15,6 +15,7 @@ import Checkbox from "../components/ui/Checkbox.astro";
 import CommandBar from "../components/ui/CommandBar.astro";
 import DataTable from "../components/ui/DataTable.astro";
 import DiffView from "../components/ui/DiffView.astro";
+import DrawPad from "../components/ui/DrawPad.astro";
 import Dropzone from "../components/ui/Dropzone.astro";
 import EmptyState from "../components/ui/EmptyState.astro";
 import FactList from "../components/ui/FactList.astro";
@@ -169,6 +170,12 @@ const themes = ["light", "dark"] as const;
               label="Textarea"
               placeholder="Paste text to analyze"
               rows={3}
+            />
+            <DrawPad
+              id="ds-drawpad"
+              label="DrawPad"
+              hint="Draw with a mouse, a finger or a pen. Offer a typed or uploaded option too."
+              height={120}
             />
             <Select id="ds-select" label="Select">
               <option>Original quality</option>

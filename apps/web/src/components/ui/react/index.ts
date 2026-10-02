@@ -16,6 +16,7 @@ export { Card, CardLink, type CardLinkProps, type CardProps } from "./Card";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
 export { DataTable, type DataTableProps } from "./DataTable";
 export { DiffView, type DiffViewProps } from "./DiffView";
+export { DrawPad, type DrawPadHandle, type DrawPadProps } from "./DrawPad";
 export { Dropzone, type DropzoneProps } from "./Dropzone";
 export { Field, type FieldProps } from "./Field";
 export {

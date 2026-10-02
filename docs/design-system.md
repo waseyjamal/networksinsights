@@ -132,6 +132,7 @@ Web Worker (ADR 0051, docs/tool-contract.md "The worker runtime").
 | Button | `Button` | `Button`, `ButtonLink` | `variant` primary, secondary, ghost, danger; `size` sm, md, lg; `loading` |
 | Input, Textarea, Select | yes | yes | `id` is required. `label`, `hint`, `error` wire up `aria-describedby` and `aria-invalid` |
 | Checkbox, Switch | yes | yes | Native inputs, so keyboard and screen readers work |
+| DrawPad | markup only | `DrawPad` | A white sheet to draw on (a signature). `handle` gives `canvas` and `clear()`; `onChange(hasInk)`. Drawing has no keyboard path: always offer a typed or uploaded option next to it |
 | Badge | yes | yes | `tone` neutral, brand, success, warning, danger, info |
 | Card | `Card` (`href` for a link) | `Card`, `CardLink` | |
 | Tabs | `Tabs` + `TabPanel` | `Tabs` | WAI-ARIA Tabs: arrow keys, Home, End, roving tabindex |

@@ -236,6 +236,18 @@
     resize: vertical;
   }
 
+  /* DrawPad: a white sheet in both themes, so dark ink stays visible and reads like paper. */
+  .ni-drawpad__canvas {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    color: var(--color-black);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
   @media (hover: hover) {
     .ni-input:hover:not(:disabled),
     .ni-textarea:hover:not(:disabled),
