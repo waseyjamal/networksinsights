@@ -1,0 +1,30 @@
+Crop Image cuts a JPG, PNG or WebP picture to a rectangle you set in pixels, or to a shape such as square or 16:9, in your browser. It is handy for a square profile photo, a wide banner, a portrait story frame, or for trimming an unwanted edge off a scan. The cut keeps the original format and full detail inside the rectangle, so nothing is scaled or blurred.
+
+## How to use
+
+1. Drop one picture on the box, or click it to choose one. Its width and height in pixels appear under the box.
+2. Pick a Shape. Free leaves every side up to you; a ratio fills the boxes with the largest centred crop of that shape, and the width and height then follow each other.
+3. Adjust Left and Top to move the rectangle, and Width and Height to change its size. All four are pixels counted from the top left corner of the picture.
+4. Press Crop, check the preview, then press Download.
+
+## Examples
+
+A test picture of 1,200 by 800 pixels with the Square (1:1) shape becomes an 800 by 800 crop that starts 200 pixels from the left, the centre of the picture, and downloads as photo-cropped-800x800.png. With 16:9 the same picture gives 1,200 by 675 pixels starting 62 pixels from the top. Notice that a ratio crop always keeps as much of the picture as the shape allows.
+
+## Limits
+
+One picture at a time, up to 25 MB, as Quick facts shows, and with at most 50 megapixels. The rectangle is set with numbers rather than dragged, and it must lie inside the picture; one that crosses an edge is refused with the size of the picture. JPG and WebP are saved again at 92% quality, so a JPG crop is not bit for bit the original. Safari cannot write WebP, so there a WebP picture is saved as PNG and the result says so. Phones have less memory than computers, so a very large picture may fail on a phone before these limits.
+
+## FAQ
+
+### Is the picture uploaded while I crop it?
+
+No. Your browser opens the picture and cuts out the rectangle on this page. Nothing is sent to a server.
+
+### Can I crop to an exact size such as 600 by 600 pixels?
+
+Yes. Choose Free or Square, then type 600 in Width and Height and set Left and Top to place the square. If the picture is smaller than 600 pixels on a side, the crop is refused, because cropping cannot add pixels. Use Resize Image first in that case.
+
+### Why does the height change when I type a width?
+
+A fixed shape is selected, so the height is worked out from the width to keep that shape. Choose Free when the two sides should be set on their own.
