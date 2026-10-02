@@ -103,7 +103,9 @@ test("uses the first of a time that happens twice and names the second", async (
   await expect(page.locator("#tz-notice")).toHaveCount(0);
 });
 
-test("adds and removes zones, up to ten", async ({ page }) => {
+// Every click that changes the layout costs a WebKit run a long frame, so the zone list is
+// tested in three short tests rather than one long walk that would outlast the test timeout.
+test("adds a zone and removes a zone", async ({ page }) => {
   await openTool(page, PATH);
   await expect(page.locator("#tz-targets li")).toHaveCount(3);
   await page.getByRole("button", { name: "Remove Asia/Tokyo" }).click();
@@ -118,7 +120,11 @@ test("adds and removes zones, up to ten", async ({ page }) => {
     "03:00",
     "UTC-10:00",
   ]);
+  await expect(page.locator("#tz-add")).toBeEnabled();
+});
 
+test("stops at ten zones and frees a place when one is removed", async ({ page }) => {
+  await openTool(page, PATH);
   for (const zone of [
     "UTC",
     "Asia/Dubai",
@@ -135,17 +141,15 @@ test("adds and removes zones, up to ten", async ({ page }) => {
   await expect(page.locator("#tz-add")).toBeDisabled();
   await expect(page.getByRole("button", { name: "Add zone" })).toBeDisabled();
   await page.getByRole("button", { name: "Remove UTC" }).click();
+  await expect(page.locator("#tz-targets li")).toHaveCount(9);
   await expect(page.locator("#tz-add")).toBeEnabled();
+});
 
-  await page
-    .getByRole("button", { name: /^Remove / })
-    .first()
-    .click();
-  for (let i = 0; i < 8; i += 1)
-    await page
-      .getByRole("button", { name: /^Remove / })
-      .first()
-      .click();
+test("asks for at least one zone when the last one is removed", async ({ page }) => {
+  await openTool(page, PATH);
+  for (const zone of ["Europe/London", "Asia/Kolkata", "Asia/Tokyo"]) {
+    await page.getByRole("button", { name: `Remove ${zone}` }).click();
+  }
   await expect(page.locator("#tz-targets li")).toHaveCount(0);
   await expect(page.locator("#tz-targets-error")).toHaveText(
     "Add at least one zone to convert to.",

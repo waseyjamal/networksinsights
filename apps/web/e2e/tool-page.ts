@@ -22,11 +22,32 @@ export async function watchViolations(page: Page) {
   return () => page.evaluate(() => (window as unknown as { __csp: string[] }).__csp);
 }
 
-/** Opens the page and waits until the island has hydrated (Astro drops `ssr` when it has). */
-export async function openTool(page: Page, path: string) {
-  await page.goto(path);
+/**
+ * Waits until React has taken over every control of the island. Astro drops `ssr` before React has
+ * finished hydrating, and a control used in that gap keeps what was typed in the DOM while the page
+ * never hears of it (WebKit is slow enough to show it). React marks each element it has hydrated
+ * with a `__reactProps$` property, so the island is ready when every control has one.
+ */
+export async function waitForHydration(page: Page) {
   await expect(page.locator("astro-island")).toHaveCount(1);
   await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  await page.waitForFunction(() => {
+    const controls = document.querySelectorAll(
+      "astro-island input, astro-island select, astro-island textarea, astro-island button",
+    );
+    return (
+      controls.length > 0 &&
+      [...controls].every((control) =>
+        Object.keys(control).some((key) => key.startsWith("__reactProps$")),
+      )
+    );
+  });
+}
+
+/** Opens the page and waits until the island has hydrated. */
+export async function openTool(page: Page, path: string) {
+  await page.goto(path);
+  await waitForHydration(page);
 }
 
 /** Runs axe with the WCAG 2.2 AA tags and expects no violation. */
