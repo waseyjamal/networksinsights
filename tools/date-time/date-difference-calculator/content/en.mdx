@@ -1,0 +1,36 @@
+Date Difference Calculator finds the time between two dates in years, months and days, and also gives the total days, the weeks and the number of weekdays. Use it for project plans, notice periods, countdowns and counting working days. A tick box lets you count the end date as part of the span, which is how many contracts and bookings count nights and days.
+
+## How to use
+
+1. Pick the **Start date** and the **End date** with the date fields, or type them in your browser's date format.
+2. Tick **Include the end date in the count** if the last day should count too. Leave it unticked to count the days from the start up to, but not including, the end.
+3. Read the cells: **Years**, **Months** and **Days** give the calendar difference, **Total days** counts every day, **Weeks** shows whole weeks and the days left over, and **Weekdays** counts Monday to Friday.
+4. If the end date is earlier than the start date, the tool puts the two in order and tells you.
+
+## Examples
+
+From 5 January 2026 to 20 March 2026 the difference is 2 months and 15 days. That is 74 total days, or 10 weeks and 4 days, and 54 of those days fall on a weekday.
+
+With the end date included, the same dates cover 75 days, 2 months and 16 days, 10 weeks and 5 days, and 55 weekdays, because 20 March 2026 is a Friday. Notice that a tick adds exactly one day to every measure, including a weekday when the end date is a weekday.
+
+## Limits
+
+It uses the Gregorian calendar for every date, even before that calendar was adopted, and accepts years from 1 to 9999. Public holidays are not known, so the weekday count only skips Saturdays and Sundays. When the start day does not exist in a later month, such as the 31st, the last day of that month is used. Times of day and time zones are not used, only calendar dates.
+
+## FAQ
+
+### How many days are there between two dates?
+
+Choose the two dates and read Total days. It counts the days from the start up to the end, so the end date itself is not counted unless you tick the option to include it. Two identical dates give 0, or 1 with the end date included.
+
+### Does it count weekends and holidays?
+
+Total days counts every day. The Weekdays cell counts Monday to Friday only, so it leaves out weekends but not public holidays, which differ by country and year and are not known to this tool.
+
+### Why do I get a message when the end date is earlier?
+
+A difference is shown as a positive span, so the tool puts the earlier date first and says it did so. The numbers are the same whichever order you type the dates.
+
+### Are my dates stored or uploaded?
+
+No. The dates stay in this page on your device, and the calculation runs there without any upload.

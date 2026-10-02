@@ -11,7 +11,7 @@ export default defineTool({
   runtime: "client",
   status: "beta",
   input: z.object({ birth: z.string(), on: z.string() }),
-  related: [],
+  related: ["date-difference-calculator"],
   added: "2026-10-02",
   updated: "2026-10-02",
 });
