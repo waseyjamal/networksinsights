@@ -67,3 +67,72 @@ export function padTo<T extends { buffer: Buffer }>(file: T, bytes: number): T {
     buffer: Buffer.concat([file.buffer, Buffer.alloc(bytes - file.buffer.length)]),
   };
 }
+
+/** A plain JPG drawn in the browser under test: a gradient, `width` by `height` pixels. */
+export async function makeTestJpg(
+  page: Page,
+  name: string,
+  size: { width: number; height: number },
+): Promise<TestImage> {
+  const base64 = await page.evaluate(async ({ width, height }) => {
+    const canvas = new OffscreenCanvas(width, height);
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("no 2d context");
+    const fill = context.createLinearGradient(0, 0, width, height);
+    fill.addColorStop(0, "rgb(200, 60, 40)");
+    fill.addColorStop(1, "rgb(40, 60, 200)");
+    context.fillStyle = fill;
+    context.fillRect(0, 0, width, height);
+    const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.9 });
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(binary);
+  }, size);
+  return { name, mimeType: "image/jpeg", buffer: Buffer.from(base64, "base64") };
+}
+
+/**
+ * The same JPG with an EXIF orientation tag, as a phone camera writes it: 6 means "turn 90°
+ * clockwise to show", so a 200 by 100 picture is shown 100 by 200.
+ */
+export function withExifOrientation(jpg: TestImage, orientation: number): TestImage {
+  // TIFF header (little endian), one IFD entry: tag 0x0112, type SHORT, count 1, the value.
+  const tiff = Buffer.from([
+    0x49,
+    0x49,
+    0x2a,
+    0x00,
+    0x08,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    0x12,
+    0x01,
+    0x03,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    orientation,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+  ]);
+  const body = Buffer.concat([Buffer.from("Exif\0\0", "latin1"), tiff]);
+  const length = Buffer.alloc(2);
+  length.writeUInt16BE(body.length + 2);
+  const app1 = Buffer.concat([Buffer.from([0xff, 0xe1]), length, body]);
+  // After the SOI marker (FF D8).
+  const buffer = Buffer.concat([jpg.buffer.subarray(0, 2), app1, jpg.buffer.subarray(2)]);
+  return { ...jpg, buffer };
+}
