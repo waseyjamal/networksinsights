@@ -34,6 +34,9 @@ const text = categoryById("text");
 if (!text) throw new Error("the text category is missing");
 const pdf = categories.find((category) => category.id === "pdf");
 if (!pdf) throw new Error("the pdf category is missing");
+// A category that has no tool yet, for the page of an empty category.
+const empty = categories.find((category) => category.id === "video-audio");
+if (!empty) throw new Error("the video-audio category is missing");
 
 const manifest: ToolManifest = {
   id: "word-counter",
@@ -374,14 +377,16 @@ describe("the consistency check itself", () => {
 describe("the category page", () => {
   it("is not indexable while it has no tool: no canonical, no structured data", async () => {
     const html = await container.renderToString(Category, {
-      request: at(hosts[0] ?? "", categoryHref(pdf)),
-      props: { category: pdf, tool: undefined },
+      request: at(hosts[0] ?? "", categoryHref(empty)),
+      props: { category: empty, tool: undefined },
     });
     expect(canonicalLinks(html)).toEqual([]);
     expect(metaProperty(html, "og:url")).toBeUndefined();
     expect(jsonLdBlocks(html)).toEqual([]);
     // It is still a page a link can preview.
-    expect(metaProperty(html, "og:image")).toBe("https://networksinsights.com/og/pdf-tools.png");
+    expect(metaProperty(html, "og:image")).toBe(
+      "https://networksinsights.com/og/video-audio-tools.png",
+    );
     expect(new Map(twitterTags(html)).get("twitter:card")).toBe("summary_large_image");
   });
 });

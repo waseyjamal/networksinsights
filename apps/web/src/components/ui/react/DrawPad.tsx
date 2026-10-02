@@ -2,7 +2,9 @@ import { type Ref, useEffect, useImperativeHandle, useRef } from "react";
 import { cx } from "../attrs";
 
 // A surface to draw on with a mouse, a finger or a pen, such as a signature. The ink colour comes
-// from the CSS `color` of the canvas (a design token), so the drawing matches the theme's paper.
+// from the CSS `color` of the canvas (the theme's text colour), so it shows in both themes; the
+// canvas background is CSS only, so the drawing itself is ink on transparent. A tool that keeps
+// the drawing reads its shape (the alpha) and colours it as it needs, such as black for a PDF.
 // Drawing cannot be done with a keyboard: a tool that offers it must offer another way too.
 
 export interface DrawPadHandle {
