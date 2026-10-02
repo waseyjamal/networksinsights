@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { type FileResultState, fileResultAttrs } from "../attrs";
+import type { IconName } from "../icons";
 import { Icon } from "./Icon";
 
 export interface FileResultProps {
@@ -11,6 +12,8 @@ export interface FileResultProps {
   previewSrc?: string | undefined;
   /** Alternative text of the preview. Required with previewSrc. */
   previewAlt?: string | undefined;
+  /** The icon shown when there is no preview, such as `pdf`. Default `image`. */
+  icon?: IconName | undefined;
   /** Buttons for this file, such as Download. */
   actions?: ReactNode;
   /** The status under the facts: progress, or a message. */
@@ -24,6 +27,7 @@ export function FileResult({
   state,
   previewSrc,
   previewAlt = "",
+  icon = "image",
   actions,
   children,
 }: FileResultProps) {
@@ -33,7 +37,7 @@ export function FileResult({
         {previewSrc ? (
           <img src={previewSrc} alt={previewAlt} loading="lazy" decoding="async" />
         ) : (
-          <Icon name="image" />
+          <Icon name={icon} />
         )}
       </div>
       <div className="ni-fileresult__body">

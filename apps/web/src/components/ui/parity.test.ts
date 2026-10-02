@@ -274,6 +274,9 @@ describe("Astro and React components emit the same markup", () => {
     expect(await astro(FileResult, { name: "a.png", state: "working" })).toBe(
       react(createElement(ReactFileResult, { name: "a.png", state: "working" })),
     );
+    expect(await astro(FileResult, { name: "report.pdf", icon: "pdf" })).toBe(
+      react(createElement(ReactFileResult, { name: "report.pdf", icon: "pdf" })),
+    );
     expect(await astro(FileResultList, { label: "Results" }, { default: "" })).toBe(
       react(createElement(ReactFileResultList, { label: "Results" })),
     );
