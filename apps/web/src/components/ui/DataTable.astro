@@ -1,0 +1,32 @@
+---
+// A table of figures, such as the month-by-month schedule of a loan. Cells arrive formatted. The
+// first column is the row header and is left-aligned; the other columns are figures, right-aligned.
+// The box scrolls inside the page, so it takes the keyboard focus to be reachable without a mouse.
+interface Props {
+  id: string;
+  label: string;
+  columns: readonly string[];
+  rows: readonly (readonly string[])[];
+}
+
+const { id, label, columns, rows } = Astro.props;
+---
+
+<!-- biome-ignore lint/a11y/noNoninteractiveTabindex: a scrolling region must be focusable to be reached by keyboard -->
+<section class="ni-table" aria-label={label} tabindex="0">
+  <table id={id}>
+    <caption class="sr-only">
+      {label}
+    </caption>
+    <thead>
+      <tr>
+        {columns.map((column) => <th scope="col">{column}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+  <tr>{row.map((cell, index) => (index === 0 ? <th scope="row">{cell}</th> : <td>{cell}</td>))}</tr>
+))}
+    </tbody>
+  </table>
+</section>

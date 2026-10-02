@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Checkbox,
+  DataTable,
   Dropzone,
   Input,
   Progress,
@@ -119,6 +120,15 @@ export default function ReactShowcase() {
           <Badge tone="danger">Danger</Badge>
           <Badge tone="info">Info</Badge>
         </div>
+        <DataTable
+          id="sample-react-table"
+          label="Sample table (React)"
+          columns={["Month", "Payment"]}
+          rows={[
+            ["1", "100.00"],
+            ["2", "100.00"],
+          ]}
+        />
         <StatGrid
           items={[
             { id: "sample-words", label: "Words (sample)", value: "42" },

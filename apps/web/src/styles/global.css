@@ -2,3 +2,5 @@
 @import "./tokens.css";
 @import "./base.css";
 @import "./components.css";
+/* Tailwind scans apps/web only; tool folders live outside it. */
+@source "../../../../tools";

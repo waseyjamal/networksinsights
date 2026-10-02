@@ -1,0 +1,37 @@
+Time Zone Converter shows a date and time from one time zone on the clocks of up to ten other zones, using IANA zone names such as `America/New_York`. It suits anyone scheduling a call, a launch or a flight across zones. Daylight saving time is applied by your browser from its own time zone data, so the same clock time can have a different offset in winter and in summer.
+
+## How to use
+
+1. Pick the **Date** and the **Time** on a 24-hour clock, as they read in the zone you are converting from.
+2. Choose that zone under **From this time zone**.
+3. Under **To these time zones**, press **Add zone** after choosing each zone you want to see, and **Remove** to take one away.
+4. Read the table. Each row gives the date, the time and the UTC offset in that zone, and a day shift such as (+1 day) when the date differs from the source date. The cell above it gives the same moment in UTC.
+5. If a message appears above the table, read it: it explains a time that does not exist or that happens twice.
+
+## Examples
+
+9:00 on 15 July 2026 in `America/New_York` is 14:00 in `Europe/London` (UTC+01:00), 18:30 in `Asia/Kolkata` (UTC+05:30) and 22:00 in `Asia/Tokyo` (UTC+09:00), all on the same day. The same moment in UTC is 13:00.
+
+On 8 March 2026 the clocks in New York skip from 02:00 to 03:00, so 02:30 does not exist. The tool moves it forward by the length of the skip, to 03:30. On 1 November 2026 the clocks go back, so 01:30 happens twice. The tool uses the first one, at UTC-04:00, and names the second, at UTC-05:00.
+
+## Limits
+
+Dates from 1970 to 2100 are accepted, and at most 10 target zones. For a time that does not exist, the tool moves it forward by the length of the skip. For a time that happens twice, it uses the first one. Rules for future dates come from your browser, which can differ from a government decision made after your browser was built. Zones are chosen from a list of IANA names, so abbreviations such as IST, which mean different zones in different places, are not offered. If your browser cannot list zones, a fixed list of 43 widely used zones is offered instead.
+
+## FAQ
+
+### How does it handle daylight saving time?
+
+It asks your browser for the offset of each zone at the exact moment you chose, so daylight saving is included wherever the zone uses it. Two zones can change on different dates, so their gap is not always the same all year.
+
+### What happens if I choose a time that does not exist?
+
+When clocks skip forward, some times are never shown, such as 02:30 on the spring change in New York. The tool moves the time forward by the length of the skip and tells you, so 02:30 becomes 03:30.
+
+### What happens if a time happens twice?
+
+When clocks go back, one hour is repeated. The tool takes the first time it happens, before the clocks go back, and the message names the offset of the second time so you can adjust if you meant that one.
+
+### Does it send my times or zones anywhere?
+
+No. The conversion uses your browser time zone data on your device, and nothing you choose is uploaded or stored.

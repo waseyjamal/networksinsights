@@ -1,0 +1,37 @@
+EMI Calculator works out the monthly instalment of a loan from its amount, yearly interest rate and tenure, and shows the total interest, total payment and a month-by-month schedule. It suits anyone comparing a home, car or personal loan before talking to a lender. The figures update as you type, so you can see at once how a different rate or tenure changes the monthly payment.
+
+## How to use
+
+1. Type the **Loan amount**, in any currency; the tool only does arithmetic and shows no currency symbol.
+2. Type the **Yearly interest rate** as a percentage, such as 8.5. A rate of 0 is allowed.
+3. Type the **Tenure** and choose whether it is in **Years** or **Months**. A tenure that is not a whole number of months, such as 0.01 years, is refused.
+4. Read **Monthly EMI**, **Total interest**, **Total payment** and **Number of payments**.
+5. Scroll the schedule. For each month it lists the instalment, how much of it repays the loan (principal), how much is interest, and the balance still owed.
+
+## Examples
+
+A loan of 500,000 at 8.5% a year for 5 years has 60 payments. The monthly EMI is 10,258.27, the total interest is 115,495.94 and the total payment is 615,495.94.
+
+In the first month, interest is 3,541.67 and principal is 6,716.60, leaving a balance of 493,283.40. Notice that the interest part shrinks and the principal part grows each month, while the instalment stays the same, and the balance reaches 0.00 in the last row.
+
+## Limits
+
+The tool uses the reducing-balance method, with interest charged each month at one twelfth of the yearly rate. Bank figures can differ because of rounding, processing fees, insurance, day-count rules, rate changes and the date of the first payment, none of which are included here. The loan amount may be up to 1,000,000,000,000, the rate up to 100% and the tenure up to 600 months, which is 50 years. Figures are rounded to two decimals only for display.
+
+## FAQ
+
+### How is the EMI calculated?
+
+The EMI is the loan amount times the monthly rate, divided by one minus the monthly rate plus one raised to the power of minus the number of months. The monthly rate is the yearly rate divided by 12 and by 100. With a 0% rate the loan is simply divided into equal parts.
+
+### Why does my bank show a different EMI?
+
+Banks may round the instalment, count interest by the actual days in each month, add fees or insurance, or start the first period on a different date. Use this result as an estimate, and ask the lender for its own schedule.
+
+### What does the schedule show?
+
+Each row is one payment. Interest is the balance at the start of that month times the monthly rate. The rest of the instalment repays principal, and the balance column is what remains afterwards.
+
+### Is my loan information uploaded?
+
+No. The amounts you type are used only by this page on your device, and nothing is sent or stored.

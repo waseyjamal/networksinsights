@@ -12,6 +12,7 @@ import Badge from "./Badge.astro";
 import Button from "./Button.astro";
 import Card from "./Card.astro";
 import Checkbox from "./Checkbox.astro";
+import DataTable from "./DataTable.astro";
 import DiffView from "./DiffView.astro";
 import Dropzone from "./Dropzone.astro";
 import FileResult from "./FileResult.astro";
@@ -29,6 +30,7 @@ import {
   Card as ReactCard,
   CardLink as ReactCardLink,
   Checkbox as ReactCheckbox,
+  DataTable as ReactDataTable,
   DiffView as ReactDiffView,
   Dropzone as ReactDropzone,
   FileResult as ReactFileResult,
@@ -330,6 +332,19 @@ describe("Astro and React components emit the same markup", () => {
       ],
     };
     expect(await astro(MatchText, props)).toBe(react(createElement(ReactMatchText, props)));
+  });
+
+  it("DataTable", async () => {
+    const props = {
+      id: "t",
+      label: "Schedule",
+      columns: ["Month", "Payment"],
+      rows: [
+        ["1", "<b>100.00</b>"],
+        ["2", "& 99.50"],
+      ],
+    };
+    expect(await astro(DataTable, props)).toBe(react(createElement(ReactDataTable, props)));
   });
 
   it("DiffView", async () => {
