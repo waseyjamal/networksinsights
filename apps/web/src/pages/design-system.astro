@@ -13,6 +13,7 @@ import Card from "../components/ui/Card.astro";
 import CategoryTile from "../components/ui/CategoryTile.astro";
 import Checkbox from "../components/ui/Checkbox.astro";
 import CommandBar from "../components/ui/CommandBar.astro";
+import DataTable from "../components/ui/DataTable.astro";
 import DiffView from "../components/ui/DiffView.astro";
 import Dropzone from "../components/ui/Dropzone.astro";
 import EmptyState from "../components/ui/EmptyState.astro";
@@ -510,6 +511,25 @@ const themes = ["light", "dark"] as const;
   { id: "words", label: "Words", value: "1,234" },
   { id: "characters", label: "Characters", value: "7,020" },
   { id: "reading", label: "Reading time", value: "5 min 11 sec" },
+]}
+          />
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Data table</h3>
+          <p class="max-w-2xl text-fg-muted">
+            A table of figures, such as the schedule of a loan. The first column is the row header
+            and the others are right-aligned; the box scrolls and keeps its header in view. The
+            values below are a sample, not data.
+          </p>
+          <DataTable
+            id="sample-table"
+            label="Sample schedule"
+            columns={["Month", "Payment", "Balance"]}
+            rows={[
+  ["1", "100.00", "900.00"],
+  ["2", "100.00", "800.00"],
+  ["3", "100.00", "700.00"],
 ]}
           />
         </div>

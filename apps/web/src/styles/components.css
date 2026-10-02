@@ -1756,6 +1756,54 @@
     line-height: var(--text-sm--line-height);
   }
 
+  /* Data table: a table of figures, such as a loan schedule. The box scrolls both ways and keeps
+     its header row in view; the first column is the row header, the rest are right-aligned. */
+
+  .ni-table {
+    max-height: 24rem;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface-raised);
+  }
+
+  .ni-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+  }
+
+  .ni-table th,
+  .ni-table td {
+    padding: 0.5rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .ni-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--surface-sunken);
+    color: var(--fg-muted);
+    font-weight: 600;
+  }
+
+  .ni-table th:first-child {
+    text-align: left;
+  }
+
+  .ni-table tbody th {
+    font-weight: 600;
+  }
+
+  .ni-table tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
   /* Stats: live numbers with a label, such as the counts of a text tool. */
 
   .ni-stats {
