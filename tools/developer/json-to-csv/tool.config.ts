@@ -21,7 +21,7 @@ export default defineTool({
     quoteAll: z.boolean(),
     protect: z.boolean(),
   }),
-  related: ["json-formatter"],
+  related: ["csv-to-json", "json-formatter"],
   added: "2026-10-03",
   updated: "2026-10-03",
 });
