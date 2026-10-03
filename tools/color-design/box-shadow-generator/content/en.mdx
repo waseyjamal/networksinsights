@@ -1,0 +1,37 @@
+Box Shadow Generator lets you design a CSS box shadow of one to five layers, see it on a card as you edit, and copy the finished CSS. It suits front-end developers matching a design file, and anyone who finds four bare pixel values hard to picture. Stacking layers is how soft, realistic depth is usually built, and here each layer has its own fields and its own inset switch.
+
+## How to use
+
+1. Edit **Layer 1**: horizontal and vertical offset, blur and spread in pixels, a colour from the picker and an opacity in percent.
+2. Turn on **Inset** to draw that layer inside the card instead of beneath it.
+3. Press **Add layer** to stack another shadow, up to five, and **Remove** to drop one. The first layer in the list is drawn on top.
+4. Press **Glass card preset** for a frosted card: two layers plus a see-through fill and a blurred backdrop. The **Glass card** switch adds or removes those extra lines on any shadow.
+5. Press **Copy CSS** and paste the lines into your rule.
+
+## Examples
+
+The page opens with one soft shadow:
+
+```css
+box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.25);
+```
+
+Press Glass card preset and the box holds five lines: the two-layer `box-shadow`, `background-color: rgba(255, 255, 255, 0.15);`, `backdrop-filter: blur(12px);`, the same filter with the `-webkit-` prefix that Safari has needed, and a thin white border. The patterned area behind the preview shows the blur at work.
+
+## Limits
+
+The ranges are our own choice: offsets from -100 to 100 pixels, blur from 0 to 100, spread from -50 to 50, opacity from 0 to 100%. A value outside them is refused with a message. Colours come from the picker as HEX and are written as `rgba()` with your opacity. The `backdrop-filter` property is not supported in every browser version, so older browsers show the glass card without the blur; plan a readable fallback.
+
+## FAQ
+
+### Why does the glass card look plain on a white page?
+
+A backdrop blur only shows when something sits behind the card. Place it over a photo, a gradient or shapes, as the striped preview area does here.
+
+### How do shadow layers combine in the output?
+
+They are written in one comma-separated `box-shadow` value in the order of the list, and the browser paints the first one on top of the ones after it.
+
+### Can a shadow be drawn on one side only?
+
+Yes. Give a vertical offset and a negative spread about as large as the blur, for example 0, 8, 8 and -8, and the shadow shows mostly below the card.
