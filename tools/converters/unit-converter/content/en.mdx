@@ -1,0 +1,33 @@
+Unit Converter changes a value between units of length, weight, temperature, area, volume, speed, data size and time, using exact conversion factors. It is handy for recipes, travel, homework, engineering notes and storage sizes, and it works out every result as an exact fraction before rounding, so you never see stray digits such as 0.30000000000000004.
+
+## How to use
+
+1. Choose the **Kind of unit**, such as Length or Data size. Each kind opens on a common pair of units.
+2. Type the **Value**. Commas between thousands and a minus sign are accepted.
+3. Choose the unit to convert **From** and the unit to convert **To**.
+4. Read the result under the boxes. A note says whether it is exact or rounded.
+5. Press **Swap units** to convert the other way.
+
+## Examples
+
+1 kilometre is 0.621371192237 mile, rounded to 12 significant digits, because a mile is exactly 1,609.344 metres.
+
+100 °C is exactly 212 °F, and 98.6 °F is exactly 37 °C. For data, 1 GiB is exactly 1.073741824 GB: notice that the binary unit is larger than the decimal one with a similar name.
+
+## Limits
+
+The factors follow the exact definitions published by NIST in SP 811 and Handbook 44: the international inch of 2.54 cm, the pound of 0.45359237 kg, the US gallon of 231 cubic inches and the imperial gallon of 4.54609 litres. Data size is offered both ways and labelled: kB, MB, GB and TB count in 1,000s, while KiB, MiB, GiB and TiB count in 1,024s. Months and years are left out because their length varies. Values may be up to 1,000,000,000,000,000 in size with up to 15 digits after the decimal point, and results are rounded to 12 significant digits; those are our own choices. Temperatures below absolute zero are refused.
+
+## FAQ
+
+### Is a kilobyte 1000 or 1024 bytes?
+
+Both conventions exist. The SI prefix kilo means 1000, so this tool calls 1000 bytes a kilobyte (kB). The binary unit of 1024 bytes is a kibibyte (KiB), as the IEC naming defines it. Choose the one your device or software uses.
+
+### Why does the result say rounded?
+
+Some conversions never end, such as kilometres to miles. The exact fraction is kept internally and only the shown figure is cut to 12 significant digits.
+
+### Can I type a number in scientific notation?
+
+No. Type it as plain digits, such as 0.000001 or 2500000.
