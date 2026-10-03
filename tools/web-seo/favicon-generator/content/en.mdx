@@ -1,0 +1,43 @@
+Favicon Generator turns one image into PNG favicons at 16, 32, 48, 180, 192 and 512 pixels, plus a favicon.ico, with the link tags for your site. It is for anyone launching a website who has a logo and needs the small icons that browser tabs, bookmarks, phone home screens and app manifests ask for. The image is drawn at each size on your device, and each file is its own download.
+
+## How to use
+
+1. Drop a JPG, PNG or WebP image on the box, or click it to choose one. A square logo with some space around it gives the best result.
+2. Wait a moment while the sizes are drawn. If the image is not square, a note says so: the icons use the largest square at its centre and cut off the edges of the longer side.
+3. Press **Download** next to each file you need. There is no zip, so every file is saved separately.
+4. Put the files at the root of your site, so that they open at addresses such as `/favicon.ico`.
+5. Copy the link tags into the head of every page, and add the manifest lines if your site has a web app manifest.
+
+## Examples
+
+Drop a 1,000 by 600 pixel logo and the tool takes the centred 600 by 600 square, cutting 200 pixels from each side. You get seven files:
+
+```text
+favicon.ico           16, 32 and 48 pixels
+favicon-16x16.png     16 × 16
+favicon-32x32.png     32 × 32
+favicon-48x48.png     48 × 48
+apple-touch-icon.png  180 × 180
+icon-192.png          192 × 192
+icon-512.png          512 × 512
+```
+
+Notice that favicon.ico is one file holding three sizes, so a browser picks the one it needs. The tags begin with `<link rel="icon" href="/favicon.ico" sizes="48x48">`.
+
+## Limits
+
+One image at a time, up to 25 MB and 50 megapixels. SVG, GIF and HEIC are not read. A small image is enlarged to 512 pixels and looks soft, so start from 512 pixels or more. Fine detail and thin text disappear at 16 pixels; a simple mark works better. Transparent areas stay transparent, but iPhones fill them with black on the home screen, so give the 180 pixel icon a solid background if that matters. The favicon.ico file holds PNG images, a layout that current browsers and Windows since Vista read; very old software that expects bitmap icons may not.
+
+## FAQ
+
+### Do I still need a favicon.ico file?
+
+Many browsers ask for `/favicon.ico` on their own even when no tag points to it, so keeping one at the root avoids an error in your server log and covers older tools.
+
+### Why is my icon blurry in the browser tab?
+
+The tab shows it at 16 or 32 pixels, where a detailed picture blurs. Simplify the logo, use bold shapes and strong contrast, and try a version without text.
+
+### Why did my new favicon not appear?
+
+Browsers keep favicons in a cache for a long time. Open the icon address directly, reload it, or try a private window to see the new file.

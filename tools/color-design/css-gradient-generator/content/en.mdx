@@ -1,0 +1,37 @@
+CSS Gradient Generator builds a linear, radial or conic CSS gradient from two to six HEX colour stops and gives you the CSS line to copy. Front-end developers and designers use it to try a blend by eye before it goes into a stylesheet, instead of editing numbers and reloading a page. The preview redraws on every change, so you can drag a stop position and watch the band move.
+
+## How to use
+
+1. Choose a **Type**: Linear blends along a straight line, Radial spreads out from the centre, and Conic sweeps around the centre like the hands of a clock.
+2. For Linear, set the **Angle** in degrees: 0 points up, 90 points right. For Conic it is the start angle of the sweep. For Radial, choose a circle or an ellipse instead.
+3. Edit each **colour stop**: use its picker or type a HEX code, and give its position from 0 to 100%.
+4. Press **Add stop** for another colour, up to six, or **Remove** to drop one, down to two.
+5. Press **Copy CSS** and paste the line into the rule for your element.
+
+## Examples
+
+The page opens with a blue to orange blend at 90 degrees, and the CSS box shows:
+
+```css
+background-image: linear-gradient(90deg, #3b82f6 0%, #ff8800 100%);
+```
+
+Switch the type to Conic and set the start angle to 45: the value becomes `conic-gradient(from 45deg, #3b82f6 0%, #ff8800 100%)`. Type `#f80` in a stop and the CSS writes it out in full as `#ff8800`.
+
+## Limits
+
+Colours are HEX only, with three or six digits. Transparency is not offered: eight-digit HEX, `rgba()` and named colours are refused, as in our Color Converter. Positions are percentages; pixel stops, repeating gradients, colour hints and a custom radial centre are not supported. The output uses `background-image`, which current browsers support for all three types, but very old browsers may not draw a conic gradient.
+
+## FAQ
+
+### Why does my gradient show a hard line between two colours?
+
+Two stops sit at the same position, or the second is placed before the first. Spread their positions apart and the blend becomes smooth again.
+
+### Can I paste the CSS into a Tailwind or inline style?
+
+Yes. The part after the colon is a plain CSS value, so it works in a stylesheet, a style attribute or an arbitrary value in a utility framework.
+
+### What happens when I type a colour the tool cannot read?
+
+A message names the stop that is wrong, and the preview and the CSS box keep the last gradient that was valid until the code reads as HEX again.

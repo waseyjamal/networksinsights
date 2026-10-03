@@ -1,0 +1,40 @@
+Meta Tag Generator writes the title, description, canonical, robots, Open Graph and Twitter card tags for a web page and gives you the HTML to paste into its head. It is for site owners, bloggers and developers who want the tags that search engines and social apps read, written correctly and escaped, without looking up each property name. An approximate search result preview shows roughly how the title and description could read.
+
+## How to use
+
+1. Type the page **Title** and **Description**. Under each one a counter shows its length, with a rule of thumb, not an official limit.
+2. Add the **Canonical URL**, the one address you want search engines to treat as the page. It must start with `https://` or `http://`.
+3. Pick a **Robots** value: `index, follow` lets search engines list the page and follow its links; the other choices turn either part off.
+4. Fill in the sharing fields if you want them: site name, Open Graph type, a share image address with a short description, the Twitter card style and an X handle.
+5. Check the preview, then press **Copy HTML** and paste the tags inside the `head` element of your page.
+
+## Examples
+
+The page opens filled in for a bakery. Its first lines of output are:
+
+```html
+<title>Fresh Sourdough Bread</title>
+<meta name="description" content="Order a fresh sourdough loaf, baked every morning.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://example.com/bread/sourdough">
+```
+
+followed by the matching `og:` and `twitter:` tags. Type a title with quotes, such as `Tom & "Jerry"`, and the output escapes it as `Tom &amp; &quot;Jerry&quot;`, so the tag stays valid HTML.
+
+## Limits
+
+The preview is approximate. Search engines decide how a result looks and often rewrite titles and descriptions. The length counter is a rule of thumb, about 60 characters for a title and 160 for a description; there is no official character limit, because results are cut by pixel width, so wide letters run out sooner. Each field takes up to 2,000 characters, our own cap. The tool does not check that your URLs or image exist, and it writes no structured data.
+
+## FAQ
+
+### Do meta keywords help my ranking?
+
+The tool leaves the keywords tag out on purpose. Google has said for years that it ignores that tag for ranking, so it adds bytes and nothing else.
+
+### Why does the share preview on a social app still show my old title?
+
+Social apps keep a copy of the tags they read last. After you publish new tags, most of them offer a debugger or refresh tool that reads the page again.
+
+### What size should the share image be?
+
+Each app sets its own sizes and they change, so check the current guidance of the apps you care about. Use a full address starting with https, because a relative path is not read by most apps.

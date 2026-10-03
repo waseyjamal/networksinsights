@@ -1,0 +1,37 @@
+Color Palette from Image picks up to eight dominant colours from a picture on your device, using median cut, and shows each as a HEX code you can copy. Designers use it to build a colour scheme that matches a photo, a product shot or a brand image, and developers use it to pull a few CSS colours from a mockup. The picture is read by your browser's own canvas and never leaves the page.
+
+## How to use
+
+1. Drop a JPG, PNG or WebP picture on the box, or click it to choose one.
+2. Choose the **Number of colours**, from 2 to 8. The palette changes at once, without reading the picture again.
+3. Read the list: each colour shows a swatch, its HEX code and the share of the picture it stands for, largest first.
+4. Press **Copy** beside a colour for that code, or **Copy all** for every code, one per line.
+
+## Examples
+
+A picture that is three quarters pure red and one quarter pure blue, with two colours chosen, gives:
+
+```text
+#ff0000  75%
+#0000ff  25%
+```
+
+A sunset photo with six colours chosen might give deep blues, oranges and a dark foreground. Each one is the average of a group of similar pixels, so it can be a shade that no single pixel has exactly. A flat logo with three colours never gives more than three, even when eight are asked for.
+
+## Limits
+
+The method is median cut: the picture is first shrunk so its longest side is at most 200 pixels, our own choice for speed, then its pixels are split again and again near the median of the widest colour channel, at the edge of a run of equal values so one flat colour is not cut in two. Results vary by image. Small but striking details, such as a red dot on a grey wall, can vanish into a larger group, and the shares are of the shrunk picture. Pixels that are mostly transparent are skipped. One picture at a time, up to 25 MB and 50 megapixels.
+
+## FAQ
+
+### Why are the colours slightly different from the ones I see?
+
+Every swatch is an average of many similar pixels. Photos hold gradients and noise, so the average sits between the shades your eye picks out.
+
+### Will the same picture always give the same palette?
+
+Yes. Median cut has no randomness, so a picture and a number of colours always give the same codes in the same browser. Browsers decode some formats slightly differently, which can move a code by a step.
+
+### Can I get RGB or HSL values instead of HEX?
+
+The tool writes HEX only. Paste a code into our Color Converter to read it as RGB or HSL.

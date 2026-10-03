@@ -1,0 +1,33 @@
+File Encrypt and Decrypt locks any file with a password using AES-256-GCM in your browser, and unlocks the resulting .nienc file again with the same password. It is for anyone who wants to send or store a private file somewhere they do not fully trust, such as a shared drive or an email attachment, without installing software. The encryption runs on your device through the browser's built-in WebCrypto, and the password never leaves the page.
+
+## How to use
+
+1. Leave **Action** on **Encrypt a file**, then drop any file on the box, up to 100 MB.
+2. Type a **Password** of at least 8 characters, our own minimum, and type it again in **Password again**.
+3. Press **Encrypt**, then **Download**. The new file has the old name plus `.nienc`, such as `report.pdf.nienc`.
+4. To open it later, choose **Decrypt a .nienc file**, drop the `.nienc` file, type the same password and press **Decrypt**.
+5. Download the result. It gets back the original file name, which was stored inside the encrypted part.
+
+## Examples
+
+Encrypt `notes.txt`, which holds `hello world`, with the password `correct horse`. The download is `notes.txt.nienc`, 71 bytes long: 33 bytes of header, then the encrypted name length, name and text, then a 16-byte tag. Encrypt the same file again and the bytes after the first five come out different, because each file gets a new random salt and nonce. Decrypt it with `correct horses` and you get only an error message, never a partial file.
+
+## Limits
+
+If the password is lost, the file cannot be recovered: there is no reset and no back door. A wrong password, a damaged file and a changed file all give the same clear error and no output, because the format cannot tell them apart. Files up to 100 MB can be encrypted, our own limit, since the whole file must fit in memory; the matching `.nienc` file may be up to 306 bytes larger. The format is this tool's own. It is not tested for files encrypted by other tools, and other programs are not expected to read it.
+
+The `.nienc` format, version 1: four bytes `NIEC`, one version byte, a 16-byte random salt and a 12-byte random nonce, then the AES-256-GCM ciphertext with its 16-byte tag. The key comes from PBKDF2 with SHA-256 and 600,000 iterations, the figure the OWASP Password Storage Cheat Sheet recommends, and the 33 header bytes are authenticated too.
+
+## FAQ
+
+### Can you recover my file if I forget the password?
+
+No. Nothing about the password is kept anywhere, so nobody can open the file without it. Store the password in a password manager before you delete the original.
+
+### Why does encrypting take a moment even for a tiny file?
+
+The password is stretched with 600,000 rounds of PBKDF2 before it becomes a key. That cost is paid once per file and makes each guess at the password slow for an attacker too.
+
+### Does the encrypted file hide the original name and size?
+
+The name is inside the encrypted part, so it is hidden, though the download is named after it unless you rename it. The size is not hidden: the output is always 51 bytes plus the length of the name longer than the input.

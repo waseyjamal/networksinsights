@@ -1,0 +1,40 @@
+Invoice Generator makes a simple invoice from your line items, tax and discount, works the totals out to the cent, and saves it as a PDF. It suits freelancers and small businesses who send the odd invoice and want a clean document without an accounting account or a spreadsheet template. Every amount is handled as a whole number of cents, so the totals never show the rounding noise of floating-point arithmetic.
+
+## How to use
+
+1. Fill in the **Invoice number** and **Invoice date**, and a due date if you give one.
+2. Type your name and address under **From**, and your customer's under **Bill to**.
+3. Add each **line item**: a description, a quantity (up to three decimals, such as 2.5 hours) and a unit price. The amount of each line shows beside it. Press **Add item** for more.
+4. Choose the **Currency sign**, a **Discount** as a percent or a fixed amount, and the **Tax** percent. The totals under the form change as you type.
+5. Add notes such as how to pay, then press **Make PDF** and **Download**.
+
+## Examples
+
+The form opens with three items: a logo at £450.00, three boxes of cards at £19.99 and 2.5 hours of support at £40. The totals are:
+
+```text
+Subtotal        £609.97
+Discount (10%)  -£61.00
+Tax (20%)       £109.79
+Total           £658.76
+```
+
+Notice the order: each line is rounded to the penny, the discount comes off the subtotal (60.997 rounds to 61.00), and tax is charged on what is left, £548.97. Halves are rounded up.
+
+## Limits
+
+This is a simple invoice layout, not tax or legal advice. Invoicing rules differ by country and trade: some need a tax number, a sequential number series, the tax for each line or wording in a set language, and this tool does not know them, so check your local rules before you send it. There are no payment links. The tax is one rate for the whole invoice, applied after the discount. Amounts have two decimal places. The PDF fonts draw English and most Western European letters only, so the rupee sign is written as Rs and other characters are refused with a message. Up to 50 line items, 500 characters a field, a quantity up to 1,000,000 and a unit price up to 1,000,000,000, our own caps. The PDF is A4.
+
+## FAQ
+
+### Is a PDF from this tool a valid tax invoice?
+
+That depends on where you trade. Many tax authorities require details this form does not ask for, such as a registration number, so read the rules that apply to you first.
+
+### Why is the discount taken before tax?
+
+This tool always takes the discount off first and then charges tax on what is left, a common way to show a price reduction. If your rules need tax on the full price, this layout does not fit your case.
+
+### Does the tool remember my business details for next time?
+
+No. Nothing is saved in the browser or sent anywhere, so the form starts again with the example on every visit. Keep the PDF as your copy.
