@@ -1,5 +1,5 @@
 import { Badge, Button, Input, Select, Textarea } from "@ui";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AVAILABILITY,
   FIELDS,
@@ -88,8 +88,19 @@ export default function ToolUi() {
   const [values, setValues] = useState<Record<string, string>>(START);
   const [questions, setQuestions] = useState<Question[]>([{ question: "", answer: "" }]);
   const [message, setMessage] = useState("");
+  // Set by Add question: once the new question is drawn, its field takes the focus and the page
+  // scrolls just enough to show it with the button under it. Browsers without scroll anchoring
+  // (Safari) would otherwise push the button off the screen with every question added.
+  const focusQuestion = useRef(0);
   const result = run({ type, values, questions });
   const errors = result.ok ? {} : result.errors;
+
+  useEffect(() => {
+    if (focusQuestion.current === 0 || focusQuestion.current !== questions.length) return;
+    focusQuestion.current = 0;
+    document.getElementById(`schema-question-${questions.length}`)?.focus({ preventScroll: true });
+    document.getElementById("schema-add-question")?.scrollIntoView({ block: "nearest" });
+  }, [questions.length]);
 
   useEffect(() => {
     if (message === "") return;
@@ -172,10 +183,14 @@ export default function ToolUi() {
           })}
           <div>
             <Button
+              id="schema-add-question"
               variant="secondary"
               size="sm"
               disabled={questions.length >= LIMITS.maxQuestions}
-              onClick={() => setQuestions((list) => [...list, { question: "", answer: "" }])}
+              onClick={() => {
+                focusQuestion.current = questions.length + 1;
+                setQuestions((list) => [...list, { question: "", answer: "" }]);
+              }}
             >
               Add question
             </Button>

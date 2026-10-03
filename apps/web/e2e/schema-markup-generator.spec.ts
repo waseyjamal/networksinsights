@@ -96,6 +96,12 @@ test("writes an Article, a LocalBusiness and an Organization", async ({ page }) 
 test("writes a FAQPage, notes the retired rich result, and stops at 20 questions", async ({
   page,
 }) => {
+  // Nineteen rounds of add, render, focus and scroll, each checked, take longer than 30 seconds in
+  // WebKit on a slow machine; the assertions are unchanged.
+  test.slow();
+  // The button's hover transform transition keeps it moving under the pointer in WebKit after each
+  // click scrolls it, so Playwright never sees it stable; reduced motion switches it off.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await openTool(page, PATH);
   await page.locator("#schema-type").selectOption("FAQPage");
   await expect(page.getByText("Google no longer shows FAQ rich results")).toBeVisible();
@@ -112,8 +118,11 @@ test("writes a FAQPage, notes the retired rich result, and stops at 20 questions
     },
   ]);
   const add = page.getByRole("button", { name: "Add question" });
-  for (let i = 0; i < 19; i++) await add.click();
-  await expect(page.locator("#schema-question-20")).toBeVisible();
+  for (let n = 2; n <= 20; n++) {
+    await add.click();
+    await expect(page.locator(`#schema-question-${n}`)).toBeFocused();
+    await expect(add).toBeInViewport();
+  }
   await expect(add).toBeDisabled();
 });
 

@@ -128,10 +128,21 @@ test("refuses values over each limit and takes the limit itself", async ({ page 
   await expect(page.locator("#invoice-notes-error")).toHaveText("Keep this under 500 characters.");
   await page.locator("#invoice-notes").fill("a".repeat(500));
   await expect(page.locator("#invoice-notes-error")).toHaveCount(0);
+});
 
+test("takes 50 line items, not 51, and keeps the Add button in view", async ({ page }) => {
+  // 47 checked rounds of add, focus, scroll and fill. WebKit draws a frame in about half a second
+  // on a slow machine and every click waits for frames, so this needs more than the default time;
+  // the assertions are the same in every browser. Reduced motion switches off the button's hover
+  // transition, which otherwise keeps it moving under the pointer after each scroll in WebKit.
+  test.slow();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openTool(page, PATH);
   const add = page.getByRole("button", { name: "Add item" });
   for (let i = 3; i < 50; i++) {
     await add.click();
+    await expect(page.locator(`#invoice-item-${i + 1}-description`)).toBeFocused();
+    await expect(add).toBeInViewport();
     await page.locator(`#invoice-item-${i + 1}-description`).fill(`Item ${i + 1}`);
     await page.locator(`#invoice-item-${i + 1}-price`).fill("1");
   }

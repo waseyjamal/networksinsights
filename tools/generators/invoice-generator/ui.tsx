@@ -10,7 +10,7 @@ import {
   Textarea,
   WorkerJobError,
 } from "@ui";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CURRENCIES,
   type Currency,
@@ -62,6 +62,18 @@ export default function ToolUi() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<Output | null>(null);
+  // Set by Add item: once the new line is drawn, its description takes the focus and the page
+  // scrolls just enough to show it with the button under it. Browsers without scroll anchoring (Safari) would otherwise push the button off the
+  // screen with every line added.
+  const focusItem = useRef(0);
+  useEffect(() => {
+    if (focusItem.current === 0 || focusItem.current !== invoice.items.length) return;
+    focusItem.current = 0;
+    document
+      .getElementById(`invoice-item-${invoice.items.length}-description`)
+      ?.focus({ preventScroll: true });
+    document.getElementById("invoice-add-item")?.scrollIntoView({ block: "nearest" });
+  }, [invoice.items.length]);
   const checked = check(invoice);
   const errors = checked.ok ? {} : checked.errors;
 
@@ -191,10 +203,14 @@ export default function ToolUi() {
         })}
         <div>
           <Button
+            id="invoice-add-item"
             size="sm"
             variant="secondary"
             disabled={invoice.items.length >= LIMITS.maxItems}
-            onClick={() => update({ items: [...invoice.items, EMPTY_ITEM] })}
+            onClick={() => {
+              focusItem.current = invoice.items.length + 1;
+              update({ items: [...invoice.items, EMPTY_ITEM] });
+            }}
           >
             Add item
           </Button>

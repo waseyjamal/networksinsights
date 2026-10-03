@@ -120,7 +120,7 @@ test("a tiled watermark covers the corners too", async ({ page }) => {
   }
 });
 
-test("a JPG stays JPG and a WebP stays WebP", async ({ page, browserName }) => {
+test("a JPG stays JPG and a WebP stays WebP", async ({ page }) => {
   await openTool(page, PATH);
   await input(page).setInputFiles(
     await makeTestJpg(page, "beach.jpg", { width: 320, height: 200 }),
@@ -131,10 +131,14 @@ test("a JPG stays JPG and a WebP stays WebP", async ({ page, browserName }) => {
 
   await input(page).setInputFiles(await darkPng(page, "dark.webp", "image/webp"));
   await apply(page).click();
-  if (browserName === "webkit") {
-    await expect(page.getByText("This browser cannot write WebP")).toBeVisible({ timeout: 30_000 });
+  // Safari has no WebP encoder; Playwright's WebKit build may have one. Whatever this browser
+  // wrote, the result must say so: a WebP file, or a PNG with the "Saved as PNG" note.
+  await expect(result(page)).toBeVisible({ timeout: 30_000 });
+  if (((await result(page).textContent()) ?? "").includes("dark-watermarked.png")) {
+    await expect(page.getByText("This browser cannot write WebP")).toBeVisible();
     await download(page, "dark-watermarked.png");
   } else {
+    await expect(page.getByText("This browser cannot write WebP")).toHaveCount(0);
     const webp = await download(page, "dark-watermarked.webp");
     expect(webp.subarray(8, 12).toString("latin1")).toBe("WEBP");
   }
