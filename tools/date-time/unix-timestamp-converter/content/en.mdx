@@ -1,0 +1,33 @@
+Unix Timestamp Converter turns a Unix timestamp into a readable date in UTC, your own time zone and ISO 8601, and turns a date and time back into a timestamp. Developers reading logs, database rows and API responses use it to check what moment a number stands for, and to produce the number for a test or a query.
+
+## How to use
+
+1. Under **Timestamp to date**, type the **Unix timestamp**. Press **Use the current time** to fill in the present moment.
+2. Leave **Read it as** on detect, or choose **Seconds** or **Milliseconds** yourself.
+3. Read the unit that was used, the date in **UTC**, in your time zone and in **ISO 8601**.
+4. Under **Date to timestamp**, type a date as YYYY-MM-DD, optionally followed by a time as HH:MM or HH:MM:SS, and choose whether it is in UTC or your time zone.
+5. Read the timestamp in **Seconds** and **Milliseconds**.
+
+## Examples
+
+1700000000 is detected as seconds and is 2023-11-14 22:13:20.000 UTC, or 2023-11-14T22:13:20.000Z in ISO 8601. On a device set to India time it shows as 2023-11-15 03:43:20.000 UTC+05:30.
+
+Going the other way, 2023-11-14 22:13:20 in UTC gives 1700000000 seconds and 1700000000000 milliseconds. Notice that the same digits with three more zeros are detected as milliseconds and give the same moment.
+
+## Limits
+
+In detect mode, a value of 100,000,000,000 or more, with or without a minus sign, is read as milliseconds, and a smaller one as seconds; this cut-off is our own rule of thumb, so choose the unit yourself for dates after the year 5138 in seconds. Supported dates run from 0001-01-01 00:00:00 UTC to 9999-12-31 23:59:59.999 UTC; anything outside is refused. Timestamps must be whole numbers. Your time zone is the one your device reports, and it is read only in your browser. Leap seconds are not counted, as in Unix time itself, and dates before 1582 use the Gregorian calendar extended backwards.
+
+## FAQ
+
+### What is a Unix timestamp?
+
+It is the count of seconds since 1 January 1970 at midnight UTC, called the Unix epoch. Many systems store it in milliseconds instead.
+
+### Why does my local time look different on another computer?
+
+The local result uses the time zone set on the device, including any daylight saving rule in force on that date. A different setting gives a different wall clock for the same moment.
+
+### What happens to a time skipped by a daylight saving change?
+
+A wall clock time that never happened in your zone is moved by the size of the jump, so the timestamp still points to a real moment.
