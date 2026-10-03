@@ -1,0 +1,52 @@
+Schema Markup Generator turns a short form into JSON-LD structured data for an Article, FAQPage, Product, LocalBusiness or Organization, ready to paste into a web page. It is for site owners and developers who want valid schema.org markup without writing JSON by hand or remembering which property nests inside which. Each field is marked required or recommended, following Google Search Central's structured data documentation for that type.
+
+## How to use
+
+1. Choose a **Type**. The form changes to that type's fields.
+2. Fill in every field marked **required**, then as many **recommended** ones as are true of your page. Leave a field empty and it is left out of the output, never written blank.
+3. For image and profile lists, put one full URL on each line.
+4. For FAQPage, type each question and its answer, and use **Add question** for more.
+5. When the required fields are complete, the JSON-LD appears in a script tag. Press **Copy JSON-LD** and paste it into the HTML of the page it describes.
+6. Test the live page with Google's Rich Results Test or the Schema Markup Validator before you rely on it.
+
+## Examples
+
+The page opens with a Product. Its output is:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Sourdough Loaf",
+  "brand": {
+    "@type": "Brand",
+    "name": "Example Bakery"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "6.50",
+    "priceCurrency": "GBP",
+    "availability": "https://schema.org/InStock"
+  }
+}
+```
+
+It sits inside a `script` tag of type `application/ld+json`. Change the price to `6,50` and the box empties, with a message under the field, until the price uses a dot for decimals again.
+
+## Limits
+
+Valid markup does not earn a rich result: Google decides which rich results it shows, and for which pages. Google stopped showing FAQ rich results in Search on 7 May 2026, so FAQPage markup no longer produces that result there, though it is still valid schema.org. Only five types are offered, with a chosen set of their properties. Ratings and reviews are left out on purpose, because markup must only describe what the page really shows. Each field takes up to 2,000 characters and a FAQPage up to 20 questions, our own caps.
+
+## FAQ
+
+### Where in the page does the script go?
+
+Either the head or the body works for JSON-LD. Paste it once on the page that the data describes, not on every page of the site.
+
+### Why does Product require a price here when Google lists other options?
+
+Google needs a name plus an offer, a review or a rating. This tool writes only offers, because invented reviews or ratings break the rules for structured data, so the price is the part that completes a product.
+
+### Does the output change what visitors see?
+
+No. Browsers do not display JSON-LD. It is read by search engines and other programs, which is why every value must match the visible content.
