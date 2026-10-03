@@ -1,0 +1,34 @@
+Remove Duplicate Lines deletes repeated lines from a list and tells you how many it removed, with options to ignore case, trim spaces, drop empty lines and sort. It helps anyone cleaning an email list, a column pasted from a spreadsheet, a keyword list or a log, where the same entry appears more than once. The result updates as you type or change an option.
+
+## How to use
+
+1. Paste or type your list into **Your lines**, one item per line.
+2. Tick **Ignore case** to treat Apple and apple as the same line.
+3. Tick **Trim spaces** to ignore spaces and tabs at the start and end of each line; the result is trimmed too.
+4. Tick **Remove empty lines** to drop blank lines altogether.
+5. Under **Keep**, choose whether the first or the last copy of a repeated line stays, and under **Sort**, keep the original order or sort A to Z or Z to A.
+6. Read the counts of lines before, after and removed, then press **Copy result**.
+
+## Examples
+
+The list below has six lines: apple, Banana, apple, banana, an empty line and cherry.
+
+With every option off, one apple goes: 6 lines before, 5 after, 1 removed. Notice that Banana and banana both stay, because case matters until you tick **Ignore case**. With **Ignore case** and **Remove empty lines** ticked, the result is apple, Banana and cherry, and 3 lines are removed.
+
+## Limits
+
+The text may be up to 1,000,000 characters, about 1 MB of plain English; that limit is our own choice, and a text of that size is processed without freezing the page. Lines are split at LF or CRLF, and the result uses LF. A line break at the very end does not count as another line. With **Remove empty lines** but not **Trim spaces**, a line holding only spaces is not empty. Sorting follows English alphabetical order, so it may not match the order another language expects.
+
+## FAQ
+
+### Which copy stays when I choose the last one?
+
+The last occurrence of each line is kept, and it stays in the position where it appeared in your list, so earlier copies are the ones taken out.
+
+### Does ignoring case change my text?
+
+No. It only decides which lines count as the same. The line that is kept keeps its original capital letters.
+
+### Is my list sent anywhere?
+
+No. The lines are compared in this page on your device, and nothing is uploaded or stored.

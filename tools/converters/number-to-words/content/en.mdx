@@ -1,0 +1,32 @@
+Number to Words writes any number in English words, using either the Indian system of lakh and crore or the international system of million and billion. It also writes an amount the way it goes on a cheque, as rupees and paise or as dollars and cents. Students, accountants and anyone filling in a cheque, invoice or legal form can check the wording before writing it out by hand.
+
+## How to use
+
+1. Type the **Number**. Commas between groups are accepted in either style, so 12,34,567 and 1,234,567 both work.
+2. Choose the **Number system**: Indian for lakh and crore, or International for million, billion and trillion.
+3. Choose the **Style**: plain Words, a rupees and paise cheque line, or a dollars and cents cheque line.
+4. Read the words under the boxes, and press **Copy words** to put them on your clipboard.
+
+## Examples
+
+1234567 in the Indian system is "Twelve lakh thirty-four thousand five hundred sixty-seven". In the international system the same number is "One million two hundred thirty-four thousand five hundred sixty-seven".
+
+1250.50 as rupees reads "Rupees one thousand two hundred fifty and fifty paise only", and as dollars "One thousand two hundred fifty dollars and fifty cents". Notice that -42 becomes "Minus forty-two", and 3.14 becomes "Three point one four", digit by digit after the point.
+
+## Limits
+
+The largest supported number is 999,999,999,999,999 (just under one thousand trillion), with or without a minus sign; anything larger is refused. Plain words take up to 10 digits after the point, and the two cheque styles take at most 2, because money has paise or cents only. A cheque amount cannot be negative. Above one crore, the Indian system counts crores in lakh and crore again, as in "one lakh crore". Scientific notation such as 1e5 is not read. Hyphens join tens and units, and "and" is not used after "hundred"; some style guides prefer otherwise.
+
+## FAQ
+
+### How is 10 lakh written in the international system?
+
+Ten lakh is one million. Type 1000000 and switch the system to see both forms.
+
+### Does the cheque wording follow a bank rule?
+
+No single rule is enforced here. The rupee style ends with the word only, which is common on Indian cheques, so nothing can be added after it. Check what your own bank asks for.
+
+### Why is the number not rounded when I type many digits?
+
+Whole numbers are handled as exact integers of any length up to the limit, so every digit is kept.

@@ -1,0 +1,41 @@
+CSV to JSON Parser reads CSV text or a CSV file and turns each row into a JSON object keyed by the header, or into an array of values. It is for developers loading a spreadsheet export into code, an API or a test fixture. The reader follows RFC 4180, so quoted fields with commas, doubled quotes and line breaks inside them come through intact, and a broken row is reported with its line number.
+
+## How to use
+
+1. Paste CSV into **Your CSV**, or drop a `.csv` file on the box below it, or click it to choose one. The file is read on your device.
+2. Leave **Delimiter** on Detect, or choose comma, semicolon or tab. When detecting, the delimiter found is shown under the box.
+3. Tick or clear **First row is the header**, **Convert numbers and true/false** and **Pretty print**.
+4. Read the **JSON** and the counts of **Rows** and **Columns**, or the message that names the line to fix.
+5. Press **Download JSON** to save `data.json`, or **Copy JSON**.
+
+## Examples
+
+This CSV has a quoted field holding a comma and doubled quotes:
+
+```text
+name,age,note
+Asha,31,"Likes ""tea"", and coffee"
+Ben,,true
+```
+
+With the default options it gives two objects, and every value stays text: `"age": "31"` and `"note": "true"`. With **Convert numbers and true/false** ticked, Asha's age becomes the number 31 and Ben's note becomes the boolean true, while Ben's empty age stays an empty string.
+
+If a third row read `Cara,40,x,y`, the message would be: Line 4: this row has 4 fields, but the first row has 3.
+
+## Limits
+
+The CSV may be up to 1,000,000 characters; that limit is our own choice. Records end with CRLF or LF, a byte order mark at the start is dropped, and empty lines are skipped. Detection counts commas, semicolons and tabs in the first record, outside double quotes, and picks the most frequent; a tie goes to comma, then semicolon, and none at all means comma. Every row must have as many fields as the first. A double quote is allowed only in a field that starts with one. Conversion is off by default; when on, only exactly `true` and `false` become booleans, and text written as a JSON number becomes a number, except integers beyond 9,007,199,254,740,991 and numbers with a leading zero such as 0123, which stay text. An empty header becomes `column` and its position, and a repeated one gets `_2`, `_3` and so on.
+
+## FAQ
+
+### Why are my numbers in quotes?
+
+Conversion is off by default so that codes such as postcodes and phone numbers keep their exact text. Tick the convert option to turn plain numbers into JSON numbers.
+
+### What does the output look like without a header row?
+
+Each row becomes an array of its values, and the first row is treated as data like the others.
+
+### Which line number does an error use?
+
+The line in your text where the faulty row starts, counting from 1, so a quoted field spread over several lines moves later rows down too.
