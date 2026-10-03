@@ -35,7 +35,10 @@ describe("encrypt and decrypt", () => {
     expect(a.subarray(5, HEADER_BYTES)).not.toEqual(b.subarray(5, HEADER_BYTES));
   });
 
-  it("refuses a wrong password, a changed byte and a changed header with one message", async () => {
+  // Four PBKDF2 runs of 600,000 iterations: over 5 seconds on a slow machine under a full run.
+  it("refuses a wrong password, a changed byte and a changed header with one message", {
+    timeout: 30_000,
+  }, async () => {
     const sealed = await encrypt(text("secret"), "s.txt", "password1");
     await expect(decrypt(sealed, "password2")).rejects.toThrow(MESSAGES.wrongPassword);
     const body = sealed.slice();

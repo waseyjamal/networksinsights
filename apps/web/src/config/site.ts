@@ -66,7 +66,7 @@ export const staticPagePaths = [
 export const pageUpdated = {
   home: "2026-09-21",
   tools: "2026-09-21",
-  about: "2026-10-02",
+  about: "2026-10-03",
   contact: "2026-09-21",
   privacy: "2026-09-28",
   terms: "2026-09-21",

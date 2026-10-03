@@ -5,9 +5,14 @@
   "type": "module",
   "dependencies": {
     "@networksinsights/tool-sdk": "workspace:*",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/hin": "1.0.0",
+    "libheif-js": "1.23.2",
     "pdf-lib": "1.17.1",
     "pdfjs-dist": "6.3.289",
     "react": "19.3.0",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "7.0.0",
     "zod": "4.6.5"
   },
   "scripts": {

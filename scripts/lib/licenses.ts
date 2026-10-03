@@ -51,6 +51,14 @@ export const LICENSE_EXCEPTIONS: readonly LicenseException[] = [
     licenses: ["Zlib"],
     approved: "ADR 0057, owner approval in Tools batch 2",
   },
+  {
+    // libheif-js 1.23.2 (libheif and libde265 compiled to WebAssembly) decodes HEIC photos in
+    // HEIC to JPG. Its wasm is served unmodified as a separate file, so it can be replaced.
+    packages: /^libheif-js$/,
+    versions: ["1.23.2"],
+    licenses: ["LGPL-3.0"],
+    approved: "ADR 0060, owner approval in Tools batch 5A",
+  },
 ];
 
 /** One package as `pnpm licenses list --json` reports it. */

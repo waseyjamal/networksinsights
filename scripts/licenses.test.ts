@@ -110,6 +110,26 @@ describe("checkLicenses", () => {
       1,
     );
   });
+
+  it("allows LGPL-3.0 for libheif-js 1.23.2 only", () => {
+    const libheif = (versions: string[], license = "LGPL-3.0") => ({
+      name: "libheif-js",
+      versions,
+      license,
+    });
+    expect(checkLicenses([libheif(["1.23.2"])])).toEqual([]);
+    expect(checkLicenses([libheif(["1.24.0"])])).toHaveLength(1);
+    expect(checkLicenses([libheif(["1.23.2"], "GPL-3.0-only")])).toHaveLength(1);
+    expect(ALLOWED_LICENSES.has("LGPL-3.0")).toBe(false);
+  });
+
+  it("still rejects LGPL for every other package", () => {
+    expect(checkLicenses([pkg("heic-to", "LGPL-3.0")])).toHaveLength(1);
+    expect(checkLicenses([pkg("libheif-js-lookalike", "LGPL-3.0")])).toHaveLength(1);
+    expect(
+      checkLicenses([{ name: "other", versions: ["1.23.2"], license: "LGPL-3.0" }]),
+    ).toHaveLength(1);
+  });
 });
 
 describe("parsePnpmLicenses and the report", () => {

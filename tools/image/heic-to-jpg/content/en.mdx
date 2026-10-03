@@ -1,0 +1,38 @@
+HEIC to JPG converts the HEIC and HEIF photos an iPhone or iPad takes into JPG or PNG pictures, right in your browser, several at a time. It helps when a website, an older computer or a form will not open a HEIC file, and you want a picture that works everywhere without installing anything or sending your photos away.
+
+## How to use
+
+1. Drop one or more HEIC or HEIF photos on the box, or click it to choose them. Each photo joins the list and starts converting at once.
+2. Under Save as, keep JPG for the smallest files that open everywhere, or pick PNG to keep every pixel exactly.
+3. For JPG, pick a quality: High for printing and zooming in, Balanced for sharing, Smallest when the file size matters most. Changing a setting makes every picture again.
+4. Press Download next to each picture you want. Remove takes one photo off the list, and Clear all empties it.
+
+## Examples
+
+A test photo of 320 by 240 pixels, stored with a rotation box that turns it a quarter turn for display, comes out as a JPG of 240 by 320 pixels, standing upright as the camera showed it. The same photo carried a GPS position in its camera details; the JPG holds only the pixels, so that position is gone. A file named IMG_0420.HEIC is saved as IMG_0420.jpg, or IMG_0420.png when you choose PNG.
+
+## Limits
+
+Each photo may be up to 50 MB and 20 photos can be in the list at once, as Quick facts shows. A photo larger than 50 megapixels is refused before it is decoded, because a phone cannot hold it in memory; a 48 megapixel iPhone photo fits. Only the main picture of a file is converted: the moving part of a Live Photo and the other shots of a burst are left out. Camera details such as the date, the camera model and the location are not copied into the new picture. Pictures are downloaded one by one, with no single archive. Phones have less memory than computers, so several very large photos in a row may fail on a phone before these limits.
+
+## FAQ
+
+### Are my photos uploaded to convert them?
+
+No. A background worker on this page decodes each photo with libheif, an open-source HEIF library that this site serves, and your browser writes the JPG or PNG. Nothing is sent to a server.
+
+### Does the converted photo keep my location?
+
+No. The new picture is written from the pixels alone, so the GPS position, the date and the camera model stored in the HEIC file are not in the JPG or PNG.
+
+### Why does my photo come out the right way up?
+
+HEIC photos store their rotation separately from the pixels. The decoder applies that rotation first, so a portrait photo is saved as a portrait picture.
+
+### Should I choose JPG or PNG?
+
+Choose JPG for sharing and uploading, because it is much smaller. Choose PNG when you will edit the picture further and want no compression loss, keeping in mind that the file is several times larger.
+
+### What happens with a HEIC file this tool cannot decode?
+
+It tries the decoder built into your browser next, which Safari 17 and later have. If neither can read the file, the photo shows a clear error and the others carry on.

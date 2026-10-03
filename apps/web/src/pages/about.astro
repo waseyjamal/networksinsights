@@ -85,6 +85,18 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
         ))}
       </ul>
     )}
+    {credit.sourceUrls && (
+      <>
+        <p>Complete source code:</p>
+        <ul data-credit-source={credit.name}>
+          {credit.sourceUrls.map((url) => (
+            <li>
+              <a href={url}>{url}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
   </section>
 ))}
   </div>
