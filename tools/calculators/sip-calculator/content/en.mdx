@@ -1,0 +1,33 @@
+SIP Calculator estimates what a fixed monthly investment could grow to, from the amount, an expected yearly return and the number of years. It is for anyone planning a systematic investment plan in a mutual fund who wants to see how the invested amount, the estimated returns and the total value build up year by year. It is a calculation from the numbers you enter, not a forecast: real returns go up and down and are not guaranteed.
+
+## How to use
+
+1. Type the **Monthly investment**, in any currency; the tool only does arithmetic and shows no currency symbol.
+2. Type the **Expected yearly return** as a percentage, such as 12. A return of 0 is allowed.
+3. Type the number of **Years**, as a whole number.
+4. Read **Invested amount**, **Estimated returns** and **Total value**.
+5. Scroll the year-by-year table to see what was paid in by the end of each year and what it is worth at that point.
+
+## Examples
+
+Investing 5,000 a month for 10 years at an expected 12% a year means 120 instalments. The invested amount is 600,000.00, the estimated returns are 561,695.38 and the total value is 1,161,695.38.
+
+After the first year the table shows 60,000.00 invested and a value of 64,046.64. Notice how the returns column grows faster in later years, because earlier instalments have had longer to compound.
+
+## Limits
+
+The formula is FV = P × ((1 + i)^n − 1) / i × (1 + i), where P is the monthly investment, i is the yearly rate divided by 12 and by 100, and n is the number of months. It assumes each instalment is paid at the start of the month and that the return is the same every month. Fund charges, taxes, missed instalments and changing returns are not included. This tool accepts up to 10,000,000 a month, a return from 0 to 50% and from 1 to 50 whole years; those limits are our own choice.
+
+## FAQ
+
+### Is the total value guaranteed?
+
+No. Market linked funds rise and fall, so the real value at the end may be higher or lower than this figure. Treat it as arithmetic on the rate you typed.
+
+### Why is there an extra (1 + i) in the formula?
+
+It reflects payment at the start of each month, so every instalment earns one more month of growth than it would if paid at the end. Some other calculators assume end of month payments and show a slightly smaller value.
+
+### What happens with a 0% return?
+
+The total value is simply the monthly investment times the number of months, and the estimated returns are zero.
