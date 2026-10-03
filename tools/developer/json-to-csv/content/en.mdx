@@ -1,0 +1,48 @@
+JSON to CSV Converter turns a JSON array of objects, or a single object, into CSV text that a spreadsheet or database import can read. Developers and analysts use it to open an API response in a spreadsheet, hand data to a colleague, or load records into another system. You choose the delimiter, whether there is a header row, how nested objects are written and how cells are quoted, then copy or download the result.
+
+## How to use
+
+1. Paste your JSON into **Your JSON**, or drop a `.json` file on the box below it, or click it to choose one. A file is read on your device.
+2. Choose the **Delimiter**: comma, semicolon or tab.
+3. Tick or clear the options: **Header row**, **Flatten nested objects**, **Quote every field** and **Protect against spreadsheet formulas**.
+4. Read the **CSV** and the counts of **Rows** and **Columns**. If the JSON cannot be converted, a message says why.
+5. Press **Download CSV** to save `data.csv`, or **Copy CSV**.
+
+## Examples
+
+This input has a list, a nested object, a comma in a name and a cell that looks like a formula:
+
+```json
+[
+  {"name": "Asha", "city": "Pune", "tags": ["a", "b"], "address": {"zip": "411001"}},
+  {"name": "Ben, Jr.", "note": "=1+1"}
+]
+```
+
+With the default options it gives five columns and two rows:
+
+```text
+name,city,tags,address.zip,note
+Asha,Pune,"[""a"",""b""]",411001,
+"Ben, Jr.",,,, =1+1
+```
+
+Notice that the list is written as JSON text, the zip code becomes the column `address.zip`, missing keys leave empty cells, and the formula gets a space in front.
+
+## Limits
+
+The JSON may be up to 1,000,000 characters; that limit is our own choice. Columns are every key, in the order each first appears. A key missing from a row, or a null value, gives an empty cell. Arrays inside a row are written as JSON text, and so are nested objects when flattening is off. Fields are quoted as RFC 4180 asks: a field holding the delimiter, a double quote or a line break goes in double quotes, quotes inside are doubled, and each line ends with CRLF. The formula protection adds exactly one space before a text cell that starts with =, +, -, @, a tab or a carriage return; real numbers such as -5 are left alone. Integers larger than 9,007,199,254,740,991 lose precision when the JSON is read, so 12345678901234567890 is written as 12345678901234567000; put such numbers in quotes in your JSON to keep every digit.
+
+## FAQ
+
+### Can it convert an array of numbers or strings?
+
+No. Each item of the array must be an object with keys, because the keys become the columns. Wrap each plain value in an object with a key first.
+
+### Why add a space before some cells?
+
+A spreadsheet may run a cell that begins with an equals sign or a similar character as a formula. With the space in front, the cell no longer begins with that character. Clear the option if you need the exact text.
+
+### Is my JSON uploaded?
+
+No. Pasted text and chosen files are converted in this page on your device.
