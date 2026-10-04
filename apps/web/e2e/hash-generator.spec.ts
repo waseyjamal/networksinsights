@@ -7,6 +7,7 @@ import { site } from "../src/config/site";
 import { jsonLdDocumentSchema } from "../src/lib/seo/schemas";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
+import { openTool } from "./tool-page";
 
 // Hash Generator in the three engines, against `wrangler dev`, so the page runs under the real
 // Content-Security-Policy and headers (e2e/edge.ts). It hydrates, hashes the example of its page as
@@ -45,9 +46,7 @@ async function watchViolations(page: Page) {
 
 /** Opens the page and waits until the island has hydrated (Astro drops `ssr` when it has). */
 async function open(page: Page) {
-  await page.goto(PATH);
-  await expect(page.locator("astro-island")).toHaveCount(1);
-  await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  await openTool(page, PATH);
 }
 
 test("hydrates and hashes the example of its page as it is typed", async ({ page }) => {

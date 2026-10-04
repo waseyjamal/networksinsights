@@ -51,6 +51,9 @@ Tools:
   `logic.ts` (ADR 0057). A dynamic `import()` in a `ui.tsx` makes Vite share its preload helper with
   the search loader, which `pnpm check:budgets` then fails. PDF.js data files come from `/vendor/pdfjs/<version>/`;
   every library a tool ships is credited in `apps/web/src/config/credits.ts`.
+- HEIC to JPG decodes with `libheif-js` 1.23.2, the only LGPL package allowed (ADR 0060): its wasm is
+  served unmodified from `/vendor/libheif/<version>/`. OCR uses `tesseract.js` 7.0.0 from its worker,
+  with its worker, core and language data served from `/vendor/tesseract/<version>/`, never a CDN.
 - A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.
 - Files go to the visitor only through `saveFile` from `@ui`. Visitor text is rendered as text
   (`{value}`, `setText`), and a visitor's URL becomes a link only through `safeUrl`. Never

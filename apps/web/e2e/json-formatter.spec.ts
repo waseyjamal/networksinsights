@@ -6,6 +6,7 @@ import { site } from "../src/config/site";
 import { jsonLdDocumentSchema } from "../src/lib/seo/schemas";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
+import { openTool } from "./tool-page";
 
 // JSON Formatter in the three engines, against `wrangler dev`, so the page runs under the real
 // Content-Security-Policy and headers (e2e/edge.ts). It hydrates, formats and minifies the example
@@ -54,9 +55,7 @@ async function watchViolations(page: Page) {
  * So a small JSON is typed, again if need be, until the page reacts, then cleared.
  */
 async function open(page: Page) {
-  await page.goto(PATH);
-  await expect(page.locator("astro-island")).toHaveCount(1);
-  await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  await openTool(page, PATH);
   await expect(async () => {
     await box(page).fill("[]");
     await expect(stat(page, "lines")).toHaveText("1", { timeout: 1_000 });

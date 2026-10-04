@@ -130,25 +130,140 @@ test("refuses values over each limit and takes the limit itself", async ({ page 
   await expect(page.locator("#invoice-notes-error")).toHaveCount(0);
 });
 
-test("takes 50 line items, not 51, and keeps the Add button in view", async ({ page }) => {
-  // 47 checked rounds of add, focus, scroll and fill. WebKit draws a frame in about half a second
-  // on a slow machine and every click waits for frames, so this needs more than the default time;
-  // the assertions are the same in every browser. Reduced motion switches off the button's hover
-  // transition, which otherwise keeps it moving under the pointer after each scroll in WebKit.
-  test.slow();
+/**
+ * WebKit only, test only: draws the workspace card flat (no shadow or glow, a solid border instead
+ * of the gradient border). WebKit repaints the whole card each time it grows, and with the card's
+ * shadow, glow and gradient border one Add item took 1 to 2 seconds to reach the next frame in
+ * local WebKit, against about 0.2 seconds flat (Chromium: about 0.04 seconds either way). The look
+ * of the card is kept for visitors; only these long add-rows tests flatten it, so they fit the
+ * normal timeout. The rule goes in through the CSSOM: page.addStyleTag adds an inline <style>,
+ * which the site's CSP blocks.
+ */
+async function flattenCardInWebkit(page: Page, browserName: string) {
+  if (browserName !== "webkit") return;
+  await page.evaluate(() => {
+    const sheet = [...document.styleSheets].find((candidate) => {
+      try {
+        return candidate.cssRules.length >= 0;
+      } catch {
+        return false;
+      }
+    });
+    sheet?.insertRule(
+      ".ni-workspace{box-shadow:none!important;background:var(--surface)!important;border-color:var(--border)!important}",
+      sheet.cssRules.length,
+    );
+  });
+}
+
+/**
+ * Adds line items `from` to `to` (1-based, inclusive) with Add item and fills each. With `checked`,
+ * every round also checks that the new description has the focus and that Add item is in view.
+ * Reduced motion switches off the button's hover transition, which otherwise keeps it moving
+ * under the pointer after each scroll in WebKit.
+ */
+async function addItems(page: Page, from: number, to: number, checked: boolean) {
+  const add = page.getByRole("button", { name: "Add item" });
+  for (let n = from; n <= to; n++) {
+    await add.click();
+    const description = page.locator(`#invoice-item-${n}-description`);
+    if (checked) {
+      await expect(description).toBeFocused();
+      await expect(add).toBeInViewport();
+    }
+    await description.fill(`Item ${n}`);
+    await page.locator(`#invoice-item-${n}-price`).fill("1");
+  }
+}
+
+/**
+ * Adds filler line items `from` to `to` fast: Add item is clicked through the DOM and each new
+ * line's description and price are set with the native value setter and an input event, all in one
+ * page.evaluate, so Playwright waits for nothing per line. React handles the click and the input
+ * events as it does a visitor's. The checks a visitor would notice (focus, Add item in view) run
+ * with real clicks in addItems; this only builds the list in between.
+ */
+async function addFillerItems(page: Page, from: number, to: number) {
+  await page.evaluate(
+    async ({ first, last }) => {
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      // React renders after the event, not inside it: wait for each change to be drawn before the
+      // next one, so the next Add item sees the line before it.
+      const drawn = async (ready: () => boolean) => {
+        while (!ready()) await new Promise((resolve) => setTimeout(resolve, 0));
+      };
+      const input = (n: number, field: string) =>
+        document.getElementById(`invoice-item-${n}-${field}`) as HTMLInputElement | null;
+      for (let n = first; n <= last; n++) {
+        document.getElementById("invoice-add-item")?.click();
+        await drawn(() => input(n, "price") !== null);
+        for (const [field, value] of [
+          ["description", `Item ${n}`],
+          ["price", "1"],
+        ] as const) {
+          const target = input(n, field);
+          setValue?.call(target, value);
+          target?.dispatchEvent(new Event("input", { bubbles: true }));
+          await drawn(() => input(n, field)?.getAttribute("aria-invalid") !== "true");
+        }
+      }
+    },
+    { first: from, last: to },
+  );
+  await expect(descriptions(page)).toHaveCount(to);
+}
+
+const descriptions = (page: Page) => page.locator('input[id^="invoice-item-"][id$="-description"]');
+
+/**
+ * The totals of the example's three lines plus 47 lines at £1: subtotal £609.97 + £47 = £656.97,
+ * 10% discount £65.70 (65.697 to the cent), tax 20% of £591.27 = £118.25, total £709.52.
+ */
+const FIFTY_TOTALS = ["£656.97", "-£65.70", "£118.25", "£709.52"];
+
+// Line items 4 to 50 in three short tests. Lines 4 to 6, 25 and 48 to 50 are added with real
+// clicks and checked (focus on the new line, Add item in view); the lines in between are filler,
+// added fast (addFillerItems).
+test("adds line items 4 to 25, each checked one focused with the Add button in view", async ({
+  page,
+  browserName,
+}) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openTool(page, PATH);
+  await flattenCardInWebkit(page, browserName);
+  await addItems(page, 4, 6, true);
+  await addFillerItems(page, 7, 24);
+  await addItems(page, 25, 25, true);
+  await expect(descriptions(page)).toHaveCount(25);
+});
+
+test("adds line items 48 to 50 with the Add button in view, and refuses a 51st", async ({
+  page,
+  browserName,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openTool(page, PATH);
+  await flattenCardInWebkit(page, browserName);
+  await addFillerItems(page, 4, 47);
+  await addItems(page, 48, 50, true);
   const add = page.getByRole("button", { name: "Add item" });
-  for (let i = 3; i < 50; i++) {
-    await add.click();
-    await expect(page.locator(`#invoice-item-${i + 1}-description`)).toBeFocused();
-    await expect(add).toBeInViewport();
-    await page.locator(`#invoice-item-${i + 1}-description`).fill(`Item ${i + 1}`);
-    await page.locator(`#invoice-item-${i + 1}-price`).fill("1");
-  }
   await expect(add).toBeDisabled();
+  await page.evaluate(() => document.getElementById("invoice-add-item")?.click());
+  await expect(descriptions(page)).toHaveCount(50);
+  await expect(totals(page).locator("dd")).toHaveText(FIFTY_TOTALS);
+});
+
+test("makes the PDF of an invoice with 50 line items", async ({ page, browserName }) => {
+  await openTool(page, PATH);
+  await flattenCardInWebkit(page, browserName);
+  await addFillerItems(page, 4, 50);
+  await expect(page.getByRole("button", { name: "Add item" })).toBeDisabled();
+  await expect(totals(page).locator("dd")).toHaveText(FIFTY_TOTALS);
   await make(page).click();
   await expect(result(page)).toContainText("pages", { timeout: 30_000 });
+  const text = pdfText(await download(page, "invoice-INV-001.pdf"));
+  for (let n = 4; n <= 50; n++) expect(text).toContain(`Item ${n}`);
+  for (const line of ["Logo design", "Subtotal", ...FIFTY_TOTALS]) expect(text).toContain(line);
 });
 
 test("names the characters the PDF fonts cannot draw", async ({ page }) => {

@@ -80,8 +80,13 @@ test("the About page keeps the open-source notices", async ({ page, request }) =
   await expect(page.locator('[data-credit-notice="PDF.js (pdfjs-dist)"]')).toContainText(
     "Mozilla Foundation",
   );
+  const lgpl = page.locator('[data-credit-notice="libheif-js (libheif and libde265)"]');
+  await expect(lgpl).toContainText("GNU Lesser General Public License, version 3");
+  await expect(
+    page.locator('[data-credit-source="libheif-js (libheif and libde265)"] a'),
+  ).toHaveCount(4);
   const links = await page
-    .locator('a[href^="/vendor/pdfjs/"]')
+    .locator('a[href^="/vendor/"]')
     .evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute("href") ?? ""));
   expect(links.length).toBeGreaterThan(0);
   for (const href of links) expect((await request.get(href)).status(), href).toBe(200);

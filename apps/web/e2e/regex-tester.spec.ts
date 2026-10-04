@@ -6,6 +6,7 @@ import { site } from "../src/config/site";
 import { jsonLdDocumentSchema } from "../src/lib/seo/schemas";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
+import { openTool } from "./tool-page";
 
 // Regex Tester in the three engines, against `wrangler dev`, so the page runs under the real
 // Content-Security-Policy and headers (e2e/edge.ts). It hydrates, tests the sample of its page,
@@ -62,9 +63,7 @@ async function watchViolations(page: Page) {
  * then stays empty. So a pattern is typed, again if need be, until the page reacts, then cleared.
  */
 async function open(page: Page) {
-  await page.goto(PATH);
-  await expect(page.locator("astro-island")).toHaveCount(1);
-  await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  await openTool(page, PATH);
   const copy = page.getByRole("button", { name: "Copy pattern" });
   await expect(async () => {
     await pattern(page).fill("a");

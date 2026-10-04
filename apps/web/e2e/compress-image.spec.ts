@@ -6,6 +6,7 @@ import manifest from "../../../tools/image/compress-image/tool.config";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
 import { makeTestPng } from "./support/test-image";
+import { openTool } from "./tool-page";
 
 // The first worker tool, in the three engines, against `wrangler dev`, so the page, its island and
 // its Web Worker all run under the real Content-Security-Policy (e2e/edge.ts). A real PNG is drawn
@@ -31,8 +32,7 @@ async function watchViolations(page: Page) {
 }
 
 async function open(page: Page) {
-  await page.goto(PATH);
-  await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  await openTool(page, PATH);
 }
 
 const FORMATS = {

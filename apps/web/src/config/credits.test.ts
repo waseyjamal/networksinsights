@@ -1,9 +1,16 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { LIBHEIF_ASSETS } from "../../../../tools/image/heic-to-jpg/logic";
+import {
+  PDFJS_ASSETS as OCR_PDFJS_ASSETS,
+  TESSERACT_ASSETS,
+} from "../../../../tools/image/ocr/logic";
 import { PDFJS_ASSETS } from "../../../../tools/pdf/pdf-to-jpg/logic";
 import { credits, ZLIB_NOTICE } from "./credits";
+import { LIBHEIF_BASE, LIBHEIF_FILES, LIBHEIF_VERSION } from "./libheif";
 import { PDFJS_BASE, PDFJS_VENDOR_FOLDERS, PDFJS_VERSION } from "./pdfjs";
+import { TESSERACT_BASE, TESSERACT_FILES, TESSERACT_VERSION } from "./tesseract";
 
 const repo = join(import.meta.dirname, "..", "..", "..", "..");
 const toolsPackage = JSON.parse(readFileSync(join(repo, "tools", "package.json"), "utf8")) as {
@@ -20,6 +27,22 @@ describe("credits", () => {
     expect(PDFJS_VERSION).toBe(toolsPackage.dependencies["pdfjs-dist"]);
     // PDF to JPG fetches the data files from the path this site serves them at.
     expect(PDFJS_ASSETS).toBe(PDFJS_BASE);
+    expect(OCR_PDFJS_ASSETS).toBe(PDFJS_BASE);
+    expect(version("libheif-js")).toBe(toolsPackage.dependencies["libheif-js"]);
+    expect(LIBHEIF_VERSION).toBe(toolsPackage.dependencies["libheif-js"]);
+    expect(LIBHEIF_ASSETS).toBe(LIBHEIF_BASE);
+    expect(version("tesseract.js-core")).toBe(toolsPackage.dependencies["tesseract.js-core"]);
+    expect(TESSERACT_VERSION).toBe(toolsPackage.dependencies["tesseract.js"]);
+    expect(TESSERACT_ASSETS).toBe(TESSERACT_BASE);
+  });
+
+  it("offers the source of the LGPL library and its licence, next to the unmodified wasm", () => {
+    const libheif = credits.find((credit) => credit.license.includes("LGPL"));
+    expect(libheif?.sourceUrls?.length).toBeGreaterThan(0);
+    expect(libheif?.notice).toContain("GNU Lesser General Public License");
+    expect(libheif?.notice).toContain(`${LIBHEIF_BASE}libheif.wasm`);
+    expect(libheif?.licenseFiles).toEqual([`${LIBHEIF_BASE}LICENSE.txt`]);
+    expect(credits.filter((credit) => credit.license.includes("LGPL"))).toHaveLength(1);
   });
 
   it("keeps pako's zlib notice word for word", () => {
@@ -54,6 +77,15 @@ describe("credits", () => {
     const files = credits.flatMap((credit) => credit.licenseFiles ?? []);
     expect(files.length).toBeGreaterThan(0);
     for (const url of files) {
+      if (url.startsWith(LIBHEIF_BASE)) {
+        const name = url.slice(LIBHEIF_BASE.length);
+        expect(Object.values(LIBHEIF_FILES) as string[], url).toContain(name);
+        continue;
+      }
+      if (url.startsWith(TESSERACT_BASE)) {
+        expect(Object.keys(TESSERACT_FILES), url).toContain(url.slice(TESSERACT_BASE.length));
+        continue;
+      }
       expect(url.startsWith(PDFJS_BASE)).toBe(true);
       const [folder, published] = url.slice(PDFJS_BASE.length).split("/");
       expect(published?.endsWith(".txt"), url).toBe(true);
