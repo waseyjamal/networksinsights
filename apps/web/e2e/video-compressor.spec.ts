@@ -3,7 +3,7 @@ import { expect, type Page, test } from "@playwright/test";
 import manifest from "../../../tools/video-audio/video-compressor/tool.config";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
-import { browserCodecs, hideFromPage, readMedia, recordPath } from "./media";
+import { browserCodecs, expectProbeSane, hideFromPage, readMedia, recordPath } from "./media";
 import {
   expectNoAxeViolations,
   expectQuickFacts,
@@ -53,6 +53,7 @@ for (const [source, codec] of [
     const violations = await watchViolations(page);
     await openTool(page, PATH);
     const can = await browserCodecs(page);
+    await expectProbeSane(page);
     const decodes = source === MP4 ? can.decodeAvc : can.decodeVp9;
     await file(page).setInputFiles(source);
     await expect(page.locator("#video-compressor-source")).toContainText("320 × 240 pixels");
@@ -99,6 +100,7 @@ test("aims at a target size: about 0.5 MB from a 1 MB clip, and refuses less tha
 }, testInfo) => {
   await openTool(page, PATH);
   const can = await browserCodecs(page);
+  await expectProbeSane(page);
   await file(page).setInputFiles(BIG);
   await expect(page.locator("#video-compressor-source")).toContainText("480 × 270 pixels");
   if (!(can.decodeAvc && (can.encodeAvc || can.encodeVp9))) {
@@ -128,6 +130,11 @@ test("aims at a target size: about 0.5 MB from a 1 MB clip, and refuses less tha
 });
 
 test("without WebCodecs encoders, says plainly that it cannot compress here", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "without WebCodecs encoders, says plainly that it cannot compress here, no conversion",
+    "message",
+  );
   await hideFromPage(page, ["VideoEncoder", "AudioEncoder"]);
   const errors = collectErrors(page);
   await openTool(page, PATH);
@@ -143,6 +150,11 @@ test("without WebCodecs encoders, says plainly that it cannot compress here", as
 });
 
 test("refuses a file that is not a video, and one that cannot be read", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "refuses a file that is not a video, and one that cannot be read, no conversion",
+    "message",
+  );
   await openTool(page, PATH);
   await file(page).setInputFiles({
     name: "photo.jpg",
@@ -163,6 +175,11 @@ test("refuses a file that is not a video, and one that cannot be read", async ({
 
 for (const theme of ["light", "dark"] as const) {
   test(`has no axe violations after reading a video, ${theme} theme`, async ({ page }) => {
+    recordPath(
+      test.info(),
+      `has no axe violations after reading a video, ${theme} theme, no conversion`,
+      "message",
+    );
     await useTheme(page, theme);
     await openTool(page, PATH);
     await file(page).setInputFiles(MP4);
@@ -177,6 +194,11 @@ for (const theme of ["light", "dark"] as const) {
 }
 
 test("structured data and Quick facts come from the manifest", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "structured data and Quick facts come from the manifest, no conversion",
+    "message",
+  );
   await openTool(page, PATH);
   await expectStructuredData(page, manifest, PATH);
   await expectQuickFacts(page, manifest);

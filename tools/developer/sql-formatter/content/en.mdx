@@ -1,0 +1,64 @@
+SQL Formatter formats SQL queries in your browser for the dialect your database speaks, with one clause a line and keywords in the case you choose. It is for developers, analysts and database administrators who copy a query out of a log, an ORM or a report and need to read it, review it in a pull request, or paste it into documentation. Your SQL is never sent anywhere.
+
+## How to use
+
+1. Paste one or more SQL statements into the Your SQL box, or type them. The tool formats them again a moment after every change.
+2. Under Dialect, pick the database the SQL is written for. Standard SQL suits most simple queries; pick your own database when the SQL uses its quotes, functions or keywords.
+3. Under Keyword case, pick UPPER CASE, lower case, or As written. The choice also applies to data types and function names.
+4. Under Indentation, pick 2 spaces, 4 spaces or tabs.
+5. Read the result with its number of lines and characters. If the dialect cannot read the SQL, a message gives the line and column of the spot instead. Press Copy result to copy it, or Clear to start over.
+
+## Examples
+
+Paste this one-line query and keep Standard SQL, UPPER CASE and 2 spaces:
+
+```sql
+select u.name, count(o.id) as orders from users u left join orders o on o.user_id = u.id where u.active = 1 group by u.name order by orders desc;
+```
+
+The result is twelve lines. Each clause starts a line, the columns and conditions under it are indented, and count becomes COUNT:
+
+```sql
+SELECT
+  u.name,
+  COUNT(o.id) AS orders
+FROM
+  users u
+  LEFT JOIN orders o ON o.user_id = u.id
+WHERE
+  u.active = 1
+GROUP BY
+  u.name
+ORDER BY
+  orders DESC;
+```
+
+Now switch the dialect to PostgreSQL and format this MySQL query, which quotes a name with backticks:
+
+```sql
+select `a` from t
+```
+
+The message reads Line 1, column 8: This SQL could not be read as PostgreSQL, and the caret points at the first backtick.
+
+## Limits
+
+The text can be up to 200,000 characters; longer text is refused with a note. Near that size a phone can take several seconds. Twenty dialects are offered, exactly the ones the sql-formatter library supports: Standard SQL, Google BigQuery, ClickHouse, IBM Db2, IBM Db2 for i, DuckDB, Apache Hive, MariaDB, MySQL, Couchbase N1QL, Oracle PL/SQL, PostgreSQL, Amazon Redshift, SingleStoreDB, Snowflake, Spark SQL, SQLite, TiDB, SQL Server (Transact-SQL), and Trino and Presto. The tool lays out SQL; it does not check that tables or columns exist or that the query would run. Some statements, such as a CREATE TABLE column list, are kept on one line, and a word the dialect does not know as a keyword keeps the case you wrote, such as key in PRIMARY KEY for Standard SQL. Stored procedure bodies may be laid out simply.
+
+## FAQ
+
+### Which dialect should I pick?
+
+Pick the database that will run the query. Dialects differ in how they quote names, which words are keywords and which operators exist, so the right one keeps backticks, square brackets, dollar quotes and special operators intact. Standard SQL works for plain SELECT, INSERT, UPDATE and DELETE statements.
+
+### Will formatting change what my query does?
+
+No. Only spaces, line breaks and the case of keywords, data types and function names change. Table and column names, strings, numbers and comments keep their exact spelling, so the database reads the same query.
+
+### Why does my query say it could not be read?
+
+The chosen dialect met something it does not know at the line and column shown. Most often a quote or bracket is not closed, or the SQL uses the syntax of another database. Check the spot, or switch to the dialect of your database.
+
+### Is my SQL sent anywhere?
+
+No. The formatting runs in a background worker on this page, and your SQL is never uploaded, stored or logged. Copy result writes to the clipboard of your own device only.

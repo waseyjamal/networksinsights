@@ -4,6 +4,7 @@
 // so any reader opens them without repair. pdfPages() reads a result back with pdf-lib, the library
 // the tools use, from the tools package.
 
+import { createHash } from "node:crypto";
 import { PDFDict, PDFDocument, PDFName } from "../../../../tools/node_modules/pdf-lib/cjs/index.js";
 
 export interface TestPdf {
@@ -19,10 +20,75 @@ export interface TestPdfOptions {
   padding?: number;
   /** Marks the file as password protected (a Standard security handler in the trailer). */
   encrypted?: boolean;
+  /**
+   * Really encrypts the file (RC4, 40 bits, revision 2) with this owner password and an empty user
+   * password, so any reader opens it without asking: it is protected only against changes.
+   */
+  ownerPassword?: string;
   /** The label on each page, before its number. Default "Page". */
   label?: string;
   /** Every page shown turned by this many degrees clockwise (/Rotate). */
   rotate?: 0 | 90 | 180 | 270;
+}
+
+/** The first part of the file identifier in the trailer, which encryption keys depend on. */
+const FILE_ID = Uint8Array.from([
+  0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
+]);
+
+/** The 32 bytes a PDF password is padded with (PDF 1.7, 7.6.3.3). */
+const PASSWORD_PADDING = Uint8Array.from([
+  0x28, 0xbf, 0x4e, 0x5e, 0x4e, 0x75, 0x8a, 0x41, 0x64, 0x00, 0x4e, 0x56, 0xff, 0xfa, 0x01, 0x08,
+  0x2e, 0x2e, 0x00, 0xb6, 0xd0, 0x68, 0x3e, 0x80, 0x2f, 0x0c, 0xa9, 0xfe, 0x64, 0x53, 0x69, 0x7a,
+]);
+
+const hex = (bytes: Uint8Array) => Buffer.from(bytes).toString("hex");
+const md5 = (...parts: Uint8Array[]) => {
+  const hash = createHash("md5");
+  for (const part of parts) hash.update(part);
+  return new Uint8Array(hash.digest());
+};
+
+function padded(password: string): Uint8Array {
+  const bytes = Buffer.from(password, "latin1").subarray(0, 32);
+  const out = new Uint8Array(32);
+  out.set(bytes);
+  out.set(PASSWORD_PADDING.subarray(0, 32 - bytes.length), bytes.length);
+  return out;
+}
+
+function rc4(key: Uint8Array, data: Uint8Array): Uint8Array {
+  const state = Uint8Array.from({ length: 256 }, (_, index) => index);
+  let j = 0;
+  for (let i = 0; i < 256; i++) {
+    j = (j + (state[i] ?? 0) + (key[i % key.length] ?? 0)) & 0xff;
+    [state[i], state[j]] = [state[j] ?? 0, state[i] ?? 0];
+  }
+  const out = new Uint8Array(data.length);
+  let i = 0;
+  j = 0;
+  for (let n = 0; n < data.length; n++) {
+    i = (i + 1) & 0xff;
+    j = (j + (state[i] ?? 0)) & 0xff;
+    [state[i], state[j]] = [state[j] ?? 0, state[i] ?? 0];
+    out[n] = (data[n] ?? 0) ^ (state[((state[i] ?? 0) + (state[j] ?? 0)) & 0xff] ?? 0);
+  }
+  return out;
+}
+
+/** The O and U entries and the file key of revision 2, with an empty user password. */
+function standardSecurity(ownerPassword: string, id: Uint8Array, permissions: number) {
+  const owner = rc4(md5(padded(ownerPassword)).subarray(0, 5), padded(""));
+  const p = new Uint8Array(4);
+  new DataView(p.buffer).setInt32(0, permissions, true);
+  const key = md5(padded(""), owner, p, id).subarray(0, 5);
+  return { owner, user: rc4(key, PASSWORD_PADDING), key };
+}
+
+/** The RC4 key of one object (PDF 1.7, 7.6.2, algorithm 1). */
+function objectKey(fileKey: Uint8Array, id: number): Uint8Array {
+  const salt = Uint8Array.from([id & 0xff, (id >> 8) & 0xff, (id >> 16) & 0xff, 0, 0]);
+  return md5(fileKey, salt).subarray(0, Math.min(fileKey.length + 5, 16));
 }
 
 /** A PDF of `pages` pages. */
@@ -52,6 +118,19 @@ export function makeTestPdf(name: string, pages: number, options: TestPdfOptions
     const key = "0".repeat(64);
     objects[encryptId] = `<< /Filter /Standard /V 1 /R 2 /O <${key}> /U <${key}> /P -44 >>`;
   }
+  if (options.ownerPassword !== undefined) {
+    encryptId = next++;
+    const security = standardSecurity(options.ownerPassword, FILE_ID, -44);
+    objects[encryptId] =
+      `<< /Filter /Standard /V 1 /R 2 /O <${hex(security.owner)}> /U <${hex(security.user)}> /P -44 >>`;
+    for (let i = 0; i < pages; i++) {
+      const id = firstPage + i * 2 + 1;
+      const text = `BT /F1 36 Tf 40 ${height / 2} Td (${label} ${i + 1}) Tj ET`;
+      const sealed = rc4(objectKey(security.key, id), Buffer.from(text, "latin1"));
+      objects[id] =
+        `<< /Length ${sealed.length} >>\nstream\n${Buffer.from(sealed).toString("latin1")}\nendstream`;
+    }
+  }
 
   const head = "%PDF-1.7\n%\xE2\xE3\xCF\xD3\n";
   const parts: Buffer[] = [Buffer.from(head, "latin1")];
@@ -68,7 +147,7 @@ export function makeTestPdf(name: string, pages: number, options: TestPdfOptions
 
   const trailerFor = (count: number, startxref: number) =>
     Buffer.from(
-      `trailer\n<< /Size ${count} /Root 1 0 R${encryptId ? ` /Encrypt ${encryptId} 0 R /ID [<00112233445566778899aabbccddeeff> <00112233445566778899aabbccddeeff>]` : ""} >>\nstartxref\n${startxref}\n%%EOF\n`,
+      `trailer\n<< /Size ${count} /Root 1 0 R${encryptId ? ` /Encrypt ${encryptId} 0 R /ID [<${hex(FILE_ID)}> <${hex(FILE_ID)}>]` : ""} >>\nstartxref\n${startxref}\n%%EOF\n`,
       "latin1",
     );
   const xrefFor = (count: number) => {
@@ -135,4 +214,21 @@ export async function pdfImageCounts(buffer: Buffer | Uint8Array): Promise<numbe
     const xObjects = page.node.Resources()?.lookup(PDFName.of("XObject"));
     return xObjects instanceof PDFDict ? xObjects.keys().length : 0;
   });
+}
+
+/** The text of every page of a PDF, as PDF.js reads it (the legacy build runs in Node). */
+export async function pdfTexts(buffer: Buffer | Uint8Array): Promise<string[]> {
+  const pdfjs = await import("../../../../tools/node_modules/pdfjs-dist/legacy/build/pdf.mjs");
+  const task = pdfjs.getDocument({ data: new Uint8Array(buffer) });
+  try {
+    const document = await task.promise;
+    const texts: string[] = [];
+    for (let number = 1; number <= document.numPages; number++) {
+      const content = await (await document.getPage(number)).getTextContent();
+      texts.push(content.items.map((item) => ("str" in item ? item.str : "")).join(" "));
+    }
+    return texts;
+  } finally {
+    await task.destroy();
+  }
 }

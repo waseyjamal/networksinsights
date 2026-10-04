@@ -3,7 +3,14 @@ import { expect, type Page, test } from "@playwright/test";
 import manifest from "../../../tools/video-audio/audio-converter/tool.config";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
-import { browserCodecs, hideFromPage, readMedia, recordPath, sineWav } from "./media";
+import {
+  browserCodecs,
+  expectProbeSane,
+  hideFromPage,
+  readMedia,
+  recordPath,
+  sineWav,
+} from "./media";
 import {
   expectNoAxeViolations,
   expectQuickFacts,
@@ -77,6 +84,7 @@ test("encodes OGG Opus and M4A where the browser can, and says why where it cann
 }, testInfo) => {
   await openTool(page, PATH);
   const can = await browserCodecs(page);
+  await expectProbeSane(page);
   await file(page).setInputFiles(WAV);
   await expect(page.locator("#audio-converter-source")).toContainText("tone.wav");
 
@@ -114,6 +122,7 @@ test("decodes AAC and Opus files to FLAC where the browser can, and copies them 
 }, testInfo) => {
   await openTool(page, PATH);
   const can = await browserCodecs(page);
+  await expectProbeSane(page);
   for (const [source, decodes, copyAs, copyName] of [
     [M4A, can.decodeAac, "m4a", "voice-converted.m4a"],
     [OGG, can.decodeOpus, "ogg", "song-converted.ogg"],
@@ -145,6 +154,11 @@ test("decodes AAC and Opus files to FLAC where the browser can, and copies them 
 test("without WebCodecs encoders, offers only WAV and FLAC for a WAV, and says why", async ({
   page,
 }) => {
+  recordPath(
+    test.info(),
+    "without WebCodecs encoders, offers only WAV and FLAC for a WAV, and says why, no conversion",
+    "message",
+  );
   await hideFromPage(page, ["AudioEncoder", "AudioDecoder"]);
   const errors = collectErrors(page);
   await openTool(page, PATH);
@@ -170,6 +184,11 @@ test("without WebCodecs encoders, offers only WAV and FLAC for a WAV, and says w
 });
 
 test("refuses MP3, a file that is not audio, and one that cannot be read", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "refuses MP3, a file that is not audio, and one that cannot be read, no conversion",
+    "message",
+  );
   await openTool(page, PATH);
   await file(page).setInputFiles({
     name: "song.mp3",
@@ -190,6 +209,11 @@ test("refuses MP3, a file that is not audio, and one that cannot be read", async
 
 for (const theme of ["light", "dark"] as const) {
   test(`has no axe violations with a result, ${theme} theme`, async ({ page }) => {
+    recordPath(
+      test.info(),
+      `has no axe violations with a result, ${theme} theme, no conversion`,
+      "message",
+    );
     await useTheme(page, theme);
     await openTool(page, PATH);
     await file(page).setInputFiles(WAV);
@@ -203,6 +227,11 @@ for (const theme of ["light", "dark"] as const) {
 }
 
 test("structured data and Quick facts come from the manifest", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "structured data and Quick facts come from the manifest, no conversion",
+    "message",
+  );
   await openTool(page, PATH);
   await expectStructuredData(page, manifest, PATH);
   await expectQuickFacts(page, manifest);

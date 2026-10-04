@@ -1,0 +1,51 @@
+XML Formatter formats or minifies XML in your browser, checks that it is well formed, and names the line and column of the first error. It is for developers reading a SOAP response, an RSS feed, a sitemap, an Android layout or a Maven POM squashed onto one line, and for anyone who needs to find the end tag that breaks a parser. Your XML stays on your device.
+
+## How to use
+
+1. Paste your XML into the Your XML box, or type it. The tool checks it again a moment after every change.
+2. Choose Format to put each element on its own indented line, or Minify to remove the line breaks and spaces between tags, and the comments.
+3. For Format, pick the indentation: 2 spaces, 4 spaces or a tab per level.
+4. Read the result below, with its number of lines and characters, and a line that names the root element and counts the elements. If the XML is not well formed, a message gives the line and column of the first problem instead, with that line and a caret under the spot.
+5. Press Copy result to put the output on your clipboard, or Clear to start over.
+
+## Examples
+
+Paste this one-line note and keep Format with 2 spaces:
+
+```xml
+<note id="7"><to>Ada</to><body>Hello</body><sent/></note>
+```
+
+The result is five lines. Each child element gets a line of its own, indented one level, and the line under the box reads Well-formed XML: root element note, 4 elements:
+
+```xml
+<note id="7">
+  <to>Ada</to>
+  <body>Hello</body>
+  <sent/>
+</note>
+```
+
+Now change the end tag of to into from, on line 2, and the message reads Line 2, column 10: The end tag from does not match the open element to. Close to first.
+
+## Limits
+
+The text can be up to 500,000 characters; longer text is refused with a note, so split it first. Near that size a phone can take several seconds. The check covers XML 1.0 well-formedness: tags, attributes, references, comments, CDATA and the DOCTYPE. It does not validate against a DTD or an XML Schema, does not fetch anything, and allows any entity when the DOCTYPE points to an external DTD. When the text inside an element starts or ends with a line break, the spaces and line breaks at that end are removed; plain spaces are kept. An element that mixes text and child elements stays on one line.
+
+## FAQ
+
+### What does well formed mean?
+
+Well formed XML follows the basic rules every XML parser needs: one root element, every start tag closed in the right order, attribute values in quotes, no attribute twice in a tag, and every ampersand starting a known reference. A file can be well formed and still be wrong for the program that reads it.
+
+### Why is my HTML refused?
+
+HTML allows things XML does not, such as a br tag without a slash, attributes without quotes, and named entities like nbsp. Write br as a self-closing tag, quote every attribute value, and use the number reference for a non-breaking space instead.
+
+### Does Minify change my data?
+
+It removes comments and the line breaks and spaces between tags. Text inside an element loses the spaces and line breaks at an end only when that end has a line break, as Format does. Attribute values, CDATA sections and all other text are kept exactly as written.
+
+### Is my XML sent anywhere?
+
+No. The checking and formatting run in a background worker on this page, and your XML is never uploaded, stored or logged. Copy result writes to the clipboard of your own device only.

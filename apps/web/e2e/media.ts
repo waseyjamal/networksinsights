@@ -1,4 +1,4 @@
-import type { Page, TestInfo } from "@playwright/test";
+import { expect, type Page, type TestInfo } from "@playwright/test";
 
 // Readers for the files the video and audio tools write, so their specs check the real result:
 // the container's own header, its codecs and its length, read in Node from the downloaded bytes.
@@ -283,7 +283,68 @@ export async function hideFromPage(page: Page, names: string[]) {
   }, names);
 }
 
-/** Records which path a test took in this browser, for the report: "real" or "message". */
+/** The label each path gets in the report. */
+export const PATH_LABELS = { real: "real conversion", message: "message path only" } as const;
+
+/**
+ * Records which path a test took in this browser, for the report: "real conversion" when it made a
+ * file and read it back, "message path only" when it checked only what the page says (a browser
+ * that cannot convert, or a test that converts nothing). Every media test records at least one.
+ */
 export function recordPath(testInfo: TestInfo, what: string, path: "real" | "message") {
-  testInfo.annotations.push({ type: `path:${path}`, description: what });
+  testInfo.annotations.push({ type: "path", description: `${PATH_LABELS[path]}: ${what}` });
+}
+
+/**
+ * Guards the capability probe the tests branch on: wherever this browser has a WebCodecs class,
+ * it must support at least one common codec. A probe that is wrong for every codec (a bad codec
+ * string, a broken API) would otherwise send every browser down the message path and let the
+ * tests pass without one real conversion. A browser without the class (WebKit on Windows) is
+ * genuinely unable, and passes.
+ */
+export async function expectProbeSane(page: Page) {
+  const broken = await page.evaluate(async () => {
+    const supported = async (run: () => Promise<{ supported?: boolean }>) => {
+      try {
+        return (await run()).supported === true;
+      } catch {
+        return false;
+      }
+    };
+    const picture = { width: 320, height: 240, bitrate: 1_000_000 };
+    const video = ["avc1.42c01e", "vp8", "vp09.00.10.08", "av01.0.04M.08"];
+    const sound = { sampleRate: 48_000, numberOfChannels: 2 };
+    const audio = ["opus", "mp4a.40.2", "flac", "pcm-s16"];
+    const any = async (codecs: string[], ask: (codec: string) => Promise<boolean>) => {
+      for (const codec of codecs) if (await ask(codec)) return true;
+      return false;
+    };
+    const failing: string[] = [];
+    if (typeof VideoDecoder !== "undefined") {
+      if (
+        !(await any(video, (codec) => supported(() => VideoDecoder.isConfigSupported({ codec }))))
+      )
+        failing.push("VideoDecoder");
+    }
+    if (typeof VideoEncoder !== "undefined") {
+      const ok = await any(video, (codec) =>
+        supported(() => VideoEncoder.isConfigSupported({ codec, ...picture })),
+      );
+      if (!ok) failing.push("VideoEncoder");
+    }
+    if (typeof AudioDecoder !== "undefined") {
+      const ok = await any(audio, (codec) =>
+        supported(() => AudioDecoder.isConfigSupported({ codec, ...sound })),
+      );
+      if (!ok) failing.push("AudioDecoder");
+    }
+    if (typeof AudioEncoder !== "undefined") {
+      const ok = await any(audio, (codec) =>
+        supported(() => AudioEncoder.isConfigSupported({ codec, ...sound, bitrate: 128_000 })),
+      );
+      if (!ok) failing.push("AudioEncoder");
+    }
+    return failing;
+  });
+  expect(broken, "a WebCodecs class that supports no common codec").toEqual([]);
 }
