@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { iconPaths } from "../components/ui/icons";
 import tokensCss from "../styles/tokens.css?raw";
-import { categories, categoryHref, reservedPaths } from "./categories";
+import { categories, categoryHref, categoryMetaDescription, reservedPaths } from "./categories";
 import { staticPagePaths } from "./site";
 
 const slugs = [
@@ -84,6 +84,37 @@ describe("categories config", () => {
     for (const category of categories) {
       for (const text of [category.description, category.intro, category.metaDescription]) {
         expect(text, category.id).not.toMatch(/\d/);
+      }
+    }
+  });
+});
+
+describe("category meta descriptions with real counts", () => {
+  it("adds the number of tools, or says Coming soon when there is none", () => {
+    const pdf = { metaDescription: "Free PDF tools, right in your browser." };
+    expect(categoryMetaDescription(pdf, 6)).toBe(
+      "Free PDF tools, right in your browser. 6 tools on NetworksInsights.",
+    );
+    expect(categoryMetaDescription(pdf, 1)).toBe(
+      "Free PDF tools, right in your browser. 1 tool on NetworksInsights.",
+    );
+    expect(categoryMetaDescription(pdf, 0)).toBe(
+      "Free PDF tools, right in your browser. Coming soon to NetworksInsights.",
+    );
+  });
+
+  it("stays under 160 characters for every category, up to 999 tools", () => {
+    for (const category of categories) {
+      for (const count of [0, 1, 999]) {
+        expect(categoryMetaDescription(category, count).length, category.id).toBeLessThan(160);
+      }
+    }
+  });
+
+  it("never says Coming soon in the fixed text", () => {
+    for (const category of categories) {
+      for (const text of [category.description, category.intro, category.metaDescription]) {
+        expect(text, category.id).not.toMatch(/coming soon/i);
       }
     }
   });

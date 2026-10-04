@@ -1,0 +1,39 @@
+Audio converter turns a WAV, FLAC, OGG, M4A or WebM recording into WAV, FLAC, OGG Opus or M4A, in your browser, with no upload. It is for anyone who needs a recording in the format an app, an editor or a device asks for, and who would rather keep the file on their own computer or phone.
+
+## How to use
+
+1. Drop one audio file on the box, or click it to choose one. The tool reads it and shows its name, size, length, the kind of sound and its sample rate.
+2. Under Convert to, pick a format. Only the formats your browser can really write for this file are listed, and any that are missing say why underneath.
+3. For OGG Opus or M4A, pick a bitrate: 96 kbit/s suits speech, 128 kbit/s suits most music and 192 kbit/s keeps more detail. WAV and FLAC are lossless, so they have no bitrate.
+4. Press Convert. A progress bar shows how far it has got, and Cancel stops it at once with nothing saved.
+5. Press the Download button with the new file name to save it.
+
+## Examples
+
+A three minute WAV recording of 48 kHz stereo is about 33 MB. As FLAC it keeps every sample, decodes back to the same WAV, and is usually around half that size. As OGG Opus at 128 kbit/s it is close to 3 MB and still sounds clean for music.
+
+An M4A voice memo called interview.m4a converted to M4A again is copied as it is, so the result is interview-converted.m4a with no loss. The same memo converted to WAV becomes interview.wav, ready for an editor that does not open M4A.
+
+## Limits
+
+A file may be up to 300 MB and two hours long. WAV and FLAC are offered for recordings up to 30 minutes, because the whole file is built in memory. Phones have less memory than computers, so a large file may fail on a phone before these limits.
+
+What your browser can do decides the choices. Every conversion needs the browser to decode the sound, except a WAV file, which needs no decoder. FLAC is encoded by libFLAC, built into the tool, so it works wherever the sound can be decoded. OGG Opus needs an Opus encoder, which current Chrome, Edge and Firefox have. M4A needs an AAC encoder: Chrome and Edge on a computer have one, Firefox does not. Older Safari versions may decode and encode nothing. The tool never writes MP3. Files with more than two channels are mixed down to stereo.
+
+## FAQ
+
+### Is my recording uploaded?
+
+No. A background worker on this page reads and writes the file on your device, with Mediabunny and the libFLAC encoder, both open source and served by this site. Nothing goes to a server.
+
+### Which format should I choose?
+
+Pick FLAC to archive or edit a recording with no loss at about half the size of WAV. Pick OGG Opus or M4A to share or store music and speech in a small file. Pick WAV when an older program accepts nothing else.
+
+### Why is there no MP3 output?
+
+Browsers have no built-in MP3 encoder, and the free MP3 encoders carry licence terms this site does not accept. M4A and OGG Opus are smaller for the same sound and play on current phones and computers.
+
+### Does converting from a lossy file to FLAC improve the sound?
+
+No. FLAC keeps exactly what it is given, so a file made from an M4A or OGG sounds the same as that source, only larger. It helps only when an editor or device asks for FLAC.

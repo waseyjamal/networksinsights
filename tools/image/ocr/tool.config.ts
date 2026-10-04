@@ -22,5 +22,5 @@ export default defineTool({
   },
   related: ["pdf-to-jpg", "image-converter", "word-counter"],
   added: "2026-10-03",
-  updated: "2026-10-03",
+  updated: "2026-10-04",
 });

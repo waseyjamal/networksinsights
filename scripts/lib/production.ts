@@ -11,7 +11,10 @@
 // --preview it checks a preview deployment instead: the same headers plus X-Robots-Tag: noindex,
 // and no redirect, because the redirect rule belongs to the production zone.
 
+import { LIBHEIF_BASE } from "../../apps/web/src/config/libheif";
+import { PDFJS_BASE } from "../../apps/web/src/config/pdfjs";
 import { site } from "../../apps/web/src/config/site";
+import { TESSERACT_BASE } from "../../apps/web/src/config/tesseract";
 import { headerChecks } from "./production-headers";
 
 export interface ProductionOptions {
@@ -130,6 +133,27 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
       `${path} is served and revalidated on every visit`,
       response.status === 200 && !/\bimmutable\b/.test(cache) && !/\bmax-age=[1-9]/.test(cache),
       `answered ${response.status} with Cache-Control: ${cache || "(none)"}. Expected 200 and no long cache: neither may be in immutablePaths (apps/web/src/config/headers.ts).`,
+    );
+  }
+
+  // 7b. Vendored files (ADR 0061): a folder named with the exact version of the one package it
+  // is copied from is cached for good; Tesseract's folder is not, since its language data comes
+  // from other packages. Small licence files stand for each folder.
+  const vendorFiles = [
+    { path: `${PDFJS_BASE}cmaps/LICENSE.txt`, immutable: true },
+    { path: `${LIBHEIF_BASE}LICENSE.txt`, immutable: true },
+    { path: `${TESSERACT_BASE}LICENSE-tesseract.js.txt`, immutable: false },
+  ];
+  for (const { path, immutable } of vendorFiles) {
+    const response = await get(fetchFn, `${base}${path}`);
+    const cache = response.headers.get("cache-control") ?? "";
+    const long = /\bimmutable\b/.test(cache) && /\bmax-age=\d{7,}\b/.test(cache);
+    add(
+      immutable
+        ? `${path} (a versioned vendor folder) is cached for good`
+        : `${path} is revalidated on every visit`,
+      response.status === 200 && long === immutable,
+      `answered ${response.status} with Cache-Control: ${cache || "(none)"}. Expected 200 and ${immutable ? '"public, max-age=31536000, immutable"' : "no long cache"}: check versionedVendorPaths in apps/web/src/config/headers.ts.`,
     );
   }
 

@@ -1,0 +1,38 @@
+Video to audio saves the sound of a video as an M4A or WAV file, right in your browser, without uploading the video. It suits anyone who wants the talk, the music or the interview from a clip on its own, as a file that plays anywhere.
+
+## How to use
+
+1. Drop one MP4, MOV or WebM video on the box, or click it to choose one. The tool reads the file and shows its name, size, length and the kind of sound it holds.
+2. Under Save as, pick M4A or WAV. Only the formats your browser can really write for this video are listed; any that are missing say why underneath.
+3. Press Extract audio. A progress bar shows how far it has got, and Cancel stops it at once with nothing saved.
+4. Press the Download button with the new file name to save it.
+
+## Examples
+
+A phone video called holiday.mp4 usually stores its sound as AAC. Choosing M4A copies that sound into holiday.m4a as it is: nothing is encoded again, so no quality is lost and even a long video takes seconds. Our two second test clip comes out as an M4A of exactly two seconds.
+
+A WebM recording usually holds Opus sound. For M4A it is decoded and encoded again as AAC at 128 kbit/s, where your browser has an AAC encoder. WAV keeps every sample uncompressed, at about 10 MB a minute for stereo sound.
+
+## Limits
+
+A video may be up to 1 GB and two hours long. WAV is offered for videos up to 30 minutes, because the uncompressed sound must fit in memory. Phones have less memory than computers, so a large video may fail on a phone before these limits.
+
+What your browser can write decides the choices. Copying AAC into M4A works in every current browser. Making WAV needs the browser to decode the sound, and making M4A from other sound needs an AAC encoder: Chrome and Edge on a computer have both, Firefox has no AAC encoder, and older Safari versions may have neither. The tool never offers MP3. Only the main sound track is saved; extra language tracks and subtitles are left out.
+
+## FAQ
+
+### Is my video uploaded anywhere?
+
+No. A background worker on this page reads the file on your device with Mediabunny, an open-source media library this site serves, and your browser writes the audio file. Nothing is sent to a server.
+
+### Why is M4A missing for my video in Firefox?
+
+Firefox has no AAC encoder, so it can only copy sound that is AAC already. A WebM file with Opus sound needs a new encoding, which Firefox cannot make; WAV still works there.
+
+### Does M4A lose quality?
+
+When the video already holds AAC sound, which most phone videos do, the sound is copied bit for bit and nothing changes. Only other kinds of sound are encoded again, and that step loses a little.
+
+### Why is there no MP3 option?
+
+Browsers have no built-in MP3 encoder, and the free encoders that exist carry licence terms this site does not accept. M4A plays on phones, computers and music apps just as widely.

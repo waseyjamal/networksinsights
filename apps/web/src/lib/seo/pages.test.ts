@@ -34,9 +34,11 @@ const text = categoryById("text");
 if (!text) throw new Error("the text category is missing");
 const pdf = categories.find((category) => category.id === "pdf");
 if (!pdf) throw new Error("the pdf category is missing");
-// A category that has no tool yet, for the page of an empty category.
-const empty = categories.find((category) => category.id === "video-audio");
-if (!empty) throw new Error("the video-audio category is missing");
+// A category that has no tool, for the page of an empty category. Every real category has tools
+// now, so this one is video-audio under an id no tool uses.
+const videoAudio = categories.find((category) => category.id === "video-audio");
+if (!videoAudio) throw new Error("the video-audio category is missing");
+const empty = { ...videoAudio, id: "no-tools-yet" };
 
 const manifest: ToolManifest = {
   id: "word-counter",
