@@ -6,6 +6,7 @@ import { site } from "../src/config/site";
 import { jsonLdDocumentSchema } from "../src/lib/seo/schemas";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
+import { openTool } from "./tool-page";
 
 // Password Generator in the three engines, against `wrangler dev`, so the page runs under the real
 // Content-Security-Policy and headers (e2e/edge.ts). The static HTML holds no password; after
@@ -43,9 +44,7 @@ async function watchViolations(page: Page) {
 
 /** Opens the page and waits until the island has hydrated and drawn its first password. */
 async function open(page: Page) {
-  await page.goto(PATH);
-  await expect(page.locator("astro-island")).toHaveCount(1);
-  await expect(page.locator("astro-island:not([ssr])")).toHaveCount(1);
+  await openTool(page, PATH);
   await expect(result(page)).toHaveValue(/^.{16}$/);
 }
 
