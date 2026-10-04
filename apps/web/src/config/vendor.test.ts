@@ -3,8 +3,10 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readHeifInfo } from "../../../../tools/image/heic-to-jpg/logic";
 import { ENGINE_BYTES, LANGUAGES } from "../../../../tools/image/ocr/logic";
-import { LIBHEIF_FILES } from "./libheif";
-import { TESSERACT_FILES } from "./tesseract";
+import { IMMUTABLE, immutablePaths, versionedVendorPaths } from "./headers";
+import { LIBHEIF_BASE, LIBHEIF_FILES } from "./libheif";
+import { PDFJS_BASE } from "./pdfjs";
+import { TESSERACT_BASE, TESSERACT_FILES } from "./tesseract";
 
 // The files HEIC to JPG and OCR fetch from this site (ADR 0060): every one exists in the installed
 // package, none passes Cloudflare's 25 MiB limit for one file, and the sizes the OCR page states
@@ -47,5 +49,29 @@ describe("the HEIC fixtures", () => {
   it("reads a real HEIC's size from its boxes, turned by its irot box", () => {
     expect(readHeifInfo(fixture("landscape.heic"))).toEqual({ ok: true, width: 320, height: 240 });
     expect(readHeifInfo(fixture("rotated.heic"))).toEqual({ ok: true, width: 240, height: 320 });
+  });
+});
+
+describe("cache headers of vendored files (ADR 0061)", () => {
+  /** The version in the installed package's own package.json, not the one we asked for. */
+  const installedVersion = (name: string) =>
+    (JSON.parse(readFileSync(installed(name, "package.json"), "utf8")) as { version: string })
+      .version;
+
+  it("caches each versioned vendor folder for good, named with the installed package version", () => {
+    expect(IMMUTABLE).toBe("public, max-age=31536000, immutable");
+    expect(versionedVendorPaths).toEqual([`${PDFJS_BASE}*`, `${LIBHEIF_BASE}*`]);
+    for (const path of versionedVendorPaths) expect(immutablePaths).toContain(path);
+    expect(versionedVendorPaths[0]).toBe(`/vendor/pdfjs/${installedVersion("pdfjs-dist")}/*`);
+    expect(versionedVendorPaths[1]).toBe(`/vendor/libheif/${installedVersion("libheif-js")}/*`);
+  });
+
+  it("keeps Tesseract and every path without a version out of the long cache", () => {
+    // Tesseract's language data comes from other packages than the version in its path.
+    expect(immutablePaths.some((path) => path.startsWith(TESSERACT_BASE))).toBe(false);
+    expect(immutablePaths.some((path) => path.startsWith("/vendor/tesseract"))).toBe(false);
+    for (const path of immutablePaths.filter((entry) => entry.startsWith("/vendor/"))) {
+      expect(path, path).toMatch(/^\/vendor\/[a-z]+\/\d+\.\d+\.\d+\/\*$/);
+    }
   });
 });

@@ -6,6 +6,8 @@
 // one place and forgotten in another. Nothing else may write a response header.
 
 import { UMAMI_HOST } from "./analytics";
+import { LIBHEIF_BASE } from "./libheif";
+import { PDFJS_BASE } from "./pdfjs";
 
 /**
  * Content-Security-Policy, deny by default. Each source is here because something needs it; the
@@ -134,15 +136,27 @@ export const securityHeaders = {
  */
 export const embeddablePaths = ["/og/*", "/favicon.ico", "/favicon.svg"] as const;
 
-/** A year, never revalidated. Only for files whose name carries a hash of their content. */
+/**
+ * A year, never revalidated. Only for files whose name carries a hash of their content, or whose
+ * path carries the exact version of the one package they come from.
+ */
 export const IMMUTABLE = "public, max-age=31536000, immutable";
 
 /**
- * Content-hashed files: a change of content is a change of name. Everything else (every HTML page
- * included) keeps Cloudflare's default, `public, max-age=0, must-revalidate` with an ETag, so a
- * visit always revalidates and an unchanged page answers 304 (ADR 0048).
+ * Vendored files whose folder is the exact version of the single package they are copied from,
+ * unmodified: a new version is a new folder, so the old one can be cached for good (ADR 0061).
+ * Tesseract is not here: its folder carries the tesseract.js version, but the language data in it
+ * comes from other packages (@tesseract.js-data/*), which could change under the same path.
  */
-export const immutablePaths = ["/_astro/*", "/search-index.*"] as const;
+export const versionedVendorPaths = [`${PDFJS_BASE}*`, `${LIBHEIF_BASE}*`] as const;
+
+/**
+ * Content-hashed files and versioned vendor files: a change of content is a change of name.
+ * Everything else (every HTML page included) keeps Cloudflare's default,
+ * `public, max-age=0, must-revalidate` with an ETag, so a visit always revalidates and an
+ * unchanged page answers 304 (ADR 0048).
+ */
+export const immutablePaths = ["/_astro/*", "/search-index.*", ...versionedVendorPaths] as const;
 
 /** What Cloudflare sends for HTML when no rule sets Cache-Control. check:production expects it. */
 export const HTML_CACHE_CONTROL = "public, max-age=0, must-revalidate";

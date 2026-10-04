@@ -107,6 +107,14 @@ test("titles and descriptions are unique and well formed on every page", async (
   }
 
   expect(titles.size).toBe(pages.length);
-  // Each category page carries its own description from the config.
-  for (const category of categories) expect(descriptions.has(category.metaDescription)).toBe(true);
+  // Each category page carries its own description from the config, then its real tool count or
+  // "Coming soon" (categoryMetaDescription).
+  for (const category of categories) {
+    const own = [...descriptions.keys()].find((text) =>
+      text.startsWith(`${category.metaDescription} `),
+    );
+    expect(own, category.id).toMatch(
+      /\. (?:[1-9]\d* tools? on|Coming soon to) NetworksInsights\.$/,
+    );
+  }
 });

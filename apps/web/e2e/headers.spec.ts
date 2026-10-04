@@ -8,6 +8,9 @@ import {
   previewHeaders,
   securityHeaders,
 } from "../src/config/headers";
+import { LIBHEIF_BASE } from "../src/config/libheif";
+import { PDFJS_BASE } from "../src/config/pdfjs";
+import { TESSERACT_BASE } from "../src/config/tesseract";
 import { headerPolicy, readPage } from "../src/lib/security/headers-file";
 import { edgePort, edgeURL } from "./edge";
 import { notFoundPath, pages } from "./pages";
@@ -85,6 +88,19 @@ test.describe("cache headers", () => {
       const response = await request.get(path);
       expect(response.headers()["cache-control"], path).toBe(IMMUTABLE);
     }
+  });
+
+  test("versioned vendor folders are immutable for a year, Tesseract's is not (ADR 0061)", async ({
+    request,
+  }) => {
+    for (const path of [`${PDFJS_BASE}cmaps/LICENSE.txt`, `${LIBHEIF_BASE}LICENSE.txt`]) {
+      const response = await request.get(path);
+      expect(response.status(), path).toBe(200);
+      expect(response.headers()["cache-control"], path).toBe(IMMUTABLE);
+    }
+    const tesseract = await request.get(`${TESSERACT_BASE}LICENSE-tesseract.js.txt`);
+    expect(tesseract.status()).toBe(200);
+    expect(tesseract.headers()["cache-control"]).toBe(HTML_CACHE_CONTROL);
   });
 
   test("pages always revalidate, with an ETag", async ({ request }) => {

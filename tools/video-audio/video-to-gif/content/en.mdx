@@ -1,0 +1,41 @@
+Video to GIF turns up to 30 seconds of a video into an animated GIF in your browser, at the start, length, width and frame rate you choose. It suits a reaction clip, a short product demo or a step from a screen recording that has to play anywhere a picture can, with no sound and no player.
+
+## How to use
+
+1. Drop one MP4, MOV or WebM video on the box, or click it to choose one. The tool reads it and shows its length and picture size.
+2. Type where the GIF should start, in seconds, and how long it should last, up to 30 seconds.
+3. Set the width in pixels, up to 480; the height follows the shape of the picture. Set the frames a second, up to 15. The line underneath shows how many frames that makes.
+4. Press Make GIF. A progress bar counts the frames, and Cancel stops it at once with nothing saved.
+5. The GIF plays on the page. Press the Download button to save it.
+
+## Examples
+
+A clip from 12 to 15 seconds of a cat video, at 320 pixels wide and 10 frames a second, gives a GIF of 30 frames, 320 by 180 pixels for a widescreen video. It is named after the video, so cat.mp4 becomes cat.gif.
+
+At the largest settings, 30 seconds at 15 frames a second makes 450 frames. Our own test video of 64 by 48 pixels, set to 480 pixels wide, comes out as 480 by 360 pixels, enlarged to the width you asked for.
+
+## Limits
+
+A video may be up to 200 MB. The GIF covers at most 30 seconds, at most 480 pixels wide, at most 15 frames a second. Phones have less memory than computers, so a long GIF at the largest settings may fail on a phone before these limits.
+
+A GIF holds 256 colours a frame, so smooth gradients and skin tones show bands, and the file is usually much larger than the same moment as a video. GIF has no sound. Frame times are stored in hundredths of a second, so 15 frames a second plays at about 14.3.
+
+Taking the frames needs the browser to decode the video with WebCodecs and draw it in a background worker. Current Chrome, Edge and Firefox on a computer can; Safari and phone browsers vary, and the page tells you when yours cannot.
+
+## FAQ
+
+### Is my video uploaded to make the GIF?
+
+No. A background worker on this page decodes the frames on your device with Mediabunny and writes the GIF with gifenc, two open-source libraries this site serves. Nothing is sent to a server.
+
+### Why is the GIF bigger than my video?
+
+GIF compresses each frame on its own and with only 256 colours, while video codecs reuse what stays the same between frames. Make the GIF shorter, narrower or with fewer frames a second to shrink it.
+
+### Why is there a 30 second limit?
+
+The whole GIF is built in memory before you can save it, and each frame is compressed on its own, so the file grows quickly. Thirty seconds at the largest settings is already 450 frames.
+
+### Can I make a GIF from the middle of a video?
+
+Yes. Type the second it should start at in the first box. The tool starts reading near that point instead of from the beginning, so a clip from late in a long video does not wait for the rest.

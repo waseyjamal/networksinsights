@@ -6,7 +6,8 @@
 // (docs/design-system.md). `slug` is the flat, keyword-rich URL: /<slug>/. Slugs are reserved
 // paths that no tool id may use.
 //
-// `intro` and `metaDescription` say what a category is for, never how many tools it has.
+// `intro` and `metaDescription` say what a category is for, never how many tools it has: the
+// category page adds the real count from the registry (`categoryMetaDescription`).
 
 import type { IconName } from "../components/ui/icons";
 import { staticPagePaths } from "./site";
@@ -27,7 +28,7 @@ export type ApplicationCategory =
  * The date the wording of the category pages last changed, as `YYYY-MM-DD`: the `lastmod` of a
  * category page that has no tool yet, and the floor for one that has (see `pageUpdated`, ADR 0040).
  */
-export const categoriesUpdated = "2026-09-26";
+export const categoriesUpdated = "2026-10-04";
 
 export interface Category {
   id: string;
@@ -48,6 +49,18 @@ export interface Category {
   metaDescription: string;
 }
 
+/**
+ * The meta description of a category page: what the category is for, then how many tools it has,
+ * counted from the registry by the caller. A category with no tool says so instead of a number.
+ */
+export function categoryMetaDescription(
+  category: Pick<Category, "metaDescription">,
+  toolCount: number,
+): string {
+  if (toolCount === 0) return `${category.metaDescription} Coming soon to NetworksInsights.`;
+  return `${category.metaDescription} ${toolCount} ${toolCount === 1 ? "tool" : "tools"} on NetworksInsights.`;
+}
+
 export const categories = [
   {
     id: "pdf",
@@ -60,7 +73,7 @@ export const categories = [
     intro:
       "For the small jobs PDFs always need: merging files, splitting out pages, shrinking a large document, rotating or editing. Where the browser can do the work, your file is processed on your device and never uploaded.",
     metaDescription:
-      "Free PDF tools for merging, splitting, rotating, signing and converting PDF files, right in your browser on NetworksInsights.",
+      "Free PDF tools for merging, splitting, rotating, signing and converting PDF files, right in your browser.",
   },
   {
     id: "image",
@@ -73,20 +86,20 @@ export const categories = [
     intro:
       "Resize, crop, convert and compress pictures for the web, email or print. Most of these jobs are one file and a few settings, so they belong in a tab, not an installer. Where possible, images are processed on your device.",
     metaDescription:
-      "Free image tools for resizing, cropping, converting and compressing pictures, right in your browser on NetworksInsights.",
+      "Free image tools for resizing, cropping, converting and compressing pictures, right in your browser.",
   },
   {
     id: "video-audio",
     name: "Video and audio tools",
     slug: "video-audio-tools",
-    description: "Trim, convert and extract.",
+    description: "Compress, convert and extract.",
     accent: "cat-video-audio",
     icon: "video-audio",
     applicationCategory: "MultimediaApplication",
     intro:
-      "Trim a clip, convert between formats or pull the audio out of a video. Media files are large, so processing them on your own device avoids a slow upload. A tool will say plainly when a file has to leave your device.",
+      "Compress a clip, convert audio between formats, pull the sound out of a video or turn a moment into a GIF. Media files are large, so processing them on your own device avoids a slow upload. A tool will say plainly when a file has to leave your device.",
     metaDescription:
-      "Free video and audio tools for trimming, converting and extracting audio from media files. Coming soon to NetworksInsights.",
+      "Free video and audio tools for compressing video, converting audio, extracting sound and making GIFs.",
   },
   {
     id: "text",
@@ -99,7 +112,7 @@ export const categories = [
     intro:
       "Count words and characters, compare two versions of a text, clean up pasted content or change its case and format. These are quick jobs, so each tool aims to do one thing and show the result immediately.",
     metaDescription:
-      "Free text tools for counting, comparing, cleaning and transforming text, right in your browser on NetworksInsights.",
+      "Free text tools for counting, comparing, cleaning and transforming text, right in your browser.",
   },
   {
     id: "calculators",
@@ -111,8 +124,7 @@ export const categories = [
     applicationCategory: "UtilitiesApplication",
     intro:
       "Percentages, loans, fuel costs and other everyday arithmetic, worked out as you type. Each calculator should show its inputs and formula so you can check the answer instead of trusting it.",
-    metaDescription:
-      "Free online calculators for percentages, loans and other everyday math. Coming soon to NetworksInsights.",
+    metaDescription: "Free online calculators for percentages, loans and other everyday math.",
   },
   {
     id: "converters",
@@ -124,8 +136,7 @@ export const categories = [
     applicationCategory: "UtilitiesApplication",
     intro:
       "Convert between units, number bases, encodings and data formats. When a conversion depends on outside data, such as an exchange rate, the tool will say where the numbers come from.",
-    metaDescription:
-      "Free online converters for units, number bases, encodings and data formats. Coming soon to NetworksInsights.",
+    metaDescription: "Free online converters for units, number bases, encodings and data formats.",
   },
   {
     id: "generators",
@@ -138,7 +149,7 @@ export const categories = [
     intro:
       "Create passwords, QR codes, placeholder text, random numbers and other things you would otherwise write by hand. Where randomness matters, as it does for passwords, tools use the browser's cryptographically secure random source.",
     metaDescription:
-      "Free online generators for passwords, QR codes, placeholder text and random values. Coming soon to NetworksInsights.",
+      "Free online generators for passwords, QR codes, placeholder text and random values.",
   },
   {
     id: "developer",
@@ -151,7 +162,7 @@ export const categories = [
     intro:
       "Format and validate JSON, test regular expressions, decode tokens, encode and hash data. Small utilities for the moments when opening an editor or writing a script is more work than the task deserves.",
     metaDescription:
-      "Free developer tools for formatting, validating, testing and debugging code and data. Coming soon to NetworksInsights.",
+      "Free developer tools for formatting, validating, testing and debugging code and data.",
   },
   {
     id: "web-seo",
@@ -164,7 +175,7 @@ export const categories = [
     intro:
       "Check meta tags, preview how a page might appear in search results, inspect headers and links, and prepare markup for the web. They help you find problems on a page you own before visitors and search engines do.",
     metaDescription:
-      "Free web and SEO tools for checking meta tags, headers, links and page markup. Coming soon to NetworksInsights.",
+      "Free web and SEO tools for checking meta tags, headers, links and page markup.",
   },
   {
     id: "color-design",
@@ -177,7 +188,7 @@ export const categories = [
     intro:
       "Build palettes, convert between color formats, create gradients and check contrast ratios against WCAG. The math is small and repetitive, which makes it a good fit for a tool.",
     metaDescription:
-      "Free color and design tools for palettes, gradients, color formats and contrast checks. Coming soon to NetworksInsights.",
+      "Free color and design tools for palettes, gradients, color formats and contrast checks.",
   },
   {
     id: "date-time",
@@ -190,7 +201,7 @@ export const categories = [
     intro:
       "Compare time zones, count the days between two dates, add or subtract durations and find week numbers. Date arithmetic is easy to get wrong by hand, especially across time zones and daylight-saving changes.",
     metaDescription:
-      "Free date and time tools for time zones, date differences, durations and calendars. Coming soon to NetworksInsights.",
+      "Free date and time tools for time zones, date differences, durations and calendars.",
   },
 ] as const satisfies readonly Category[];
 

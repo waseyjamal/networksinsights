@@ -38,6 +38,8 @@ interface Fake {
   indexStatus?: number;
   /** The Cache-Control the service worker is served with (ADR 0052). */
   workerCache?: string;
+  /** The Cache-Control the versioned vendor files are served with (ADR 0061). */
+  vendorCache?: string;
   /** Answer as a preview deployment does: with X-Robots-Tag: noindex. */
   preview?: boolean;
   /** Changes the headers of one path after the site's own are set. */
@@ -75,6 +77,10 @@ function fakeFetch(fake: Fake = {}): typeof fetch {
     if (path === "/sw.js" || path === "/manifest.webmanifest") {
       return respond(200, "x", fake.workerCache ? { "cache-control": fake.workerCache } : {});
     }
+    if (path.startsWith("/vendor/pdfjs/") || path.startsWith("/vendor/libheif/")) {
+      return respond(200, "x", { "cache-control": fake.vendorCache ?? IMMUTABLE });
+    }
+    if (path.startsWith("/vendor/tesseract/")) return respond(200, "x");
     if (path === "/sitemap-index.xml" || path === "/llms.txt") return respond(200, "x");
     if (path === SCRIPT || path === "/og/home.png") return respond(200, "x");
     return respond(fake.missing ?? 404, "not found");
@@ -135,6 +141,36 @@ describe("the redirect", () => {
 });
 
 describe("everything else on the site", () => {
+  it("wants the versioned vendor folders cached for good, and Tesseract revalidated (ADR 0061)", async () => {
+    const pass = await runProductionChecks({ fetchFn: fakeFetch(), launched: false });
+    const vendor = pass.filter((check) => check.name.startsWith("/vendor/"));
+    expect(vendor.map((check) => check.name)).toEqual([
+      "/vendor/pdfjs/6.3.289/cmaps/LICENSE.txt (a versioned vendor folder) is cached for good",
+      "/vendor/libheif/1.23.2/LICENSE.txt (a versioned vendor folder) is cached for good",
+      "/vendor/tesseract/7.0.0/LICENSE-tesseract.js.txt is revalidated on every visit",
+    ]);
+    expect(vendor.every((check) => check.ok)).toBe(true);
+    const fail = await runProductionChecks({
+      fetchFn: fakeFetch({ vendorCache: HTML_CACHE_CONTROL }),
+      launched: false,
+    });
+    const failed = fail.filter((check) => check.name.startsWith("/vendor/") && !check.ok);
+    expect(failed).toHaveLength(2);
+    expect(failed[0]?.detail).toContain("versionedVendorPaths");
+  });
+
+  it("fails when Tesseract's folder is cached for good", async () => {
+    const checks = await runProductionChecks({
+      fetchFn: fakeFetch({
+        headers: (path, headers) => {
+          if (path.startsWith("/vendor/tesseract/")) headers["cache-control"] = IMMUTABLE;
+        },
+      }),
+      launched: false,
+    });
+    expect(checks.find((check) => check.name.includes("tesseract"))?.ok).toBe(false);
+  });
+
   it("fails when the service worker is cached for good (ADR 0052)", async () => {
     const checks = await runProductionChecks({
       fetchFn: fakeFetch({ workerCache: "public, max-age=31536000, immutable" }),

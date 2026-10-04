@@ -6,7 +6,12 @@ import EmptyState from "../components/ui/EmptyState.astro";
 import LinkList from "../components/ui/LinkList.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import ToolCardList from "../components/ui/ToolCardList.astro";
-import { categories, categoryById, categoryHref } from "../config/categories";
+import {
+  categories,
+  categoryById,
+  categoryHref,
+  categoryMetaDescription,
+} from "../config/categories";
 import { pageTitle, sitePages } from "../config/site";
 import Page from "../layouts/Page.astro";
 import { getTool, tools, toolsInCategory } from "../lib/registry";
@@ -61,7 +66,7 @@ const breadcrumbs = category ? [{ label: "Home", href: "/" }, { label: category.
 {category && (
   <Page
     title={pageTitle(category.name)}
-    description={category.metaDescription}
+    description={categoryMetaDescription(category, inCategory.length)}
     breadcrumbs={breadcrumbs}
     share={categoryCard(category)}
     noindex={!isCategoryIndexable(inCategory.length)}

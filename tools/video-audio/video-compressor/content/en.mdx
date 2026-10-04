@@ -1,0 +1,41 @@
+Video compressor makes a video file smaller in your browser by encoding it again at a lower bitrate or resolution, saved as MP4 or WebM. It helps when a clip is too large to email, attach to a form or send in a chat app, and you would rather not upload it to a stranger's server first.
+
+## How to use
+
+1. Drop one MP4, MOV or WebM video on the box, or click it to choose one. The tool reads it and shows its size, length and picture size.
+2. Pick a Resolution. Keep leaves the picture as it is, up to 1080p; 720p and 480p make it smaller, which saves the most.
+3. Under Save as, pick MP4 or WebM. Only the formats your browser can really write are listed, and the note underneath says what happens to the sound.
+4. Under Compress by, choose Quality and pick High, Medium or Low, or choose Target size and type the size you want in MB.
+5. Press Compress video. A progress bar shows how far it has got, and Cancel stops it at once with nothing saved. Then press the Download button.
+
+## Examples
+
+Our own eight second test clip of 480 by 270 pixels is about 1 MB. With Target size set to 0.5 MB it comes out near half a megabyte, as MP4 with its sound copied unchanged.
+
+A one minute phone video at 1080p is often 100 MB or more. At 720p and Medium quality it usually becomes a small part of that, still sharp on a phone screen. The new file is named after the old one, so holiday.mov becomes holiday-compressed.mp4.
+
+## Limits
+
+A video may be up to 500 MB, ten minutes long and 4K (3840 by 2160 pixels) in size. Larger pictures are brought down to 1080p at most. A target size can be 0.5 MB or more, below the size of the file. Phones have less memory than computers, so a large video may fail on a phone before these limits.
+
+The target size is approximate. The encoder aims for it, but the file can come out a little above or below, most of all for very short clips. A quality preset makes no promise about size either: a video that was already compressed well may not get smaller, and the page says so when that happens.
+
+Compressing needs the browser to decode the video and encode H.264 or VP9 with WebCodecs. Current Chrome, Edge and Firefox on a computer can; Safari and phone browsers vary, and the page tells you when yours cannot. The sound is copied when the format can hold it, encoded again when the browser can, and otherwise left out, which the page says before you start.
+
+## FAQ
+
+### Is my video uploaded to be compressed?
+
+No. A background worker on this page reads the file on your device with Mediabunny, an open-source media library this site serves, and the encoders built into your browser make the new video. Nothing is sent to a server.
+
+### Will the file be exactly the size I typed?
+
+No. The tool works out a bitrate from your target and the length of the video, and encoders only follow a bitrate roughly. Expect a file near the target, sometimes a little larger, and try a smaller target if it must fit a hard limit.
+
+### Should I choose MP4 or WebM?
+
+Choose MP4 when the video must play everywhere, including phones, TVs and older programs. Choose WebM when it is going to a website or to Chrome or Firefox users, where VP9 often gives a sharper picture at the same size.
+
+### Why did my video come out larger?
+
+Some videos are already compressed hard, so encoding them again at High quality adds bytes. Try Low quality, a lower resolution or a target size instead, which force a lower bitrate.

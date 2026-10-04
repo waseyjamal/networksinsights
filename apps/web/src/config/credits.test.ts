@@ -7,7 +7,7 @@ import {
   TESSERACT_ASSETS,
 } from "../../../../tools/image/ocr/logic";
 import { PDFJS_ASSETS } from "../../../../tools/pdf/pdf-to-jpg/logic";
-import { credits, ZLIB_NOTICE } from "./credits";
+import { credits, LIBFLAC_NOTICE, ZLIB_NOTICE } from "./credits";
 import { LIBHEIF_BASE, LIBHEIF_FILES, LIBHEIF_VERSION } from "./libheif";
 import { PDFJS_BASE, PDFJS_VENDOR_FOLDERS, PDFJS_VERSION } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES, TESSERACT_VERSION } from "./tesseract";
@@ -94,5 +94,41 @@ describe("credits", () => {
       expect(rule?.include.test(name ?? ""), url).toBe(true);
       expect(existsSync(join(installed("pdfjs-dist"), folder ?? "", name ?? "")), url).toBe(true);
     }
+  });
+});
+
+describe("credits of the video and audio tools (ADR 0061)", () => {
+  const find = (name: string) => credits.find((credit) => credit.name.startsWith(name));
+
+  it("credits Mediabunny, its FLAC encoder and gifenc at the versions installed", () => {
+    expect(find("Mediabunny")?.version).toBe(toolsPackage.dependencies.mediabunny);
+    expect(find("@mediabunny/flac-encoder")?.version).toBe(
+      toolsPackage.dependencies["@mediabunny/flac-encoder"],
+    );
+    expect(find("gifenc")?.version).toBe(toolsPackage.dependencies.gifenc);
+  });
+
+  it("links the MPL-2.0 source at the installed tag, and keeps the libFLAC notice", () => {
+    const version = toolsPackage.dependencies.mediabunny;
+    expect(find("Mediabunny")?.sourceUrls).toContain(
+      `https://github.com/Vanilagy/mediabunny/tree/v${version}`,
+    );
+    const flac = find("@mediabunny/flac-encoder");
+    expect(flac?.license).toBe("MPL-2.0 AND BSD-3-Clause");
+    expect(flac?.notice).toContain(LIBFLAC_NOTICE);
+    expect(LIBFLAC_NOTICE).toContain("Copyright (C) 2011-2025 Xiph.Org Foundation");
+    expect(LIBFLAC_NOTICE).toContain("Neither the name of the Xiph.Org Foundation");
+  });
+
+  it("matches the licence each installed package declares", () => {
+    const declared = (name: string) =>
+      (
+        JSON.parse(readFileSync(join(installed(name), "package.json"), "utf8")) as {
+          license: string;
+        }
+      ).license;
+    expect(declared("mediabunny")).toBe("MPL-2.0");
+    expect(declared("@mediabunny/flac-encoder")).toBe("MPL-2.0");
+    expect(declared("gifenc")).toBe("MIT");
   });
 });
