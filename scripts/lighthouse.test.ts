@@ -6,8 +6,10 @@ import {
   judge,
   keyPages,
   median,
+  parseShard,
   type Run,
   runOf,
+  shardPages,
 } from "./lib/lighthouse";
 
 const run = (overrides: Partial<Run> = {}): Run => ({
@@ -96,5 +98,58 @@ describe("judge", () => {
     expect(text).toMatch(/✓ \/\s+98\s+100\s+100\s+100/);
     expect(text).toMatch(/✗ \/tools\//);
     expect(text).toContain("/tools/: CLS 0.300 is over 0.1");
+  });
+});
+
+describe("shardPages", () => {
+  const pages = keyPages(
+    Array.from({ length: 62 }, (_, k) => `tool-${String(k).padStart(3, "0")}`),
+  );
+  const shards = (list: readonly string[], count: number) =>
+    Array.from({ length: count }, (_, k) => shardPages(list, k + 1, count));
+
+  it("puts every page in exactly one shard", () => {
+    const all = shards(pages, 6).flat();
+    expect(all).toHaveLength(pages.length);
+    expect([...all].sort()).toEqual([...pages].sort());
+  });
+
+  it("keeps the shards within one page of each other", () => {
+    for (const count of [1, 2, 3, 6, 7]) {
+      const sizes = shards(pages, count).map((shard) => shard.length);
+      expect(Math.max(...sizes) - Math.min(...sizes), `${count} shards`).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("still covers every page once after a tool is added", () => {
+    const more = keyPages([...pages.slice(3).map((path) => path.slice(1, -1)), "aaa-new-tool"]);
+    const all = shards(more, 6).flat();
+    expect([...all].sort()).toEqual([...more].sort());
+    expect(new Set(all).size).toBe(more.length);
+  });
+
+  it("gives empty shards when there are more shards than pages", () => {
+    const few = ["/", "/tools/"];
+    const result = shards(few, 6);
+    expect(result.flat().sort()).toEqual([...few].sort());
+    expect(result.filter((shard) => shard.length === 0)).toHaveLength(4);
+  });
+
+  it("is the same on every call, whatever the input order", () => {
+    expect(shardPages([...pages].reverse(), 2, 6)).toEqual(shardPages(pages, 2, 6));
+  });
+
+  it("refuses a shard out of range", () => {
+    expect(() => shardPages(pages, 0, 6)).toThrow();
+    expect(() => shardPages(pages, 7, 6)).toThrow();
+  });
+});
+
+describe("parseShard", () => {
+  it("reads i/n and refuses anything else", () => {
+    expect(parseShard("1/6")).toEqual({ index: 1, count: 6 });
+    for (const bad of ["0/6", "7/6", "1/0", "1", "a/b", "1/6/2"]) {
+      expect(parseShard(bad), bad).toBeUndefined();
+    }
   });
 });

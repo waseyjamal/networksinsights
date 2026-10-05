@@ -140,3 +140,26 @@ export function formatResults(results: readonly PageResult[]): string {
   }
   return lines.join("\n");
 }
+
+/**
+ * The pages of shard `index` of `count` (ADR 0063): page k of the sorted list goes to shard
+ * (k mod count) + 1, so the shards together hold every page exactly once and differ in size by at
+ * most one page. A new tool takes its alphabetical place; pages after it may move to another
+ * shard, but none is ever left out.
+ */
+export function shardPages(pages: readonly string[], index: number, count: number): string[] {
+  if (!Number.isInteger(count) || count < 1 || !Number.isInteger(index)) {
+    throw new Error(`shard ${index}/${count} is not a shard`);
+  }
+  if (index < 1 || index > count) throw new Error(`shard ${index}/${count} is out of range`);
+  return [...pages].sort().filter((_, k) => k % count === index - 1);
+}
+
+/** Reads `--shard <i>/<n>`, or gives undefined when it is not of that form. */
+export function parseShard(value: string): { index: number; count: number } | undefined {
+  const match = /^(\d+)\/(\d+)$/.exec(value);
+  if (!match) return undefined;
+  const index = Number(match[1]);
+  const count = Number(match[2]);
+  return count >= 1 && index >= 1 && index <= count ? { index, count } : undefined;
+}

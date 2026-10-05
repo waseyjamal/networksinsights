@@ -1,6 +1,6 @@
 # CI: what runs where
 
-Workflow: `.github/workflows/ci.yml`. Decisions: ADR 0025, 0027, 0054, 0055, 0058.
+Workflow: `.github/workflows/ci.yml`. Decisions: ADR 0025, 0027, 0054, 0055, 0058, 0063.
 
 ## What runs where
 
@@ -29,6 +29,24 @@ On `main`:
 
 **Rule:** when any measured E2E job, sharded or scoped, passes 25 minutes, add one shard to that run type (a new ADR). The durations are on the run page of the Actions tab.
 
+## Lighthouse jobs
+
+A full run splits the key pages into 6 shards, `lighthouse-1` to `lighthouse-6`, each `pnpm check:lighthouse --shard <n>/6` (ADR 0063). The `lighthouse` job is the gate: it passes only when every expected shard passed, and fails on a failed, cancelled, skipped or missing shard, naming the shard and the pages.
+
+| Event | Lighthouse |
+| --- | --- |
+| Push to `main` | All 6 shards, every page, even when E2E is skipped |
+| Pull request, tool-only | 1 job, `lighthouse-1`, only the changed tools' pages |
+| Pull request, anything else | All 6 shards |
+| Manual run (`workflow_dispatch`) | All 6 shards |
+| `scope` failed | All 6 shards |
+
+MEASURED, run 37255844478 (main, 62 tools, one job, before sharding): 24 minutes 7 seconds, 65 pages, about 21 seconds a page. ESTIMATED per shard: about 6 minutes at 62 tools, 11.5 at 150. Each shard has a 20-minute timeout as a backstop.
+
+To run one shard locally: `pnpm build`, then `pnpm check:lighthouse --shard 1/6`.
+
+**Rule:** when any measured Lighthouse shard passes 12 minutes, add one shard (a new ADR).
+
 ## Run the full suite by hand
 
 On GitHub: Actions, CI, Run workflow, pick the branch. Or:
@@ -54,4 +72,4 @@ ESTIMATED, with sharding (ADR 0058): fixed jobs 7 (measured), Lighthouse 14 for 
 | Full run on `main` (3 shards per browser) | 86 ESTIMATED | 117 ESTIMATED | 202 ESTIMATED |
 | Full run, before sharding (run 37000596636) | 136 MEASURED | | |
 
-Replace the estimates with measured numbers as runs happen. At about 100 tools a WebKit shard is estimated near 22 minutes, and Lighthouse near its 30-minute timeout: check both against the rule above.
+Replace the estimates with measured numbers as runs happen. At about 100 tools a WebKit shard is estimated near 22 minutes, check it against the rule above. Lighthouse is sharded since ADR 0063, so its estimates above are for one job.
