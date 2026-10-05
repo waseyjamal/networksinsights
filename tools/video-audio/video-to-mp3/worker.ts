@@ -81,7 +81,10 @@ defineWorker<Job, JobResult>(async (job, { progress, signal }) => {
       if (bytes.length > 0) chunks.push(bytes.slice());
     };
     const sink = new AudioSampleSink(track);
-    for await (const sample of sink.samples()) {
+    // From 0, as Mediabunny's own Conversion reads: with the default start (minus infinity) the
+    // first decoded sample never arrived for AAC in WebKit, and the job stalled. Priming samples
+    // before 0 are not part of the sound.
+    for await (const sample of sink.samples(0)) {
       try {
         signal.throwIfAborted();
         const planes: Float32Array[] = [];
