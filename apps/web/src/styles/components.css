@@ -250,7 +250,8 @@
   }
 
   /* PageCanvas: a page picture with items placed over it as fractions of the page. The page is a
-     size container, so text in an item can be sized in cqw and scales with the page. */
+     size container, so text in an item can be sized in cqw and scales with the page. A page is
+     white paper with black ink in both themes, as it prints. */
   .ni-pagecanvas__page {
     position: relative;
     container-type: inline-size;
@@ -258,7 +259,7 @@
     overflow: hidden;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-lg);
-    background: #ffffff;
+    background: var(--color-white);
     box-shadow: var(--shadow-inset);
     user-select: none;
   }
@@ -282,7 +283,7 @@
     padding: 0;
     border: 1px dashed transparent;
     background: transparent;
-    color: #000000;
+    color: var(--color-black);
     font: inherit;
     line-height: 1.2;
     text-align: left;

@@ -130,7 +130,8 @@ export function PageCanvas({
     }
   };
 
-  const percent = (value: number) => `${value * 100}%`;
+  // Rounded to a hundredth of a percent, so 0.1 + 0.01 shows as 11%, not 11.000000000000002%.
+  const percent = (value: number) => `${Math.round(value * 10000) / 100}%`;
 
   return (
     <div className={cx("ni-field ni-pagecanvas", className)}>
