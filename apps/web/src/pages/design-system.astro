@@ -27,6 +27,7 @@ import Input from "../components/ui/Input.astro";
 import Kbd from "../components/ui/Kbd.astro";
 import LinkList from "../components/ui/LinkList.astro";
 import MatchText from "../components/ui/MatchText.astro";
+import PageCanvas from "../components/ui/PageCanvas.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import Progress from "../components/ui/Progress.astro";
 import Select from "../components/ui/Select.astro";
@@ -176,6 +177,12 @@ const themes = ["light", "dark"] as const;
               label="DrawPad"
               hint="Draw with a mouse, a finger or a pen. Offer a typed or uploaded option too."
               height={120}
+            />
+            <PageCanvas
+              id="ds-pagecanvas"
+              label="PageCanvas"
+              hint="Items on a page: drag them, or move them with the arrow keys."
+              aspectRatio={1.6}
             />
             <Select id="ds-select" label="Select">
               <option>Original quality</option>

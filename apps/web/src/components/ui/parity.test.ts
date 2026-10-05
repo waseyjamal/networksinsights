@@ -22,6 +22,7 @@ import Icon from "./Icon.astro";
 import Input from "./Input.astro";
 import Kbd from "./Kbd.astro";
 import MatchText from "./MatchText.astro";
+import PageCanvas from "./PageCanvas.astro";
 import Progress from "./Progress.astro";
 import {
   Alert as ReactAlert,
@@ -41,6 +42,7 @@ import {
   Input as ReactInput,
   Kbd as ReactKbd,
   MatchText as ReactMatchText,
+  PageCanvas as ReactPageCanvas,
   Progress as ReactProgress,
   Select as ReactSelect,
   Skeleton as ReactSkeleton,
@@ -200,6 +202,14 @@ describe("Astro and React components emit the same markup", () => {
     expect(await astro(DrawPad, props)).toBe(react(createElement(ReactDrawPad, props)));
     const bare = { id: "pad", label: "Draw", height: 120 };
     expect(await astro(DrawPad, bare)).toBe(react(createElement(ReactDrawPad, bare)));
+  });
+
+  it("PageCanvas", async () => {
+    const props = { id: "page", label: "Page 1", hint: "Drag items, or use the arrow keys." };
+    expect(await astro(PageCanvas, props)).toBe(react(createElement(ReactPageCanvas, props)));
+    // No `src` here: React adds a preload link for an image when it renders on the server.
+    const picture = { id: "p2", label: "Page 2", aspectRatio: 1.5 };
+    expect(await astro(PageCanvas, picture)).toBe(react(createElement(ReactPageCanvas, picture)));
   });
 
   it("Textarea", async () => {
