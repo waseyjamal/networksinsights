@@ -107,6 +107,8 @@ export const MESSAGES = {
   pastEnd: (duration: string) => `The video is only ${duration} long.`,
   noExact:
     "Your browser cannot decode and encode this video, so only the fast keyframe cut is offered here. A recent Chrome or Edge on a computer can do both.",
+  cannotPlay:
+    "The player cannot show this video here, so type the start and end instead. Trimming still works, because it does not use the player.",
   cannotCopy: "This video cannot be cut without re-encoding, and your browser cannot re-encode it.",
   failed: "The browser could not write the video.",
 } as const;

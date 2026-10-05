@@ -102,6 +102,7 @@ export default function ToolUi() {
   const [progress, setProgress] = useState(0);
   const [output, setOutput] = useState<Output | null>(null);
   const [error, setError] = useState("");
+  const [unplayable, setUnplayable] = useState(false);
   const player = useRef<HTMLVideoElement>(null);
   const job = useRef<AbortController | null>(null);
   const sourceRef = useRef(source);
@@ -236,7 +237,17 @@ export default function ToolUi() {
             preload="none"
             className="w-full rounded-md border border-border"
             style={{ maxHeight: "20rem" }}
+            onError={() => setUnplayable(true)}
           />
+          {unplayable && (
+            <Alert
+              tone="info"
+              title="This browser cannot play this video"
+              id="video-trimmer-player"
+            >
+              {MESSAGES.cannotPlay}
+            </Alert>
+          )}
           {!source.codec && (
             <Alert tone="info" title="Only the fast cut here" id="video-trimmer-support">
               {MESSAGES.noExact}
@@ -263,9 +274,11 @@ export default function ToolUi() {
                   setError("");
                 }}
               />
-              <Button size="sm" variant="ghost" onClick={() => takeTime("start")}>
-                Use the player's time as start
-              </Button>
+              {!unplayable && (
+                <Button size="sm" variant="ghost" onClick={() => takeTime("start")}>
+                  Use the player's time as start
+                </Button>
+              )}
             </div>
             <div className="grid gap-2">
               <Input
@@ -278,9 +291,11 @@ export default function ToolUi() {
                   setError("");
                 }}
               />
-              <Button size="sm" variant="ghost" onClick={() => takeTime("end")}>
-                Use the player's time as end
-              </Button>
+              {!unplayable && (
+                <Button size="sm" variant="ghost" onClick={() => takeTime("end")}>
+                  Use the player's time as end
+                </Button>
+              )}
             </div>
           </div>
           <div className="ni-workspace__actions">

@@ -172,29 +172,72 @@ test("refuses times out of order, past the end, under 0.1 seconds or unreadable"
   recordPath(testInfo, "a 0.1 second cut at the very end", "real");
 });
 
-test("takes the start and end from the player", async ({ page }, testInfo) => {
+/** True when this browser's own video element can load the file: the real decode check. */
+function playable(page: Page, source: { buffer: Buffer; mimeType: string }) {
+  return page.evaluate(
+    ({ base64, type }) => {
+      const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+      const video = document.createElement("video");
+      video.muted = true;
+      video.preload = "auto";
+      const url = URL.createObjectURL(new Blob([bytes], { type }));
+      return new Promise<boolean>((resolve) => {
+        video.addEventListener("loadeddata", () => resolve(true), { once: true });
+        video.addEventListener("error", () => resolve(false), { once: true });
+        video.src = url;
+      }).finally(() => URL.revokeObjectURL(url));
+    },
+    { base64: source.buffer.toString("base64"), type: source.mimeType },
+  );
+}
+
+test("takes the start and end from the player, or says the player cannot play it", async ({
+  page,
+}, testInfo) => {
   await openTool(page, PATH);
-  await file(page).setInputFiles(TALK);
-  await opened(page, "talk.mp4");
+  // The fixture is chosen by what this browser can really play, not by its name.
+  const source = (await playable(page, TALK)) ? TALK : (await playable(page, WEBM)) ? WEBM : null;
+  if (!source) {
+    await file(page).setInputFiles(TALK);
+    await opened(page, "talk.mp4");
+    // The player loads only when asked (preload="none"), as a visitor pressing play would.
+    await page.locator("video").evaluate((video: HTMLVideoElement) => video.load());
+    await expect(field(page, "player")).toContainText(
+      "The player cannot show this video here, so type the start and end instead.",
+    );
+    await expect(page.getByRole("button", { name: "Use the player's time as start" })).toHaveCount(
+      0,
+    );
+    recordPath(testInfo, "player times", "message");
+    return;
+  }
+  await file(page).setInputFiles(source);
+  await opened(page, source.name);
   const seek = (seconds: number) =>
     page.locator("video").evaluate(async (video: HTMLVideoElement, to) => {
       if (video.readyState < 1) {
-        await new Promise((resolve) =>
+        // preload="none" waits for a request: load() is what pressing play does first.
+        const ready = new Promise((resolve) =>
           video.addEventListener("loadedmetadata", resolve, { once: true }),
         );
+        video.load();
+        await ready;
       }
       await new Promise((resolve) => {
         video.addEventListener("seeked", resolve, { once: true });
         video.currentTime = to;
       });
     }, seconds);
-  await seek(3);
+  const [first, second, firstText, secondText] =
+    source === TALK ? [3, 6.5, "0:03", "0:06.5"] : [0.5, 1.5, "0:00.5", "0:01.5"];
+  await seek(first);
   await page.getByRole("button", { name: "Use the player's time as start" }).click();
-  await expect(field(page, "start")).toHaveValue("0:03");
-  await seek(6.5);
+  await expect(field(page, "start")).toHaveValue(firstText);
+  await seek(second);
   await page.getByRole("button", { name: "Use the player's time as end" }).click();
-  await expect(field(page, "end")).toHaveValue("0:06.5");
-  recordPath(testInfo, "player times", "message");
+  await expect(field(page, "end")).toHaveValue(secondText);
+  await expect(field(page, "player")).toHaveCount(0);
+  recordPath(testInfo, `player times with ${source.name}`, "message");
 });
 
 test("refuses a file one byte over 500 MB, and opens one of exactly 500 MB", async ({
