@@ -77,7 +77,11 @@ function fakeFetch(fake: Fake = {}): typeof fetch {
     if (path === "/sw.js" || path === "/manifest.webmanifest") {
       return respond(200, "x", fake.workerCache ? { "cache-control": fake.workerCache } : {});
     }
-    if (path.startsWith("/vendor/pdfjs/") || path.startsWith("/vendor/libheif/")) {
+    if (
+      path.startsWith("/vendor/pdfjs/") ||
+      path.startsWith("/vendor/libheif/") ||
+      path.startsWith("/vendor/wasm-media-encoders/")
+    ) {
       return respond(200, "x", { "cache-control": fake.vendorCache ?? IMMUTABLE });
     }
     if (path.startsWith("/vendor/tesseract/")) return respond(200, "x");
@@ -147,6 +151,7 @@ describe("everything else on the site", () => {
     expect(vendor.map((check) => check.name)).toEqual([
       "/vendor/pdfjs/6.3.289/cmaps/LICENSE.txt (a versioned vendor folder) is cached for good",
       "/vendor/libheif/1.23.2/LICENSE.txt (a versioned vendor folder) is cached for good",
+      "/vendor/wasm-media-encoders/0.7.0/mp3.wasm (a versioned vendor folder) is cached for good",
       "/vendor/tesseract/7.0.0/LICENSE-tesseract.js.txt is revalidated on every visit",
     ]);
     expect(vendor.every((check) => check.ok)).toBe(true);
@@ -155,7 +160,7 @@ describe("everything else on the site", () => {
       launched: false,
     });
     const failed = fail.filter((check) => check.name.startsWith("/vendor/") && !check.ok);
-    expect(failed).toHaveLength(2);
+    expect(failed).toHaveLength(3);
     expect(failed[0]?.detail).toContain("versionedVendorPaths");
   });
 

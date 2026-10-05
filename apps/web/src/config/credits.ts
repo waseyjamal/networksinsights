@@ -2,6 +2,7 @@
 // The About page shows this list. Keeping a notice is a condition of these licences (ADR 0057):
 // never remove an entry while the library is used, and never present the code as ours.
 
+import { LAME_BASE, LAME_SOURCE } from "./lame";
 import { LIBHEIF_BASE } from "./libheif";
 import { PDFJS_BASE, publishedName } from "./pdfjs";
 import { TESSERACT_BASE } from "./tesseract";
@@ -101,6 +102,38 @@ export const credits: readonly Credit[] = [
       "https://github.com/strukturag/libde265",
     ],
     notice: `libheif: Copyright (c) 2017-2020 Struktur AG, Copyright (c) 2017-2026 Dirk Farin. libde265: Copyright (c) 2013-2014 Struktur AG. Both are free software, distributed under the terms of the GNU Lesser General Public License, version 3 (LGPL-3.0); libheif-js packages them for the browser under the same licence. This site uses them unmodified: the WebAssembly file is served as it is published, as a separate file at ${LIBHEIF_BASE}libheif.wasm, so it can be replaced with another build. The licence text is linked below, and the complete source code is available from the projects linked here.`,
+  },
+  {
+    name: "wasm-media-encoders (LAME MP3 encoder)",
+    version: "0.7.0",
+    license: "MIT AND LGPL-2.0-or-later",
+    url: "https://github.com/arseneyr/wasm-media-encoders",
+    usedFor:
+      "Encoding MP3 files in Video to MP3 and Audio to MP3: LAME 3.100 compiled to WebAssembly, with its decoder left out",
+    licenseFiles: [`${LAME_BASE}LICENSE.txt`],
+    sourceUrls: [
+      "https://github.com/arseneyr/wasm-media-encoders/tree/v0.7.0",
+      `${LAME_SOURCE.fork}/tree/${LAME_SOURCE.commit}`,
+      `${LAME_SOURCE.fork}/blob/${LAME_SOURCE.commit}/COPYING`,
+      "https://lame.sourceforge.io/",
+    ],
+    notice: `This site uses LAME (https://lame.sourceforge.io/), the LAME MP3 encoder, version ${LAME_SOURCE.version}. LAME is free software, distributed under the terms of the GNU Library General Public License, version 2 or (at your option) any later version (LGPL-2.0-or-later); its copyright belongs to the LAME authors. wasm-media-encoders compiles it to WebAssembly, and its own JavaScript is MIT licensed: Copyright (c) 2020-2024 arseneyr. ${MIT_TERMS} This site uses the WebAssembly file unmodified: it is served as it is published, as a separate file at ${LAME_BASE}mp3.wasm, so it can be replaced with another build. The licence text and the complete source code of the exact version used are linked below.`,
+  },
+  {
+    name: "@swc/helpers",
+    version: "0.5.23",
+    license: "Apache-2.0",
+    url: "https://github.com/swc-project/swc",
+    usedFor: "Small helper functions inside wasm-media-encoders, in the MP3 tools",
+    notice: `Copyright (c) SWC contributors. ${APACHE_TERMS}`,
+  },
+  {
+    name: "fflate",
+    version: "0.8.3",
+    license: "MIT",
+    url: "https://github.com/101arrowz/fflate",
+    usedFor: "Reading and writing ZIP files in ZIP create and extract",
+    notice: `Copyright (c) 2026 Arjun Barrett. ${MIT_TERMS}`,
   },
   {
     name: "tesseract.js",

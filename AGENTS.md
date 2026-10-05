@@ -55,9 +55,15 @@ Tools:
   served unmodified from `/vendor/libheif/<version>/`. OCR uses `tesseract.js` 7.0.0 from its worker,
   with its worker, core and language data served from `/vendor/tesseract/<version>/`, never a CDN.
 - Video and audio tools use `mediabunny` 1.61.0 (MPL-2.0), `@mediabunny/flac-encoder` 1.61.0 (libFLAC,
-  BSD-3-Clause, built without Ogg) and `gifenc` 1.0.3 (MIT), only from `worker.ts` (ADR 0061). No MP3, and
-  nothing LGPL, GPL or LAME-based. A tool asks the browser with WebCodecs `isConfigSupported` what it can
-  decode and encode, offers only that, and says plainly what it cannot do.
+  BSD-3-Clause, built without Ogg) and `gifenc` 1.0.3 (MIT), only from `worker.ts` (ADR 0061). Nothing GPL.
+  A tool asks the browser with WebCodecs `isConfigSupported` what it can decode and encode, offers only
+  that, and says plainly what it cannot do.
+- MP3 is encoded only by LAME 3.100 in `wasm-media-encoders` 0.7.0, the one LGPL exception for an encoder
+  (ADR 0064): load it with `createEncoder("audio/mpeg", "/vendor/wasm-media-encoders/0.7.0/mp3.wasm")` from
+  `worker.ts`, never `createMp3Encoder` (it inlines a second copy). `pnpm check:budgets` fails unless the
+  build holds exactly one LAME copy, the vendored `mp3.wasm`. No other MP3 encoder and no other LGPL package.
+- ZIP files use `fflate` 0.8.3 (MIT) only from `worker.ts` (ADR 0064). Read a ZIP's central directory in
+  `logic.ts` and refuse encrypted, ZIP64 and oversized archives before unpacking anything.
 - Formatter libraries (`yaml` 2.9.1, `xml-formatter` 3.7.0, `sql-formatter` 15.9.0) load only from a
   tool's `worker.ts`; `logic.ts` takes the library as a parameter and imports nothing (ADR 0062).
   Compress PDF uses `@embedpdf/pdfium` 2.15.1 only from `worker.ts`; its wasm is the hashed file Vite

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { readHeifInfo } from "../../../../tools/image/heic-to-jpg/logic";
 import { ENGINE_BYTES, LANGUAGES } from "../../../../tools/image/ocr/logic";
 import { IMMUTABLE, immutablePaths, versionedVendorPaths } from "./headers";
+import { LAME_BASE, LAME_FILES } from "./lame";
 import { LIBHEIF_BASE, LIBHEIF_FILES } from "./libheif";
 import { PDFJS_BASE } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES } from "./tesseract";
@@ -20,6 +21,12 @@ describe("vendored files", () => {
   it("copies libheif's files from libheif-js, each under 25 MiB", () => {
     for (const from of Object.keys(LIBHEIF_FILES)) {
       expect(statSync(installed("libheif-js", from)).size).toBeLessThan(25 * MiB);
+    }
+  });
+
+  it("copies the LAME encoder's files from wasm-media-encoders, each under 25 MiB", () => {
+    for (const from of Object.keys(LAME_FILES)) {
+      expect(statSync(installed("wasm-media-encoders", from)).size).toBeLessThan(25 * MiB);
     }
   });
 
@@ -60,10 +67,13 @@ describe("cache headers of vendored files (ADR 0061)", () => {
 
   it("caches each versioned vendor folder for good, named with the installed package version", () => {
     expect(IMMUTABLE).toBe("public, max-age=31536000, immutable");
-    expect(versionedVendorPaths).toEqual([`${PDFJS_BASE}*`, `${LIBHEIF_BASE}*`]);
+    expect(versionedVendorPaths).toEqual([`${PDFJS_BASE}*`, `${LIBHEIF_BASE}*`, `${LAME_BASE}*`]);
     for (const path of versionedVendorPaths) expect(immutablePaths).toContain(path);
     expect(versionedVendorPaths[0]).toBe(`/vendor/pdfjs/${installedVersion("pdfjs-dist")}/*`);
     expect(versionedVendorPaths[1]).toBe(`/vendor/libheif/${installedVersion("libheif-js")}/*`);
+    expect(versionedVendorPaths[2]).toBe(
+      `/vendor/wasm-media-encoders/${installedVersion("wasm-media-encoders")}/*`,
+    );
   });
 
   it("keeps Tesseract and every path without a version out of the long cache", () => {
@@ -71,7 +81,7 @@ describe("cache headers of vendored files (ADR 0061)", () => {
     expect(immutablePaths.some((path) => path.startsWith(TESSERACT_BASE))).toBe(false);
     expect(immutablePaths.some((path) => path.startsWith("/vendor/tesseract"))).toBe(false);
     for (const path of immutablePaths.filter((entry) => entry.startsWith("/vendor/"))) {
-      expect(path, path).toMatch(/^\/vendor\/[a-z]+\/\d+\.\d+\.\d+\/\*$/);
+      expect(path, path).toMatch(/^\/vendor\/[a-z]+(-[a-z]+)*\/\d+\.\d+\.\d+\/\*$/);
     }
   });
 });

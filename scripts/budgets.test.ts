@@ -1,6 +1,13 @@
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -12,6 +19,7 @@ import {
   measurePageJs,
   measurePageWeight,
 } from "./lib/budgets";
+import { LAME_WASM_PATH } from "./lib/lame-copies";
 import { scratchRoot } from "./lib/test-support";
 import { repoRoot } from "./lib/tools";
 
@@ -322,6 +330,12 @@ describe("the command", () => {
           .map((tool) => tool.name),
       );
     for (const id of ids) put(`${id}/index.html`, page);
+    // A real build carries LAME once, as the vendored wasm, and check:budgets checks that.
+    mkdirSync(dirname(join(dist, LAME_WASM_PATH)), { recursive: true });
+    copyFileSync(
+      join(repoRoot, "tools", "node_modules", "wasm-media-encoders", "wasm", "mp3.wasm"),
+      join(dist, LAME_WASM_PATH),
+    );
     const result = spawnSync(
       process.execPath,
       ["--import", "tsx", "scripts/check-budgets.ts", "--dist", dist],
