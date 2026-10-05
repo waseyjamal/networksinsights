@@ -1,4 +1,4 @@
-// pnpm check:lighthouse [--runs <n>] [--page <path>] [--json] [--out <folder>]
+// pnpm check:lighthouse [--runs <n>] [--page <path>]... [--shard <i>/<n>] [--json] [--out <folder>]
 //
 // The site-wide performance budgets (ADR 0052): Lighthouse, on its default mobile profile, against
 // the production build in apps/web/dist, on the home page, /tools/, one category page and every
@@ -26,19 +26,22 @@ import {
   judge,
   keyPages,
   type PageResult,
+  parseShard,
   type Run,
   runOf,
+  shardPages,
 } from "./lib/lighthouse";
 import { defaultToolsRoot, listToolFolders, repoRoot } from "./lib/tools";
 
-const HELP = `Usage: pnpm check:lighthouse [--runs <n>] [--page <path>] [--json] [--out <folder>]
+const HELP = `Usage: pnpm check:lighthouse [--runs <n>] [--page <path>]... [--shard <i>/<n>] [--json] [--out <folder>]
 
 Measures the key pages of the build with Lighthouse (mobile), so run \`pnpm build\` first.
 
   --runs <n>      runs per page, judged on the median (default 3)
-  --page <path>   measure one page, such as /word-counter/
+  --page <path>   measure this page, such as /word-counter/; repeat it for several
+  --shard <i>/<n> measure only shard i of n of the key pages (ADR 0063)
   --json          print the result as JSON
-  --out <folder>  also write each page's last report there, as HTML and JSON
+  --out <folder>  also write each page's last report there, as HTML and JSON, and summary.json
   --help          show this text`;
 
 const webDir = join(repoRoot, "apps", "web");
@@ -130,7 +133,8 @@ function stop(child: ChildProcess) {
 async function main(): Promise<number> {
   let values: {
     runs?: string | undefined;
-    page?: string | undefined;
+    page?: string[] | undefined;
+    shard?: string | undefined;
     json?: boolean | undefined;
     out?: string | undefined;
     help?: boolean | undefined;
@@ -139,7 +143,8 @@ async function main(): Promise<number> {
     ({ values } = parseArgs({
       options: {
         runs: { type: "string" },
-        page: { type: "string" },
+        page: { type: "string", multiple: true },
+        shard: { type: "string" },
         json: { type: "boolean" },
         out: { type: "string" },
         help: { type: "boolean" },
@@ -162,10 +167,22 @@ async function main(): Promise<number> {
 
   // A tool's folder name is its id and its URL (docs/tool-contract.md).
   const all = keyPages(listToolFolders(defaultToolsRoot).map(([, id]) => id));
-  const pages = values.page === undefined ? all : all.filter((path) => path === values.page);
-  if (pages.length === 0) {
-    console.error(`${values.page} is not a key page. The key pages are: ${all.join(", ")}`);
+  const unknown = (values.page ?? []).filter((path) => !all.includes(path));
+  if (unknown.length > 0) {
+    console.error(`${unknown.join(", ")} is not a key page. The key pages are: ${all.join(", ")}`);
     return 2;
+  }
+  let pages = values.page === undefined ? all : all.filter((path) => values.page?.includes(path));
+  if (values.shard !== undefined) {
+    const shard = parseShard(values.shard);
+    if (!shard) {
+      console.error(`--shard takes <i>/<n>, such as 1/6.
+
+${HELP}`);
+      return 2;
+    }
+    pages = shardPages(pages, shard.index, shard.count);
+    if (!values.json) console.error(`shard ${values.shard}: ${pages.length} pages`);
   }
 
   const profile = mkdtempSync(join(tmpdir(), "ni-lighthouse-"));
@@ -214,6 +231,19 @@ async function main(): Promise<number> {
   }
 
   const ok = results.every((result) => result.problems.length === 0);
+  if (values.out) {
+    // What the CI gate reads to name the failing pages (scripts/lighthouse-gate.ts, ADR 0063).
+    mkdirSync(values.out, { recursive: true });
+    const failing = results.filter((result) => result.problems.length > 0);
+    writeFileSync(
+      join(values.out, "summary.json"),
+      JSON.stringify({
+        ok,
+        pages: pages.length,
+        failing: failing.map(({ path, problems }) => ({ path, problems })),
+      }),
+    );
+  }
   if (values.json) console.log(JSON.stringify({ ok, pages: results }, null, 2));
   else console.log(formatResults(results));
   return ok ? 0 : 1;
