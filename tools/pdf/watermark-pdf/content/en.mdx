@@ -1,0 +1,34 @@
+Watermark PDF draws a line of text such as DRAFT or CONFIDENTIAL across the pages of a PDF in your browser, once in the centre or tiled. You set its size, colour, opacity and angle, and the pages it goes on. It marks a contract as a draft, a copy of an ID as for one purpose only, or a report as not for sharing, without any upload.
+
+## How to use
+
+1. Drop one PDF on the box, or click it to choose it. Its page count appears under the box.
+2. Type the Watermark text, one line.
+3. Set the Font size in points, the Colour as a hex code such as #cc0000, the Opacity in percent and the Angle in degrees. A positive angle turns the text counterclockwise; 45 runs it up from the lower left.
+4. Under Layout, pick Once, in the centre, or Tiled across the page for rows of the text over the whole page.
+5. Keep All pages, or pick Only the pages I choose and list them.
+6. Press Add watermark, then Download the file.
+
+## Examples
+
+A test PDF called contract.pdf with 3 pages, watermarked with CONFIDENTIAL at 60 points, colour #808080, opacity 25 and angle 45, once in the centre. The download is contract-watermarked.pdf and the result says 3 pages watermarked, 3 copies of the text. Each page shows the word in pale grey, running corner to corner through its middle, with the page text still readable underneath. Pick Tiled across the page and the same settings fill each page with staggered rows instead.
+
+## Limits
+
+One PDF at a time, up to 50 MB, as Quick facts shows. The text can be 1 to 100 characters, the font size 8 to 200 points, the opacity 5 to 100 percent and the angle -180 to 180 degrees; these ranges are our own choice. A tiled page holds at most 500 copies, and the gaps widen to stay under it.
+
+The text is drawn in Helvetica Bold, one of the standard fonts every PDF reader has. It can draw Latin letters, digits, the accented letters of Western European languages and common punctuation, including the euro sign. It cannot draw Hindi or other Indian scripts, the rupee sign, Cyrillic, Chinese, emoji or letters such as Ā and ł; text with any of them is refused with a message naming them. Image watermarks are not offered. Password-protected and damaged PDFs are refused.
+
+## FAQ
+
+### Does my PDF get uploaded?
+
+No. A background worker in your browser opens the file and draws the text into it. Nothing is sent to a server.
+
+### Can someone remove the watermark?
+
+Someone with a PDF editor can delete it, because it is drawn as text on top of the page. It shows intent and discourages casual copying, but it is not protection.
+
+### What opacity should I choose?
+
+Between 15 and 30 percent usually keeps the page readable while the mark stays visible. That range is a rule of thumb, so check the result on your own document.
