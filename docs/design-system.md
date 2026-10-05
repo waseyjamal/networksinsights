@@ -63,7 +63,7 @@ Do not use Tailwind's `dark:` variant. Tokens already switch with the theme.
 
 | Group | Tokens |
 |---|---|
-| Surfaces | `bg`, `surface`, `surface-raised`, `surface-sunken` |
+| Surfaces | `bg`, `surface`, `surface-raised`, `surface-sunken`; `paper` and `paper-ink` are a document page, white with black ink in both themes |
 | Borders | `border` (decorative), `border-strong` (control edges, 3:1) |
 | Text | `fg`, `fg-muted`, `fg-subtle`, `inverse`, `inverse-fg` |
 | Brand | `brand`, `brand-hover`, `brand-active`, `brand-fg` (button), `brand-ui`, `brand-ui-fg` (checked controls, progress), `brand-text` (links), `brand-soft`, `brand-soft-fg`, `ring` |

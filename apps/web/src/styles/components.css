@@ -259,7 +259,7 @@
     overflow: hidden;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-lg);
-    background: var(--color-white);
+    background: var(--paper);
     box-shadow: var(--shadow-inset);
     user-select: none;
   }
@@ -283,7 +283,7 @@
     padding: 0;
     border: 1px dashed transparent;
     background: transparent;
-    color: var(--color-black);
+    color: var(--paper-ink);
     font: inherit;
     line-height: 1.2;
     text-align: left;
