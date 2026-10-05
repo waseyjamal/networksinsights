@@ -18,7 +18,7 @@ An M4A voice memo called interview.m4a converted to M4A again is copied as it is
 
 A file may be up to 300 MB and two hours long. WAV and FLAC are offered for recordings up to 30 minutes, because the whole file is built in memory. Phones have less memory than computers, so a large file may fail on a phone before these limits.
 
-What your browser can do decides the choices. Every conversion needs the browser to decode the sound, except a WAV file, which needs no decoder. FLAC is encoded by libFLAC, built into the tool, so it works wherever the sound can be decoded. OGG Opus needs an Opus encoder, which current Chrome, Edge and Firefox have. M4A needs an AAC encoder: Chrome and Edge on a computer have one, Firefox does not. Older Safari versions may decode and encode nothing. The tool never writes MP3. Files with more than two channels are mixed down to stereo.
+What your browser can do decides the choices. Every conversion needs the browser to decode the sound, except a WAV file, which needs no decoder. FLAC is encoded by libFLAC, built into the tool, so it works wherever the sound can be decoded. OGG Opus needs an Opus encoder, which current Chrome, Edge and Firefox have. M4A needs an AAC encoder: Chrome and Edge on a computer have one, Firefox does not. Older Safari versions may decode and encode nothing. This tool does not write MP3; Audio to MP3 does. Files with more than two channels are mixed down to stereo.
 
 ## FAQ
 
@@ -32,7 +32,7 @@ Pick FLAC to archive or edit a recording with no loss at about half the size of 
 
 ### Why is there no MP3 output?
 
-Browsers have no built-in MP3 encoder, and the free MP3 encoders carry licence terms this site does not accept. M4A and OGG Opus are smaller for the same sound and play on current phones and computers.
+MP3 has its own tool on this site, Audio to MP3, which encodes with LAME, a free MP3 encoder served as a separate file. This tool keeps to the formats browsers and libFLAC write. M4A and OGG Opus are smaller for the same sound and play on current phones and computers.
 
 ### Does converting from a lossy file to FLAC improve the sound?
 
