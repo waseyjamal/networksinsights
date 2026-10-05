@@ -3,7 +3,14 @@ import { expect, type Page, test } from "@playwright/test";
 import manifest from "../../../tools/video-audio/video-to-gif/tool.config";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
-import { type BrowserCodecs, browserCodecs, hideFromPage, readMedia, recordPath } from "./media";
+import {
+  type BrowserCodecs,
+  browserCodecs,
+  expectProbeSane,
+  hideFromPage,
+  readMedia,
+  recordPath,
+} from "./media";
 import {
   expectNoAxeViolations,
   expectQuickFacts,
@@ -61,6 +68,7 @@ test("makes a GIF from a clip the browser decodes, or says plainly that it canno
   const errors = collectErrors(page);
   const violations = await watchViolations(page);
   await openTool(page, PATH);
+  await expectProbeSane(page);
   const clip = decodable(await browserCodecs(page));
   if (!clip) {
     await file(page).setInputFiles(clips.mp4);
@@ -91,6 +99,7 @@ test("refuses one over each limit, and makes a GIF at exactly 30 s, 480 px and 1
   page,
 }, testInfo) => {
   await openTool(page, PATH);
+  await expectProbeSane(page);
   const clip = decodable(await browserCodecs(page), true);
   if (!clip) {
     await file(page).setInputFiles(clips.longMp4);
@@ -134,6 +143,7 @@ test("refuses one over each limit, and makes a GIF at exactly 30 s, 480 px and 1
 
 test("Cancel stops a GIF in progress and saves nothing", async ({ page }, testInfo) => {
   await openTool(page, PATH);
+  await expectProbeSane(page);
   const clip = decodable(await browserCodecs(page), true);
   if (!clip) {
     await file(page).setInputFiles(clips.longMp4);
@@ -156,6 +166,11 @@ test("Cancel stops a GIF in progress and saves nothing", async ({ page }, testIn
 });
 
 test("without a video decoder, says plainly that it cannot make a GIF here", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "without a video decoder, says plainly that it cannot make a GIF here, no conversion",
+    "message",
+  );
   await hideFromPage(page, ["VideoDecoder", "VideoEncoder", "AudioEncoder"]);
   const errors = collectErrors(page);
   await openTool(page, PATH);
@@ -167,6 +182,7 @@ test("without a video decoder, says plainly that it cannot make a GIF here", asy
 });
 
 test("refuses a file that is not a video", async ({ page }) => {
+  recordPath(test.info(), "refuses a file that is not a video, no conversion", "message");
   await openTool(page, PATH);
   await file(page).setInputFiles({
     name: "cat.gif",
@@ -181,6 +197,11 @@ test("refuses a file that is not a video", async ({ page }) => {
 
 for (const theme of ["light", "dark"] as const) {
   test(`has no axe violations after reading a video, ${theme} theme`, async ({ page }) => {
+    recordPath(
+      test.info(),
+      `has no axe violations after reading a video, ${theme} theme, no conversion`,
+      "message",
+    );
     await useTheme(page, theme);
     await openTool(page, PATH);
     const clip = decodable(await browserCodecs(page)) ?? clips.mp4;
@@ -191,6 +212,11 @@ for (const theme of ["light", "dark"] as const) {
 }
 
 test("structured data and Quick facts come from the manifest", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "structured data and Quick facts come from the manifest, no conversion",
+    "message",
+  );
   await openTool(page, PATH);
   await expectStructuredData(page, manifest, PATH);
   await expectQuickFacts(page, manifest);

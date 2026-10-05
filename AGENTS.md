@@ -58,6 +58,10 @@ Tools:
   BSD-3-Clause, built without Ogg) and `gifenc` 1.0.3 (MIT), only from `worker.ts` (ADR 0061). No MP3, and
   nothing LGPL, GPL or LAME-based. A tool asks the browser with WebCodecs `isConfigSupported` what it can
   decode and encode, offers only that, and says plainly what it cannot do.
+- Formatter libraries (`yaml` 2.9.1, `xml-formatter` 3.7.0, `sql-formatter` 15.9.0) load only from a
+  tool's `worker.ts`; `logic.ts` takes the library as a parameter and imports nothing (ADR 0062).
+  Compress PDF uses `@embedpdf/pdfium` 2.15.1 only from `worker.ts`; its wasm is the hashed file Vite
+  emits. FreeType inside it is used under the FTL, never the GPLv2, with its notice in `credits.ts`.
 - `/vendor/<name>/<version>/*` is cached for a year only when the folder holds unmodified files of the one
   package whose exact version it names (`versionedVendorPaths`, ADR 0061). Tesseract's folder is not.
 - A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.

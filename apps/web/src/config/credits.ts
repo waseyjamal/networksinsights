@@ -38,6 +38,15 @@ export const LIBFLAC_NOTICE =
 export const ZLIB_NOTICE =
   "(C) 1995-2013 Jean-loup Gailly and Mark Adler. (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin. This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software. Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions: 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required. 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software. 3. This notice may not be removed or altered from any source distribution.";
 
+/**
+ * FreeType's notice under the FreeType License (FTL), which this site chose over the GPLv2 that
+ * FreeType also offers (ADR 0062). FTL section 2 requires a binary distribution to state in its
+ * documentation that the software is based in part on the work of the FreeType Team; the credit
+ * line is the one FTL.TXT recommends, with the year of FreeType 2.14.1.
+ */
+export const FREETYPE_NOTICE =
+  "Portions of this software are copyright © 2025 The FreeType Project (www.freetype.org). All rights reserved. This software is based in part on the work of the FreeType Team. FreeType is used under the FreeType License (FTL), https://freetype.org/license.html.";
+
 export const credits: readonly Credit[] = [
   {
     name: "pdf-lib",
@@ -152,5 +161,68 @@ export const credits: readonly Credit[] = [
     url: "https://github.com/mattdesl/gifenc",
     usedFor: "Choosing the colours of each frame and writing the GIF in Video to GIF",
     notice: `Copyright (c) 2017 Matt DesLauriers. ${MIT_TERMS}`,
+  },
+  {
+    name: "yaml",
+    version: "2.9.1",
+    license: "ISC",
+    url: "https://github.com/eemeli/yaml",
+    usedFor: "Reading and printing YAML in YAML Formatter",
+    notice:
+      'Copyright Eemeli Aro <eemeli@gmail.com>. Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies. THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.',
+  },
+  {
+    name: "xml-formatter (with xml-parser-xo)",
+    version: "3.7.0",
+    license: "MIT",
+    url: "https://github.com/chrisbottin/xml-formatter",
+    usedFor: "Printing XML in XML Formatter, with its parser xml-parser-xo 4.1.6",
+    notice: `xml-formatter: Copyright 2019 Chris Bottin (https://github.com/chrisbottin). xml-parser-xo: Copyright 2020 Chris Bottin (https://github.com/chrisbottin). ${MIT_TERMS}`,
+  },
+  {
+    name: "sql-formatter",
+    version: "15.9.0",
+    license: "MIT",
+    url: "https://github.com/sql-formatter-org/sql-formatter",
+    usedFor:
+      "Formatting SQL in SQL Formatter, with the nearley parser (MIT) and the moo lexer (BSD-3-Clause)",
+    notice: `sql-formatter: Copyright (c) 2016-2020 ZeroTurnaround LLC, Copyright (c) 2020-2021 George Leslie-Waksman and other contributors, Copyright (c) 2021-Present inferrinizzard and other contributors. ${MIT_TERMS} nearley: Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019 Kartik Chandra, Tim Radvan, under the same MIT terms. moo: Copyright (c) 2017, Tim Radvan (tjvr) All rights reserved. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. * Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`,
+  },
+  {
+    name: "@embedpdf/pdfium",
+    version: "2.15.1",
+    license: "MIT",
+    url: "https://github.com/embedpdf/embed-pdf-viewer",
+    usedFor:
+      "Running PDFium in Compress PDF: the WebAssembly build of PDFium and the JavaScript that loads it",
+    notice: `Copyright (c) 2024 CloudPDF, Ji Chang. ${MIT_TERMS}`,
+  },
+  {
+    name: "PDFium",
+    version: "embedpdf/runtime 0ba3b64",
+    license: "BSD-3-Clause AND Apache-2.0",
+    url: "https://pdfium.googlesource.com/pdfium/",
+    usedFor:
+      "Opening PDFs, decoding their pictures and saving the result in Compress PDF, compiled to WebAssembly from the embedpdf/runtime fork",
+    sourceUrls: ["https://github.com/embedpdf/runtime"],
+    notice: `Copyright 2014 PDFium Authors. All rights reserved. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. Neither the name of Google Inc. nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. Parts of PDFium are under the Apache License, Version 2.0. ${APACHE_TERMS}`,
+  },
+  {
+    name: "FreeType",
+    version: "2.14.1",
+    license: "FTL",
+    url: "https://freetype.org/",
+    usedFor: "Reading the fonts inside PDFs in Compress PDF, as part of PDFium",
+    sourceUrls: ["https://gitlab.freedesktop.org/freetype/freetype"],
+    notice: FREETYPE_NOTICE,
+  },
+  {
+    name: "Libraries inside PDFium",
+    version: "as pinned by embedpdf/runtime 0ba3b64",
+    license: "MIT AND BSD-2-Clause AND IJG AND BSD-3-Clause AND Libpng AND Zlib",
+    url: "https://github.com/embedpdf/runtime/tree/0ba3b640128e149f08071e270218560c0991cf73/third_party",
+    usedFor:
+      "Colour management, JPEG 2000, JPEG, PNG and Deflate decoding and vector drawing inside PDFium's WebAssembly in Compress PDF",
+    notice: `Little CMS: Copyright (c) 2023 Marti Maria Saguer, under the MIT licence. OpenJPEG: Copyright (c) 2002-2014, Universite catholique de Louvain (UCL), Belgium, Copyright (c) 2002-2014, Professor Benoit Macq, and the other OpenJPEG contributors, under the 2-clause BSD licence. libjpeg-turbo: This software is based in part on the work of the Independent JPEG Group. Copyright (C)2009-2024 D. R. Commander, Copyright (C)2015 Viktor Szathmáry, under the IJG licence and the 3-clause BSD licence. libpng: Copyright (c) 1995-2019 The PNG Reference Library Authors, Copyright (c) 2018-2019 Cosmin Truta, under the PNG Reference Library License version 2. zlib: Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler, under the zlib licence. Anti-Grain Geometry 2.3: Copyright (C) 2002-2005 Maxim Shemanarev (McSeem). Permission to copy, use, modify, sell and distribute this software is granted provided this copyright notice appears in all copies. This software is provided "as is" without express or implied warranty, and with no claim as to its suitability for any purpose. The full licence texts are in the source linked here.`,
   },
 ];

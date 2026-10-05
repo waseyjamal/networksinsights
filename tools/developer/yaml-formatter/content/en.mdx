@@ -1,0 +1,61 @@
+YAML Formatter formats, validates or minifies YAML in your browser, and names the line and column of any syntax error. It is for developers and operators who edit Kubernetes manifests, CI pipelines, Docker Compose files or app settings, and want consistent indentation or a quick check before a commit. Every value is printed exactly as you wrote it, so 007 stays 007 and a long number keeps all its digits.
+
+## How to use
+
+1. Paste your YAML into the Your YAML box, or type it. The tool checks it again a moment after every change.
+2. Choose Format to print it in block style, one key per line, or Minify to put each document on one line in flow style without comments.
+3. For Format, pick the indentation: 2 spaces or 4 spaces per level.
+4. Read the result below with its number of lines and characters, and a line that says the YAML is valid and how many documents it holds. If it is not valid, a message gives the line and column instead, with that line and a caret under the spot.
+5. Press Copy result to put the output on your clipboard, or Clear to start over.
+
+## Examples
+
+Paste this and keep Format with 2 spaces:
+
+```yaml
+name: Ada
+langs: [en, fr]
+address: {city: London, zip: 007}
+```
+
+The result is seven lines. The list and the address move to block style under their keys, and zip keeps its leading zeros:
+
+```yaml
+name: Ada
+langs:
+  - en
+  - fr
+address:
+  city: London
+  zip: 007
+```
+
+Press Minify and the same document becomes one line:
+
+```yaml
+{name: Ada, langs: [en, fr], address: {city: London, zip: 007}}
+```
+
+Add a line that repeats the key name, and the message reads Line 4, column 1: Map keys must be unique.
+
+## Limits
+
+The text can be up to 500,000 characters; longer text is refused with a note, so split it first. Near that size a phone can take several seconds. Minify removes comments and blank lines; Format keeps comments. A folded block scalar (one that starts with >) is printed with its text on one line. The tool checks YAML syntax only: it does not check a file against a schema, such as a Kubernetes resource or a GitHub Actions workflow. Only the first error is explained, with a count of the others.
+
+## FAQ
+
+### Why does my YAML say tabs are not allowed?
+
+YAML forbids tab characters for indentation, so a line indented with a tab is an error even when it looks right in your editor. Replace the tabs at the start of that line with spaces, and turn on visible whitespace in your editor to find them.
+
+### Will formatting change my values?
+
+No. Every value is printed as the text you typed and is never turned into a number or a date and back. Leading zeros, hexadecimal like 0x1F, exponents like 1e5, long numbers, quotes and block text all stay as they are. Anchors, aliases and tags are kept too.
+
+### Can it handle several documents in one file?
+
+Yes. Documents separated by three dashes are checked and formatted one after the other, and the result puts three dashes between them again. The valid line under the box says how many documents were found.
+
+### Is my YAML sent anywhere?
+
+No. The checking and formatting run in a background worker on this page, and your YAML is never uploaded, stored or logged. Copy result writes to the clipboard of your own device only.

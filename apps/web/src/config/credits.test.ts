@@ -7,7 +7,7 @@ import {
   TESSERACT_ASSETS,
 } from "../../../../tools/image/ocr/logic";
 import { PDFJS_ASSETS } from "../../../../tools/pdf/pdf-to-jpg/logic";
-import { credits, LIBFLAC_NOTICE, ZLIB_NOTICE } from "./credits";
+import { credits, FREETYPE_NOTICE, LIBFLAC_NOTICE, ZLIB_NOTICE } from "./credits";
 import { LIBHEIF_BASE, LIBHEIF_FILES, LIBHEIF_VERSION } from "./libheif";
 import { PDFJS_BASE, PDFJS_VENDOR_FOLDERS, PDFJS_VERSION } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES, TESSERACT_VERSION } from "./tesseract";
@@ -34,6 +34,29 @@ describe("credits", () => {
     expect(version("tesseract.js-core")).toBe(toolsPackage.dependencies["tesseract.js-core"]);
     expect(TESSERACT_VERSION).toBe(toolsPackage.dependencies["tesseract.js"]);
     expect(TESSERACT_ASSETS).toBe(TESSERACT_BASE);
+  });
+
+  it("credits the formatter libraries and PDFium at the versions installed (ADR 0062)", () => {
+    const version = (name: string) => credits.find((credit) => credit.name === name)?.version;
+    expect(version("yaml")).toBe(toolsPackage.dependencies.yaml);
+    expect(version("sql-formatter")).toBe(toolsPackage.dependencies["sql-formatter"]);
+    expect(version("@embedpdf/pdfium")).toBe(toolsPackage.dependencies["@embedpdf/pdfium"]);
+    expect(credits.find((credit) => credit.name.startsWith("xml-formatter"))?.version).toBe(
+      toolsPackage.dependencies["xml-formatter"],
+    );
+  });
+
+  it("carries the notice the FreeType License requires, and no GPL", () => {
+    // FTL.TXT: the recommended credit line with the year of the release used, and section 2's
+    // statement that the software is based in part on the work of the FreeType Team.
+    expect(FREETYPE_NOTICE).toContain(
+      "Portions of this software are copyright © 2025 The FreeType Project (www.freetype.org). All rights reserved.",
+    );
+    expect(FREETYPE_NOTICE).toContain("based in part on the work of the FreeType Team");
+    const freetype = credits.find((credit) => credit.name === "FreeType");
+    expect(freetype?.license).toBe("FTL");
+    expect(freetype?.notice).toBe(FREETYPE_NOTICE);
+    expect(credits.some((credit) => /\bGPL/.test(credit.license.replace("LGPL", "")))).toBe(false);
   });
 
   it("offers the source of the LGPL library and its licence, next to the unmodified wasm", () => {

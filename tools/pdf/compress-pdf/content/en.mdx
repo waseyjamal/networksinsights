@@ -1,0 +1,34 @@
+Compress PDF makes a PDF smaller in your browser by recompressing its pictures as JPEG, while the text, fonts and drawings stay exactly as they were, sharp and selectable. It helps when a form, a portal or an email refuses a file for being too large, and the size comes from photos or scans. Some PDFs will not get smaller, and the tool says so plainly instead of guessing a size.
+
+## How to use
+
+1. Drop one PDF on the box, or click it to choose one. Its name and size appear under the box.
+2. Under Compression, pick Light (220 dpi, high quality), Recommended (150 dpi, good quality) or Strong (96 dpi, smaller pictures). A picture shown at more than that resolution is made smaller; one shown at less keeps its size and is only encoded again.
+3. Press Compress. A bar shows the pages done, and Cancel stops the work.
+4. Read the summary: how many pictures were found, recompressed, and kept as they were. If the new file is smaller, Download it, with its old and new size; if not, the page says there is nothing to download.
+
+## Examples
+
+A test PDF of 7 pages holds six photos of 3000 by 2000 pixels saved as high-quality JPEG, each shown half a page wide, one picture with a transparent part, and twelve lines of text on each page. It is about 20 MB. With Recommended, the six photos are recompressed, the transparent picture is kept as it was, and the result is less than a tenth of the original size. Every line of text can still be selected and reads the same. A PDF made only of text, such as a letter typed in a word processor, does not get smaller, and the page says so.
+
+## Limits
+
+One PDF at a time, up to 50 MB and 500 pages, as Quick facts shows. Password-protected PDFs, including ones that open without a password but carry an owner password, are refused, and so are damaged files. Only pictures are compressed; fonts, text and drawings stay the same size. Pictures with transparency or a mask, pictures larger than 25 megapixels, black and white pictures, and CMYK or other print colours are kept as they were. A picture is replaced only when its new version is at least 10% smaller. After compressing, the text of every page is compared with the original; if any page differs, nothing is returned. A digital signature is no longer valid after the file changes. Phones have less memory than computers, so a large PDF may fail on a phone before these limits.
+
+## FAQ
+
+### Will my text stay selectable?
+
+Yes. Only pictures are changed, and the tool reads the text of every page again after compressing. If a single page reads differently from the original, no file is offered, and your original is left as it is.
+
+### Why did my PDF not get smaller?
+
+Most of its size is probably text, fonts or drawings, which this tool does not change, or its pictures are already well compressed. When the new file would not be smaller, nothing is offered for download, so you never get a bigger file by mistake.
+
+### Which level should I choose?
+
+Recommended suits screens and most printing. Choose Light to keep photos sharper for print, or Strong when the file must be as small as possible and the pictures only need to be readable on a screen.
+
+### Is my PDF uploaded?
+
+No. A background worker in your browser opens the PDF with PDFium, the PDF engine of Chrome compiled to WebAssembly, and recompresses the pictures there. Nothing is sent anywhere.

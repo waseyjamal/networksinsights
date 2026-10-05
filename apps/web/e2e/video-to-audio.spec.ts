@@ -3,7 +3,7 @@ import { expect, type Page, test } from "@playwright/test";
 import manifest from "../../../tools/video-audio/video-to-audio/tool.config";
 import { edgeURL } from "./edge";
 import { collectErrors } from "./helpers";
-import { browserCodecs, hideFromPage, readMedia, recordPath } from "./media";
+import { browserCodecs, expectProbeSane, hideFromPage, readMedia, recordPath } from "./media";
 import {
   expectNoAxeViolations,
   expectQuickFacts,
@@ -64,6 +64,7 @@ test("saves WAV when the browser decodes the sound, and says so when it cannot",
 }, testInfo) => {
   await openTool(page, PATH);
   const can = await browserCodecs(page);
+  await expectProbeSane(page);
   for (const [clip, decodes] of [
     [MP4, can.decodeAac],
     [WEBM, can.decodeOpus],
@@ -92,6 +93,7 @@ test("re-encodes Opus from a WebM as AAC where the browser can, and explains it 
 }, testInfo) => {
   await openTool(page, PATH);
   const can = await browserCodecs(page);
+  await expectProbeSane(page);
   await file(page).setInputFiles(WEBM);
   await expect(page.locator("#video-to-audio-source")).toContainText("sound: opus");
   if (can.decodeOpus && can.encodeAac) {
@@ -110,6 +112,11 @@ test("re-encodes Opus from a WebM as AAC where the browser can, and explains it 
 test("with no WebCodecs audio at all, offers only the AAC copy, or says it cannot", async ({
   page,
 }) => {
+  recordPath(
+    test.info(),
+    "with no WebCodecs audio at all, offers only the AAC copy, or says it cannot, no conversion",
+    "message",
+  );
   await hideFromPage(page, ["AudioEncoder", "AudioDecoder"]);
   const errors = collectErrors(page);
   await openTool(page, PATH);
@@ -130,6 +137,11 @@ test("with no WebCodecs audio at all, offers only the AAC copy, or says it canno
 });
 
 test("refuses a file that is not a video, and one that cannot be read", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "refuses a file that is not a video, and one that cannot be read, no conversion",
+    "message",
+  );
   await openTool(page, PATH);
   await file(page).setInputFiles({
     name: "notes.txt",
@@ -150,6 +162,11 @@ test("refuses a file that is not a video, and one that cannot be read", async ({
 
 for (const theme of ["light", "dark"] as const) {
   test(`has no axe violations with a result, ${theme} theme`, async ({ page }) => {
+    recordPath(
+      test.info(),
+      `has no axe violations with a result, ${theme} theme, no conversion`,
+      "message",
+    );
     await useTheme(page, theme);
     await openTool(page, PATH);
     await file(page).setInputFiles(MP4);
@@ -162,6 +179,11 @@ for (const theme of ["light", "dark"] as const) {
 }
 
 test("structured data and Quick facts come from the manifest", async ({ page }) => {
+  recordPath(
+    test.info(),
+    "structured data and Quick facts come from the manifest, no conversion",
+    "message",
+  );
   await openTool(page, PATH);
   await expectStructuredData(page, manifest, PATH);
   await expectQuickFacts(page, manifest);
