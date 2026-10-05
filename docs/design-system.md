@@ -63,7 +63,7 @@ Do not use Tailwind's `dark:` variant. Tokens already switch with the theme.
 
 | Group | Tokens |
 |---|---|
-| Surfaces | `bg`, `surface`, `surface-raised`, `surface-sunken` |
+| Surfaces | `bg`, `surface`, `surface-raised`, `surface-sunken`; `paper` and `paper-ink` are a document page, white with black ink in both themes |
 | Borders | `border` (decorative), `border-strong` (control edges, 3:1) |
 | Text | `fg`, `fg-muted`, `fg-subtle`, `inverse`, `inverse-fg` |
 | Brand | `brand`, `brand-hover`, `brand-active`, `brand-fg` (button), `brand-ui`, `brand-ui-fg` (checked controls, progress), `brand-text` (links), `brand-soft`, `brand-soft-fg`, `ring` |
@@ -133,6 +133,7 @@ Web Worker (ADR 0051, docs/tool-contract.md "The worker runtime").
 | Input, Textarea, Select | yes | yes | `id` is required. `label`, `hint`, `error` wire up `aria-describedby` and `aria-invalid` |
 | Checkbox, Switch | yes | yes | Native inputs, so keyboard and screen readers work |
 | DrawPad | markup only | `DrawPad` | A sheet to draw on (a signature): ink in the theme's text colour on transparent; a tool colours the shape as it needs. `handle` gives `canvas` and `clear()`; `onChange(hasInk)`. Drawing has no keyboard path: always offer a typed or uploaded option next to it |
+| PageCanvas | markup only | `PageCanvas` | A page picture with items placed over it as fractions of the page (`x`, `y`, `width`, `height` from 0 to 1, top left). Each item is a button: drag it, or move it with the arrow keys (Shift for ten steps) and remove it with Delete or Backspace; `onMove`, `onDelete`, `onSelect`. The page is a size container, so item text sized in `cqw` scales with it. `mode="draw"` reports strokes with `onStroke(points)`; drawing has no keyboard path, so offer other items too. First used by Edit PDF |
 | Badge | yes | yes | `tone` neutral, brand, success, warning, danger, info |
 | Card | `Card` (`href` for a link) | `Card`, `CardLink` | |
 | Tabs | `Tabs` + `TabPanel` | `Tabs` | WAI-ARIA Tabs: arrow keys, Home, End, roving tabindex |

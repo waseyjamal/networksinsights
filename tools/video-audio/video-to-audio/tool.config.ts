@@ -15,7 +15,7 @@ export default defineTool({
   status: "beta",
   input: z.object({ output: z.enum(["m4a", "wav"]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
-  related: ["audio-converter", "video-compressor", "video-to-gif"],
+  related: ["video-to-mp3", "audio-converter", "video-compressor"],
   added: "2026-10-04",
-  updated: "2026-10-04",
+  updated: "2026-10-05",
 });

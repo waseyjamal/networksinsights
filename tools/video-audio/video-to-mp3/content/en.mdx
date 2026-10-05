@@ -1,0 +1,38 @@
+Video to MP3 saves the sound of a video as an MP3 file, encoded in your browser with the LAME encoder, without uploading the video. It suits anyone who wants the talk, the lecture or the music from a clip as an MP3 that plays on every phone, car stereo and music player.
+
+## How to use
+
+1. Choose one video with the box: an MP4 from a phone, a MOV from an iPhone or camera, or a WebM recording. The page lists its name, size, running time and the codec of its sound track.
+2. Set MP3 quality to 128, 192 or 320 kbit/s. The hint shows how large the MP3 of this video will be.
+3. Press Make MP3. The first press fetches the encoder; after that the bar tracks the sound as it is encoded, and Cancel throws the half made file away.
+4. Save the result with the Download button, which is named after your video.
+
+## Examples
+
+A phone video called lecture.mp4 that runs for ten minutes becomes lecture.mp3. At 128 kbit/s the MP3 is about 9.2 MB, at 192 kbit/s about 13.7 MB and at 320 kbit/s about 22.9 MB, because an MP3 at a constant bitrate grows by the same amount every second.
+
+Our two second test clip with AAC sound comes out as a stereo MP3 at 48 kHz and 192 kbit/s, two seconds long plus the few milliseconds of silence every MP3 encoder adds at the start and end.
+
+## Limits
+
+A video may be up to 1 GB and two hours long. Phones have less memory than computers, so a large video may fail on a phone before these limits.
+
+The sound is decoded by your browser, so the tool works only when your browser can decode the sound in that video. Chrome and Edge on a computer decode the most formats; when your browser cannot, the page says so and makes no file. Only the main sound track is saved. Sound with more than two channels is mixed down to stereo, and the MP3 is always 32, 44.1 or 48 kHz. MP3 is lossy, so every conversion loses a little quality.
+
+## FAQ
+
+### Is my video uploaded anywhere?
+
+No. The picture is never decoded at all: a background worker on this page takes only the sound track from the file on your device and turns it into MP3. Nothing is sent to a server.
+
+### Which quality should I choose?
+
+For a talk, a lecture or a voice note, 128 kbit/s is plenty and keeps the file small. For a music video, 192 kbit/s sounds close to the original for most listeners, and 320 kbit/s is the highest quality MP3 allows.
+
+### Why does the page say my browser cannot do this?
+
+The sound inside a video is stored compressed, as AAC in most MP4 and MOV files and as Opus in most WebM files, and your browser has to decode it before it can be encoded as MP3. Some browsers cannot decode some of these. Try Chrome or Edge on a computer.
+
+### Can I save only part of the sound?
+
+Not in this tool, which always saves the whole sound track. Cut the video first with Video trimmer on this site, then turn the shorter video into an MP3 here.

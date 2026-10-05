@@ -123,20 +123,83 @@ test("adds a zone and removes a zone", async ({ page }) => {
   await expect(page.locator("#tz-add")).toBeEnabled();
 });
 
-test("stops at ten zones and frees a place when one is removed", async ({ page }) => {
+/**
+ * WebKit only, test only: draws the workspace card flat (no shadow or glow, a solid border instead
+ * of the gradient border), as the Invoice Generator spec does. WebKit repaints the whole card each
+ * time a zone row is added. Measured in Playwright's Linux WebKit (1.63) on 2026-10-05, a real
+ * Add zone took 3.6 to 7.9 seconds with the shadow, glow and gradient border (the first 31 s), and
+ * 0.7 to 1.2 seconds flat; Chromium took 0.13 to 0.19 seconds either way. Seven real clicks then
+ * passed the 30 second timeout in CI. The look of the card is kept for visitors. The rule goes in through the CSSOM: page.addStyleTag adds an inline <style>, which the
+ * site's CSP blocks.
+ */
+async function flattenCardInWebkit(page: Page, browserName: string) {
+  if (browserName !== "webkit") return;
+  await page.evaluate(() => {
+    const sheet = [...document.styleSheets].find((candidate) => {
+      try {
+        return candidate.cssRules.length >= 0;
+      } catch {
+        return false;
+      }
+    });
+    sheet?.insertRule(
+      ".ni-workspace{box-shadow:none!important;background:var(--surface)!important;border-color:var(--border)!important}",
+      sheet.cssRules.length,
+    );
+  });
+}
+
+/** Adds a zone as a visitor does: real Playwright choice and click. */
+async function addZone(page: Page, zone: string) {
+  await page.locator("#tz-add").selectOption(zone);
+  await page.getByRole("button", { name: "Add zone" }).click();
+}
+
+/**
+ * Adds filler zones fast: each is chosen with the native value setter and a change event, and Add
+ * zone is clicked through the DOM, all in one page.evaluate, so Playwright waits for nothing per
+ * zone. React handles both events as it does a visitor's. The checks run with real clicks around it.
+ */
+async function addFillerZones(page: Page, zones: string[]) {
+  await page.evaluate(async (list) => {
+    const select = document.getElementById("tz-add") as HTMLSelectElement;
+    const setValue = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+    const addButton = () =>
+      [...document.querySelectorAll("button")].find((button) => button.textContent === "Add zone");
+    const count = () => document.querySelectorAll("#tz-targets li").length;
+    // React renders after the event: wait for each change to be drawn before the next one.
+    const drawn = async (ready: () => boolean) => {
+      while (!ready()) await new Promise((resolve) => setTimeout(resolve, 0));
+    };
+    for (const zone of list) {
+      const before = count();
+      setValue?.call(select, zone);
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      await drawn(() => addButton()?.disabled === false);
+      addButton()?.click();
+      await drawn(() => count() === before + 1);
+    }
+  }, zones);
+}
+
+test("stops at ten zones and frees a place when one is removed", async ({ page, browserName }) => {
   await openTool(page, PATH);
-  for (const zone of [
-    "UTC",
+  await flattenCardInWebkit(page, browserName);
+  // The first zone with a real click, and the checks at the start.
+  await expect(page.locator("#tz-targets li")).toHaveCount(3);
+  await expect(page.locator("#tz-add")).toBeEnabled();
+  await addZone(page, "UTC");
+  await expect(page.locator("#tz-targets li")).toHaveCount(4);
+  await addFillerZones(page, [
     "Asia/Dubai",
     "Europe/Paris",
     "Europe/Berlin",
     "Africa/Cairo",
     "Asia/Seoul",
-    "Europe/Rome",
-  ]) {
-    await page.locator("#tz-add").selectOption(zone);
-    await page.getByRole("button", { name: "Add zone" }).click();
-  }
+  ]);
+  await expect(page.locator("#tz-targets li")).toHaveCount(9);
+  // The tenth zone with a real click, then the limit.
+  await addZone(page, "Europe/Rome");
   await expect(page.locator("#tz-targets li")).toHaveCount(10);
   await expect(page.locator("#tz-add")).toBeDisabled();
   await expect(page.getByRole("button", { name: "Add zone" })).toBeDisabled();

@@ -1,6 +1,6 @@
 # 0061. Video and audio tools: Mediabunny, the libFLAC encoder and gifenc; long cache for versioned vendor folders
 
-Status: Accepted
+Status: Accepted; its "No MP3" rule is superseded by [0064](0064-mp3-encoder-lgpl-exception-and-zip-library.md)
 Date: 2026-10-04
 
 ## Context

@@ -249,6 +249,75 @@
     touch-action: none;
   }
 
+  /* PageCanvas: a page picture with items placed over it as fractions of the page. The page is a
+     size container, so text in an item can be sized in cqw and scales with the page. A page is
+     white paper with black ink in both themes, as it prints. */
+  .ni-pagecanvas__page {
+    position: relative;
+    container-type: inline-size;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-inset);
+    user-select: none;
+  }
+
+  .ni-pagecanvas__page[data-mode="draw"] {
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .ni-pagecanvas__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .ni-pagecanvas__item {
+    position: absolute;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 1px dashed transparent;
+    background: transparent;
+    color: var(--paper-ink);
+    font: inherit;
+    line-height: 1.2;
+    text-align: left;
+    white-space: pre;
+    cursor: move;
+    touch-action: none;
+  }
+
+  .ni-pagecanvas__page[data-mode="draw"] .ni-pagecanvas__item {
+    pointer-events: none;
+  }
+
+  .ni-pagecanvas__item:hover,
+  .ni-pagecanvas__item[aria-pressed="true"] {
+    border-color: var(--brand-ui);
+  }
+
+  .ni-pagecanvas__item:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .ni-pagecanvas__stroke {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: var(--brand-ui);
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+  }
+
   @media (hover: hover) {
     .ni-input:hover:not(:disabled),
     .ni-textarea:hover:not(:disabled),

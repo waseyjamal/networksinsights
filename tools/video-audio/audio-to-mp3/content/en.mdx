@@ -1,0 +1,38 @@
+Audio to MP3 converts a WAV, FLAC, M4A, OGG, Opus or WebM recording to an MP3 file in your browser, encoded with LAME, without uploading anything. It suits podcasters, musicians and anyone whose car stereo, old phone or music player only plays MP3, and who would rather not send a private recording to a website.
+
+## How to use
+
+1. Drop one recording on the box, or click it to choose one. The tool reads the file and shows its name, size, length and the kind of sound it holds.
+2. Under MP3 quality, pick 128, 192 or 320 kbit/s. The hint underneath gives the size the MP3 will have at that quality.
+3. Press Make MP3. The encoder loads the first time, then a progress bar shows how far it has got. Cancel stops it at once with nothing saved.
+4. Press the Download button with the new file name to save it.
+
+## Examples
+
+A three minute song saved as song.wav at 44.1 kHz stereo is about 30 MB. As song.mp3 at 192 kbit/s it becomes about 4.1 MB, and at 128 kbit/s about 2.7 MB, because an MP3 at a constant bitrate grows by the same amount every second.
+
+Our two second WAV test file at 48 kHz comes out as a stereo MP3 at 48 kHz and 192 kbit/s, two seconds long plus the few milliseconds of silence every MP3 encoder adds at the start and end.
+
+## Limits
+
+A recording may be up to 300 MB and two hours long. Phones have less memory than computers, so a large file may fail on a phone before these limits.
+
+Your browser decodes the recording, so the tool works only when it can decode that format. WAV needs no decoder and works everywhere; Chrome and Edge on a computer decode the most other formats, and the page says so when your browser cannot. An MP3 is refused, since it needs no conversion. Sound with more than two channels is mixed down to stereo, and the MP3 is always 32, 44.1 or 48 kHz. Tags such as the title and artist are not copied. MP3 is lossy, so a little quality is lost.
+
+## FAQ
+
+### Is my recording uploaded anywhere?
+
+No. A background worker on this page reads the file on your device with Mediabunny, an open-source media library, and encodes the MP3 with LAME. This site serves both files itself, and nothing is sent to a server.
+
+### Does converting FLAC or WAV to MP3 lose quality?
+
+Yes, a little. FLAC and WAV keep every sample, while MP3 leaves out detail most people cannot hear. At 320 kbit/s the difference is very hard to hear, and at 128 kbit/s music can sound slightly dull. Keep the original if you may need it later.
+
+### Why are my title and artist tags missing?
+
+This tool saves the sound only and does not copy tags from the original file. A music player or a tag editor can add the title, artist and album to the MP3 afterwards.
+
+### What is LAME?
+
+LAME is a well known free MP3 encoder, released under the GNU Lesser General Public License. This site serves it as a separate, unmodified WebAssembly file, and the About page links its licence and source code.

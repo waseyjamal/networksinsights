@@ -3,6 +3,7 @@ import {
   ALLOWED_LICENSES,
   checkLicenses,
   formatLicenseReport,
+  LICENSE_OVERRIDES,
   parsePnpmLicenses,
   satisfies,
 } from "./lib/licenses";
@@ -128,6 +129,35 @@ describe("checkLicenses", () => {
     expect(checkLicenses([pkg("libheif-js-lookalike", "LGPL-3.0")])).toHaveLength(1);
     expect(
       checkLicenses([{ name: "other", versions: ["1.23.2"], license: "LGPL-3.0" }]),
+    ).toHaveLength(1);
+  });
+});
+
+describe("the LAME exception (ADR 0064)", () => {
+  const encoder = (versions: string[], license = "MIT") => ({
+    name: "wasm-media-encoders",
+    versions,
+    license,
+  });
+
+  it("checks wasm-media-encoders as LGPL, whatever it declares, and allows 0.7.0 only", () => {
+    expect(LICENSE_OVERRIDES["wasm-media-encoders"]?.license).toBe("MIT AND LGPL-2.0-or-later");
+    expect(checkLicenses([encoder(["0.7.0"])])).toEqual([]);
+    expect(checkLicenses([encoder(["0.7.1"])])).toHaveLength(1);
+    expect(checkLicenses([encoder(["0.7.0", "0.8.0"])])).toHaveLength(1);
+    expect(ALLOWED_LICENSES.has("LGPL-2.0-or-later")).toBe(false);
+  });
+
+  it("still rejects every other LGPL package, MP3 encoders included", () => {
+    for (const name of ["lamejs", "@breezystack/lamejs", "@mediabunny/mp3-encoder", "lame-wasm"]) {
+      for (const license of ["LGPL-2.0-or-later", "LGPL-2.1", "LGPL-3.0", "LGPL-3.0-only"]) {
+        expect(checkLicenses([{ name, versions: ["0.7.0"], license }]), name).toHaveLength(1);
+      }
+    }
+    expect(
+      checkLicenses([
+        { name: "wasm-media-encoders-fork", versions: ["0.7.0"], license: "LGPL-2.0-or-later" },
+      ]),
     ).toHaveLength(1);
   });
 });

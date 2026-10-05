@@ -7,7 +7,10 @@ import {
   TESSERACT_ASSETS,
 } from "../../../../tools/image/ocr/logic";
 import { PDFJS_ASSETS } from "../../../../tools/pdf/pdf-to-jpg/logic";
+import { MP3_WASM_URL as AUDIO_MP3_WASM } from "../../../../tools/video-audio/audio-to-mp3/logic";
+import { MP3_WASM_URL } from "../../../../tools/video-audio/video-to-mp3/logic";
 import { credits, FREETYPE_NOTICE, LIBFLAC_NOTICE, ZLIB_NOTICE } from "./credits";
+import { LAME_BASE, LAME_FILES, LAME_PACKAGE_VERSION, LAME_SOURCE } from "./lame";
 import { LIBHEIF_BASE, LIBHEIF_FILES, LIBHEIF_VERSION } from "./libheif";
 import { PDFJS_BASE, PDFJS_VENDOR_FOLDERS, PDFJS_VERSION } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES, TESSERACT_VERSION } from "./tesseract";
@@ -60,12 +63,32 @@ describe("credits", () => {
   });
 
   it("offers the source of the LGPL library and its licence, next to the unmodified wasm", () => {
-    const libheif = credits.find((credit) => credit.license.includes("LGPL"));
+    const libheif = credits.find((credit) => credit.name.startsWith("libheif-js"));
     expect(libheif?.sourceUrls?.length).toBeGreaterThan(0);
     expect(libheif?.notice).toContain("GNU Lesser General Public License");
     expect(libheif?.notice).toContain(`${LIBHEIF_BASE}libheif.wasm`);
     expect(libheif?.licenseFiles).toEqual([`${LIBHEIF_BASE}LICENSE.txt`]);
-    expect(credits.filter((credit) => credit.license.includes("LGPL"))).toHaveLength(1);
+    expect(credits.filter((credit) => credit.license.includes("LGPL"))).toHaveLength(2);
+  });
+
+  it("credits LAME with its exact source, its licence and the unmodified wasm (ADR 0064)", () => {
+    const version = (name: string) => credits.find((credit) => credit.name === name)?.version;
+    const lame = credits.find((credit) => credit.name.startsWith("wasm-media-encoders"));
+    expect(lame?.version).toBe(toolsPackage.dependencies["wasm-media-encoders"]);
+    expect(LAME_PACKAGE_VERSION).toBe(toolsPackage.dependencies["wasm-media-encoders"]);
+    expect(MP3_WASM_URL).toBe(`${LAME_BASE}mp3.wasm`);
+    expect(AUDIO_MP3_WASM).toBe(`${LAME_BASE}mp3.wasm`);
+    expect(LAME_SOURCE.version).toBe("3.100");
+    expect(lame?.license).toBe("MIT AND LGPL-2.0-or-later");
+    expect(lame?.notice).toContain("GNU Library General Public License, version 2");
+    expect(lame?.notice).toContain("https://lame.sourceforge.io/");
+    expect(lame?.notice).toContain(`${LAME_BASE}mp3.wasm`);
+    expect(lame?.sourceUrls).toContain(`${LAME_SOURCE.fork}/tree/${LAME_SOURCE.commit}`);
+    expect(lame?.sourceUrls).toContain(
+      "https://github.com/arseneyr/wasm-media-encoders/tree/v0.7.0",
+    );
+    expect(lame?.licenseFiles).toEqual([`${LAME_BASE}LICENSE.txt`]);
+    expect(version("fflate")).toBe(toolsPackage.dependencies.fflate);
   });
 
   it("keeps pako's zlib notice word for word", () => {
@@ -103,6 +126,10 @@ describe("credits", () => {
       if (url.startsWith(LIBHEIF_BASE)) {
         const name = url.slice(LIBHEIF_BASE.length);
         expect(Object.values(LIBHEIF_FILES) as string[], url).toContain(name);
+        continue;
+      }
+      if (url.startsWith(LAME_BASE)) {
+        expect(Object.values(LAME_FILES) as string[], url).toContain(url.slice(LAME_BASE.length));
         continue;
       }
       if (url.startsWith(TESSERACT_BASE)) {

@@ -27,7 +27,9 @@ const fixture = (name: string) => {
 };
 
 describe("every tool's logic.ts", () => {
-  it("is pure", () => {
+  // Parses every tool's logic.ts: past 70 tools it can pass the default 5 s while `pnpm check`
+  // typechecks in parallel, so it gets more room.
+  it("is pure", { timeout: 30_000 }, () => {
     for (const [path, source] of Object.entries(toolLogic)) {
       expect(checkLogicPurity(source, path), path).toEqual([]);
     }

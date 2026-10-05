@@ -1,0 +1,42 @@
+Edit PDF adds text, pictures, drawings, highlights and white boxes on top of the pages of a PDF, right in your browser, then saves a new copy. It suits filling in a form that has no fields, ticking and initialling a contract, marking up a draft or putting a stamp on an invoice, without uploading a private document anywhere.
+
+## How to use
+
+1. Drop one PDF on the box, or click it to choose one. The first page appears, with Previous page and Next page to move between pages.
+2. Press Add text, Add highlight or Add white box, or choose a JPG or PNG under Add a picture. The new item appears near the top left of the page shown.
+3. Drag the item into place. With a keyboard, select it with Tab and move it with the arrow keys; Shift moves ten times as far, and Delete removes it.
+4. Change the selected item underneath the page: the words, font, size and colour of text, or the width and height of a box.
+5. To draw, press Draw, draw on the page, then press Stop drawing.
+6. Press Save PDF, then Download.
+
+## Examples
+
+A two page report.pdf with a white box over a heading, the word Approved in Helvetica, a highlight, a picture and a drawing on page 1, and a note on page 2, saves as report-edited.pdf. Both pages keep their size, the picture is on page 1, and the heading under the white box can still be copied out of the file.
+
+A page shown turned sideways keeps its turn, and text added to it reads upright, just as you placed it on the screen.
+
+A PDF with a filled form field and a link keeps the field, its value and the link after saving.
+
+## Limits
+
+One PDF of up to 50 MB and 100 pages. Pictures are JPG or PNG of up to 5 MB, and a text item holds up to 500 characters. Pages are previewed at 1,600 pixels on their longest side, one page at a time, so no preview comes near the largest canvas an iPhone or iPad allows.
+
+It cannot edit or delete text already in the PDF. A white box only covers what is under it and is not redaction: the covered text or picture stays in the file, and anyone can still copy it out. Password protected or encrypted PDFs are refused. Text uses the standard PDF fonts Helvetica, Times and Courier, which draw only the Windows-1252 characters of Western European languages; Hindi, Chinese, Arabic, Greek, Cyrillic and emoji cannot be drawn, and the page names each one it cannot draw. The preview uses similar fonts on your device, so text may sit slightly differently in the saved PDF.
+
+## FAQ
+
+### Is my PDF uploaded anywhere?
+
+No. A background worker on this page draws the pages with PDF.js and saves your changes with pdf-lib, two open-source libraries this site serves. The file stays on your device and nothing is sent to a server.
+
+### Can I use a white box to hide private information?
+
+No. A white box hides what is under it only on screen and on paper. The hidden text or picture is still in the file, and anyone can select, copy or extract it. To remove information for good, you need a real redaction tool that deletes it from the file.
+
+### Why can I not change the text that is already there?
+
+Text in a PDF is stored as positioned letters, often with only part of a font embedded, so changing it safely needs much more than this tool does. Here you can cover old words with a white box and type new ones on top, knowing the old words remain in the file.
+
+### Why does the page say some characters cannot be drawn?
+
+This tool writes text with the standard fonts every PDF reader has, which cover only Western European letters and signs. Characters outside that set, such as Hindi or Chinese, would need a font embedded in the file, which this tool does not do.

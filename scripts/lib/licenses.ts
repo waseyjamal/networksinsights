@@ -59,7 +59,27 @@ export const LICENSE_EXCEPTIONS: readonly LicenseException[] = [
     licenses: ["LGPL-3.0"],
     approved: "ADR 0060, owner approval in Tools batch 5A",
   },
+  {
+    // wasm-media-encoders 0.7.0: its mp3.wasm is LAME 3.100, LGPL-2.0-or-later (the override
+    // below says so, whatever the package declares). The MP3 tools serve that wasm unmodified as
+    // a separate file, so it can be replaced. This version only; LGPL stays banned elsewhere.
+    packages: /^wasm-media-encoders$/,
+    versions: ["0.7.0"],
+    licenses: ["LGPL-2.0-or-later"],
+    approved: "ADR 0064, owner approval in Tools batch 6B",
+  },
 ];
+
+/**
+ * Packages whose declared licence leaves out code they ship. The gate checks the licence here
+ * instead of the declared one, for every version of the package.
+ */
+export const LICENSE_OVERRIDES: Readonly<Record<string, { license: string; why: string }>> = {
+  "wasm-media-encoders": {
+    license: "MIT AND LGPL-2.0-or-later",
+    why: "declares MIT for its JavaScript, but its mp3.wasm is LAME, LGPL-2.0-or-later (ADR 0064)",
+  },
+};
 
 /** One package as `pnpm licenses list --json` reports it. */
 export interface InstalledPackage {
@@ -149,9 +169,12 @@ export function checkLicenses(
   packages: readonly InstalledPackage[],
   allowedLicenses: ReadonlySet<string> = ALLOWED_LICENSES,
   exceptions: readonly LicenseException[] = LICENSE_EXCEPTIONS,
+  overrides: Readonly<Record<string, { license: string }>> = LICENSE_OVERRIDES,
 ): LicenseProblem[] {
   const problems: LicenseProblem[] = [];
-  for (const pkg of packages) {
+  for (const declared of packages) {
+    const override = Object.hasOwn(overrides, declared.name) ? overrides[declared.name] : undefined;
+    const pkg = override ? { ...declared, license: override.license } : declared;
     const extra = exceptions
       .filter(
         (exception) =>

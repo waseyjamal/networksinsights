@@ -18,7 +18,7 @@ export default defineTool({
     bitrate: z.enum(["96", "128", "192"]),
   }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
-  related: ["video-to-audio", "video-compressor", "video-to-gif"],
+  related: ["audio-to-mp3", "video-to-audio", "video-compressor"],
   added: "2026-10-04",
-  updated: "2026-10-04",
+  updated: "2026-10-05",
 });

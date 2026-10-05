@@ -11,6 +11,7 @@
 // --preview it checks a preview deployment instead: the same headers plus X-Robots-Tag: noindex,
 // and no redirect, because the redirect rule belongs to the production zone.
 
+import { LAME_BASE } from "../../apps/web/src/config/lame";
 import { LIBHEIF_BASE } from "../../apps/web/src/config/libheif";
 import { PDFJS_BASE } from "../../apps/web/src/config/pdfjs";
 import { site } from "../../apps/web/src/config/site";
@@ -142,6 +143,7 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
   const vendorFiles = [
     { path: `${PDFJS_BASE}cmaps/LICENSE.txt`, immutable: true },
     { path: `${LIBHEIF_BASE}LICENSE.txt`, immutable: true },
+    { path: `${LAME_BASE}mp3.wasm`, immutable: true },
     { path: `${TESSERACT_BASE}LICENSE-tesseract.js.txt`, immutable: false },
   ];
   for (const { path, immutable } of vendorFiles) {

@@ -1,0 +1,37 @@
+ZIP create and extract makes a ZIP file from files you choose, or opens a ZIP and saves the files inside it one by one, all in your browser. It is handy on a borrowed or locked down computer with no archive program, or when the files are private and should not be sent to a website to be zipped or unzipped.
+
+## How to use
+
+To open a ZIP, stay on the Open a ZIP tab and drop the ZIP on the box. The tool reads only its list of files and shows each one with its folder and size. Press the Download button next to a file to unpack and save that file; each file is checked against the checksum stored in the ZIP as it comes out.
+
+To make a ZIP, switch to the Make a ZIP tab and drop your files, as many times as you like. Choose Compressed for text and documents or Stored for photos and videos, press Make ZIP, then Download files.zip.
+
+## Examples
+
+A ZIP that holds holiday/beach.jpg and work/beach.jpg lists both files with their folders. Because they are saved one by one into your downloads, the first is saved as beach.jpg and the second as beach (2).jpg, and the page says so next to it.
+
+A ZIP made on an older Windows computer may hold a file named café.txt without marking the name as UTF-8. The tool reads such names with code page 437, the character set the ZIP standard names as the default, so the name shows as café.txt and not as garbled letters.
+
+## Limits
+
+A ZIP may be up to 500 MB with 1,000 entries, folders included, whose files unpack to at most 1 GB in all, by the sizes the ZIP declares. A new ZIP may hold up to 1,000 files and 500 MB in all. Phones have less memory than computers, so a large ZIP may fail on a phone before these limits.
+
+Password protected ZIP files are refused, and so are ZIP64 archives, split archives, RAR and 7z. Only stored and deflate compression can be unpacked; a file packed another way, such as LZMA, is listed with the reason. Links are not followed. Folders are not recreated: files are saved one at a time. A name that tries to leave its folder, such as ../secret.txt, is cleaned and the page says so.
+
+## FAQ
+
+### Are my files uploaded anywhere?
+
+No. A background worker on this page reads the ZIP or your files on your device with fflate, an open-source compression library this site serves, and your browser saves the result. Nothing is sent to a server.
+
+### What happens with a zip bomb?
+
+A zip bomb is a tiny file that unpacks to an enormous size. The tool refuses any ZIP that declares more than 1 GB, and while a file unpacks it stops the moment the file grows past the size the ZIP declared for it, so the bomb never fills your memory.
+
+### Why can I not open my password protected ZIP?
+
+Many ZIP passwords use an old scheme that is easy to break, and handling passwords safely in a web page takes more than this tool offers. Rather than do it badly, it refuses encrypted ZIP files with a clear message.
+
+### What is the difference between Compressed and Stored?
+
+Compressed uses deflate, which makes text, documents and spreadsheets much smaller. Stored keeps every file as it is, which is quicker and right for photos, videos and other files that are compressed already.

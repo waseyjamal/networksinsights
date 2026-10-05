@@ -135,6 +135,8 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
+  --color-paper: var(--paper);
+  --color-paper-ink: var(--paper-ink);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-fg: var(--fg);
@@ -192,6 +194,9 @@
   --surface: var(--color-white);
   --surface-raised: var(--color-white);
   --surface-sunken: var(--color-slate-100);
+  /* A document page (a PDF page in Edit PDF): white paper and black ink in both themes. */
+  --paper: var(--color-white);
+  --paper-ink: var(--color-black);
   --border: var(--color-slate-200);
   --border-strong: var(--color-slate-500);
 
@@ -266,6 +271,9 @@
   --surface: var(--color-slate-900);
   --surface-raised: var(--color-slate-850);
   --surface-sunken: var(--color-slate-975);
+  /* A document page (a PDF page in Edit PDF): white paper and black ink in both themes. */
+  --paper: var(--color-white);
+  --paper-ink: var(--color-black);
   --border: var(--color-slate-800);
   --border-strong: var(--color-slate-500);
 

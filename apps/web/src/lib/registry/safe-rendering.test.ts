@@ -17,7 +17,9 @@ const tsx = (source: string) => checkSafeRendering(source, "ui.tsx");
 const ts = (source: string) => checkSafeRendering(source, "logic.ts");
 
 describe("every tool's code", () => {
-  it("renders user text as text, never as markup or code", () => {
+  // Parses every tool's ui.tsx and worker.ts: past 70 tools it can pass the default 5 s while
+  // `pnpm check` typechecks in parallel, so it gets more room.
+  it("renders user text as text, never as markup or code", { timeout: 30_000 }, () => {
     for (const [path, source] of Object.entries(toolCode)) {
       expect(checkSafeRendering(source, path), path).toEqual([]);
     }

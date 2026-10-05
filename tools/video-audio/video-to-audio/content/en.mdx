@@ -17,7 +17,7 @@ A WebM recording usually holds Opus sound. For M4A it is decoded and encoded aga
 
 A video may be up to 1 GB and two hours long. WAV is offered for videos up to 30 minutes, because the uncompressed sound must fit in memory. Phones have less memory than computers, so a large video may fail on a phone before these limits.
 
-What your browser can write decides the choices. Copying AAC into M4A works in every current browser. Making WAV needs the browser to decode the sound, and making M4A from other sound needs an AAC encoder: Chrome and Edge on a computer have both, Firefox has no AAC encoder, and older Safari versions may have neither. The tool never offers MP3. Only the main sound track is saved; extra language tracks and subtitles are left out.
+What your browser can write decides the choices. Copying AAC into M4A works in every current browser. Making WAV needs the browser to decode the sound, and making M4A from other sound needs an AAC encoder: Chrome and Edge on a computer have both, Firefox has no AAC encoder, and older Safari versions may have neither. This tool does not offer MP3; Video to MP3 does. Only the main sound track is saved; extra language tracks and subtitles are left out.
 
 ## FAQ
 
@@ -35,4 +35,4 @@ When the video already holds AAC sound, which most phone videos do, the sound is
 
 ### Why is there no MP3 option?
 
-Browsers have no built-in MP3 encoder, and the free encoders that exist carry licence terms this site does not accept. M4A plays on phones, computers and music apps just as widely.
+MP3 has its own tool on this site, Video to MP3, which encodes with LAME, a free MP3 encoder served as a separate file. Choosing M4A here copies AAC sound without any loss, and M4A plays on phones, computers and music apps just as widely.

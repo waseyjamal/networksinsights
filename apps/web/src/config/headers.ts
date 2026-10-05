@@ -6,6 +6,7 @@
 // one place and forgotten in another. Nothing else may write a response header.
 
 import { UMAMI_HOST } from "./analytics";
+import { LAME_BASE } from "./lame";
 import { LIBHEIF_BASE } from "./libheif";
 import { PDFJS_BASE } from "./pdfjs";
 
@@ -148,7 +149,11 @@ export const IMMUTABLE = "public, max-age=31536000, immutable";
  * Tesseract is not here: its folder carries the tesseract.js version, but the language data in it
  * comes from other packages (@tesseract.js-data/*), which could change under the same path.
  */
-export const versionedVendorPaths = [`${PDFJS_BASE}*`, `${LIBHEIF_BASE}*`] as const;
+export const versionedVendorPaths = [
+  `${PDFJS_BASE}*`,
+  `${LIBHEIF_BASE}*`,
+  `${LAME_BASE}*`,
+] as const;
 
 /**
  * Content-hashed files and versioned vendor files: a change of content is a change of name.
