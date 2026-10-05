@@ -1,0 +1,30 @@
+Delete and Reorder PDF Pages shows a thumbnail of every page in a PDF, lets you remove pages and move the rest, and saves the new PDF in your browser. It suits the scan with a blank page in the middle, the report whose appendix should come first, or the form where only three of ten pages matter. Each page is copied as it is, so text stays sharp and searchable.
+
+## How to use
+
+1. Drop one PDF on the box, or click it to choose it. A thumbnail of each page appears, numbered in its current place.
+2. To move a page, drag it onto the place you want, or press its left and right arrow buttons. The arrow buttons work from the keyboard too, and the focus stays on the page you moved.
+3. To leave a page out, press its Delete button. The page is greyed out and marked deleted; press Keep to bring it back. Start over undoes every change.
+4. Press Save new PDF, then Download the file.
+
+## Examples
+
+A test PDF called report.pdf with 5 pages: delete page 2, then move page 5 to the front. The list reads 5, 1, 3, 4, and the line under it says the new PDF will have 4 pages. Save gives report-edited.pdf with the pages in that order, described as 4 pages, 1 deleted, order changed. Page numbers printed on the pages themselves do not change, because the pages are copied, not redrawn.
+
+## Limits
+
+One PDF at a time, up to 50 MB, as Quick facts shows, and at most 200 pages, a limit we chose because every thumbnail is kept in memory. A longer PDF is refused with its real page count. Password-protected PDFs are refused with a note, and damaged files are refused too. At least one page must stay. Bookmarks, links between pages and form fields of the original may not carry over to the new file.
+
+## FAQ
+
+### Does the PDF leave my computer?
+
+No. A background worker in your browser reads the file, draws the thumbnails and writes the new PDF. Nothing is sent to a server.
+
+### Can I rearrange pages without a mouse?
+
+Yes. Tab to a page and press its arrow buttons with Enter or Space. A screen reader announces the new position after every move.
+
+### Can I add pages from another PDF here?
+
+No, this tool only works inside one file. Join files first with Merge PDF, then open the joined file here to remove or move pages.

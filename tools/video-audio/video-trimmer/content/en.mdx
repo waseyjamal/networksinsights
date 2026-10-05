@@ -1,0 +1,32 @@
+Video Trimmer cuts the start and the end off an MP4, MOV or WebM video in your browser, with a fast keyframe cut or a frame-exact cut. It is for the phone clip with ten seconds of fumbling at the start, the screen recording that runs on after the demo, or the part of a long video you want to send on its own. The page tells you plainly which kind of cut you got and where it really starts.
+
+## How to use
+
+1. Drop one video on the box, or click it to choose it. Its length and picture size appear, with a player.
+2. Pick the Cut. Fast copies the video as it is, so it is quick and loses no quality, but it can only start on a key frame. Exact decodes and encodes the video again, so it starts on the frame you chose, but it takes longer.
+3. Type the Start and the End, as seconds such as 12.5 or as minutes and seconds such as 1:05. Or play the video, pause where you want, and press Use the player's time as start or as end.
+4. Press Trim video, then Download the new file. WebM stays WebM; MP4 and MOV become MP4.
+
+## Examples
+
+A test video of 8 seconds, 480 by 270 pixels, whose only key frame is its first frame, cut from 2.5 to 5. With Fast, the result is 5 seconds long, from 0:00 of the original, and the page says the fast cut starts at the key frame at 0:00, before the 0:02.5 you chose. With Exact, the result is 2.5 seconds long, from 0:02.5. Phone videos usually have a key frame every second or two, so a fast cut there lands much closer to the start you typed.
+
+## Limits
+
+One video at a time, up to 500 MB, as Quick facts shows; the new file is built in memory, so a phone may run out of memory sooner. A cut must be at least 0.1 seconds long, a minimum we chose. The end of a fast cut can also run a fraction of a second past the end you typed, to the edge of the last piece of video it copies.
+
+The exact cut needs your browser to decode and encode video with WebCodecs. The page asks the browser when the video opens; if it cannot, only the fast cut is offered and a note says why. The exact cut encodes the video again, so the picture can lose a little quality, and the sound is copied as it is. Files with more than one video or sound track keep only the main one.
+
+## FAQ
+
+### Is my video uploaded to cut it?
+
+No. A background worker in your browser reads the video in pieces and writes the new file on your device. Nothing is sent to a server.
+
+### Why did the fast cut start earlier than I asked?
+
+Most videos store a full picture only now and then, at key frames, and the frames between depend on it. Copying without re-encoding has to begin at one of those, so pick Exact if the first frame matters.
+
+### Can I cut a piece out of the middle and keep both ends?
+
+Not in one step. Trim the first part and the last part as two files; this tool does not join videos.

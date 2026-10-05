@@ -1,0 +1,33 @@
+Add Page Numbers to PDF numbers the pages of a PDF in your browser, at the corner or edge you pick, as 1, Page 1 or 1 of N. It is for the thesis, the bundle of scanned documents or the court file that has to be numbered before it is printed or sent. You choose where counting starts, so a cover page or a contents page can be left blank.
+
+## How to use
+
+1. Drop one PDF on the box, or click it to choose it. Its page count appears under the box.
+2. Pick the Position: top or bottom, at the left, the centre or the right.
+3. Pick the Format: 1, Page 1, or 1 of N.
+4. Set the Start number and the First page to number. That page carries the start number, each later page one more, and earlier pages stay blank.
+5. Set the Font size and the Margin in points; 72 points are one inch.
+6. Keep All pages, or pick Only the pages I choose and list them. Pages left out still count, so the numbers match the page order.
+7. Press Add numbers, then Download the file.
+
+## Examples
+
+A test PDF called report.pdf with 10 pages, numbered with the format 1 of N, starting at 1 on page 3, at the bottom centre. Pages 1 and 2 stay blank; page 3 reads 1 of 8 and page 10 reads 8 of 8. The download is report-numbered.pdf, and the result says 8 pages numbered, first number 1 of 8, last number 8 of 8. On a page that is shown turned, the number still reads upright at the bottom of the page as you see it.
+
+## Limits
+
+One PDF at a time, up to 50 MB, as Quick facts shows. The font size can be 6 to 72 points, the margin 0 to 144 points and the start number 0 to 99,999; those ranges are our own choice. Numbers are drawn in black Helvetica, one of the standard fonts every PDF reader has, so no font file is added. That font has only Latin letters and Western digits: the words Page and of are always English, and other digit forms, such as Devanagari or Arabic numerals, cannot be drawn. A number is drawn over whatever is already at that spot. Password-protected and damaged PDFs are refused.
+
+## FAQ
+
+### Is my PDF uploaded to add the numbers?
+
+No. A background worker in your browser opens the file and writes the numbers into it. Nothing is sent to a server.
+
+### How do I skip numbering the cover page?
+
+Set First page to number to 2 and keep the start number at 1. The cover stays blank and the second page reads 1.
+
+### Can the numbers be removed later?
+
+Not with this tool. The numbers become part of each page, so keep your original file if you might want a version without them.
