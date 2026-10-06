@@ -1,0 +1,30 @@
+Unlock PDF removes the password from a PDF when you type that password, and gives you a copy that opens with no password at all. It suits a bank statement, a payslip or a tax form that asks for its password every single time you open it, when you want to keep it in your own files or pass it to a program that cannot ask. It does NOT crack, find or guess passwords: it works only when you type the correct one.
+
+## How to use
+
+1. Drop one PDF on the box, or click the box to choose it.
+2. Type its password in the password field. For a file that asks for a password before it opens, type that one. For a file that opens freely but blocks printing, copying or editing, type its owner password.
+3. Press Remove password, or press Enter in the field.
+4. When the check finishes, the copy appears with its page count and size and the words opens with no password. Press Download to save it.
+
+## Examples
+
+A two-page statement locked with the password open sesame and an older 40-bit lock gives statement-unlocked.pdf, which opens straight away and still shows Secret 1 and Secret 2 as selectable text. A file locked with the newer 256-bit AES lock works the same way. Typing open-sesame instead stops with a message that the password is not right, and no file is made.
+
+## Limits
+
+One PDF at a time, up to 50 MB, as Quick facts shows. Without the correct password nothing happens: there is no recovery, no list of common passwords and no second try made for you. Before the copy is offered, the PDF.js library opens it with no password and reads every page; if the page count or the text of any page differs from the original, the copy is not given back. A PDF with no password is refused with a note. Phones have less memory than computers and may fail earlier on a large file.
+
+## FAQ
+
+### Can it open a PDF if I forgot the password?
+
+No. The tool needs the exact password, including capital letters and spaces. Ask the sender for it, or for a copy without one. Guessing passwords is not something this tool does or will do.
+
+### Where is my password used?
+
+Only inside a background worker in this browser tab, by the PDFium engine compiled to WebAssembly. The file and the password are never sent to a server, and the password field is cleared when you leave the page.
+
+### Is the unlocked copy different from the original?
+
+The pages, text and pictures are the same. PDFium writes the file again without its lock, so the file size and the internal layout of the file can change a little.
