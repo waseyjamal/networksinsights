@@ -16,6 +16,10 @@ overrides:
   "undici@7.29.0": "7.29.1"
   # GHSA-4q55-j62x-fr9h and 5 more devalue advisories: astro 7.3.2 resolves devalue 5.9.2; remove once astro ships devalue >=5.9.3.
   "devalue@5.9.2": "5.9.4"
+  # GHSA-68fv-2mgg-jv7q: vite > postcss and astro > magicast resolve source-map-js 1.2.1; remove once they resolve >=1.2.2 (ADR 0065).
+  "source-map-js@1.2.1": "1.2.2"
+  # GHSA-r4xh-jqrq-34v2: @astrojs/internal-helpers resolves smol-toml 1.8.0; remove once it resolves >=1.9.0 (ADR 0065).
+  "smol-toml@1.8.0": "1.9.0"
 auditConfig:
   # GHSA-ch52-4w7c-c8xp: no patched http-cache-semantics; build-time only via astro (ADR 0059). Re-check by 2026-10-17.
   ignoreGhsas:
