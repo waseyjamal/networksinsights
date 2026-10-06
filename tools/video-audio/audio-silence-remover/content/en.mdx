@@ -1,0 +1,31 @@
+Audio Silence Remover cuts the silence from the start and end of a recording, shortens long pauses inside it, and can bring its loudest moment up to one set level. It suits a voice memo with a long wait before you speak, a podcast take with gaps between answers, or a lecture clip that is too quiet. It does NOT remove noise: hum, hiss and background sound stay exactly as they were.
+
+## How to use
+
+1. Drop one recording on the box, or click it to choose it: WAV, M4A, OGG or WebM, up to 10 minutes long.
+2. Set the Threshold in dB. Sound quieter than it counts as silence; -45 dB suits a quiet room, and a noisy room needs a higher number such as -35.
+3. Set the Shortest silence to cut. Pauses inside shorter than this are kept; longer ones become a quarter of a second.
+4. Leave Normalise ticked to bring the loudest peak to -1 dB, or untick it to keep the volume.
+5. Choose WAV, or M4A or OGG where your browser can write them, press Remove silence, then Download.
+
+## Examples
+
+A 6-second test recording of 1 second of silence, 1 second of tone, 2 seconds of silence, 1 second of tone and 1 second of silence, cleaned at -45 dB with 0.5 seconds as the shortest silence, gives 2.25 seconds: the two tones with a quarter-second pause between them. With Normalise on, a tone that peaked at a quarter of full scale is raised by about 11 dB to peak at -1 dB.
+
+## Limits
+
+One recording of up to 100 MB and 10 minutes, our own choices, because the whole sound is held in memory. The quarter-second pause and the -1 dB peak are our own choices too. Silence is judged in steps of a hundredth of a second, so cuts fall within that. Normalising follows the single loudest sample, so one loud click can keep the rest quiet; it does not even out loud and soft parts. Recordings with more than two channels keep the first two. M4A and OGG are offered only where the browser can encode them; WAV always works. Decoding M4A, OGG and WebM needs browser support, and the page says when it is missing. Phones have less memory than computers and may fail earlier.
+
+## FAQ
+
+### Will this clean up background noise?
+
+No. Noise is quieter than speech but not silent, so it stays wherever there is sound. If the noise is louder than the threshold, nothing is cut either; raise the threshold a little, for example to -35 dB.
+
+### What does the threshold number mean?
+
+It is a level in decibels below the loudest possible sound, so -60 is very quiet and -20 is fairly loud. Only stretches where every sample stays below it are treated as silence.
+
+### Is my recording uploaded?
+
+No. A background worker in this tab decodes and rewrites the sound with the Mediabunny library and your browser, on your device. Nothing is sent to a server.
