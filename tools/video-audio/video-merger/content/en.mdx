@@ -1,0 +1,31 @@
+Video Merger joins two or more video clips into one file, one after another, in the order you set. It suits phone clips from one day out, the parts of a screen recording, or a short intro placed before a longer video. Each clip is decoded and encoded again, so clips of different sizes and formats can be joined, and the page lists only the output formats your browser can really write.
+
+## How to use
+
+1. Drop two or more clips on the box, or click it to choose them: MP4, MOV or WebM. You can add more later.
+2. Each clip is read and listed with its length, its size in pixels and whether it has sound. A clip your browser cannot decode is marked.
+3. Put the clips in order with Up and Down, or take one out with Remove. The line under the list shows the total length and the size of the joined video.
+4. Pick the joined file format, MP4 or WebM, from the formats your browser can write.
+5. Press Join, wait for the bar to fill, then press Download.
+
+## Examples
+
+Two 2-second test clips of 320 by 240 pixels, one MP4 and one WebM, give a joined file of about 4 seconds at 320 by 240, named after the first clip, such as clip-h264-aac-joined.mp4. With a 480 by 270 clip placed first, the joined video is 480 by 270 and the 320 by 240 clip sits in the middle with black bars at its sides. A clip with no sound is joined with silence, so the sound of later clips stays in step with their pictures.
+
+## Limits
+
+These are our own choices. Up to 10 clips, each up to 500 MB, and at most 10 minutes in all, because the joined file is built in memory. The joined video takes the size of the first clip, scaled down to fit 1920 by 1080 (or 1080 by 1920 for an upright clip), with even sides. Sound becomes 48 kHz stereo. Every clip is encoded again, which takes time and changes quality a little. Joining needs a browser that can decode and encode video: a recent Chrome or Edge on a computer can, Firefox writes WebM only when clips have sound, and some browsers cannot join at all, which the page says. Phones have less memory than computers and may fail earlier.
+
+## FAQ
+
+### Why does joining take longer than copying the files?
+
+Every frame is decoded and encoded again so the clips share one size, one frame layout and one codec. That is what lets an MP4 from one phone and a WebM from a screen recorder become one video.
+
+### Why is MP4 not offered in my browser?
+
+MP4 here means H.264 pictures with AAC sound. Some browsers cannot encode AAC, so when any clip has sound only WebM with Opus sound is listed. The page asks the browser itself, it does not guess from its name.
+
+### Are my clips uploaded to join them?
+
+No. A background worker in this tab reads the files from your device with the Mediabunny library, and the browser encodes the result. Nothing is sent anywhere.
