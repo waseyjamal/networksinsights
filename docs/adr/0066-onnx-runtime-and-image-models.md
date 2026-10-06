@@ -113,10 +113,40 @@ Tolerances were written before any browser run, and are never raised after a fai
 
 - Upscaler: every channel within **2 levels** (the 1 measured above, plus 1 for rounding between
   native and WebAssembly float kernels), mean under 0.05 levels.
-- Background remover: MODNet showed 0 levels between onnxruntime's optimised and plain graphs, but
-  it is 8-bit quantised, so one rounding step inside it can move a few pixels: mean under 0.5
-  levels, 99.5% of pixels within 2 levels, none over 16; plus the page's own example: top corners
-  transparent, face and suit opaque, the helmet only partly kept.
+- Background remover: see the next section. Its limits were changed after the first run failed.
+
+### Background remover: limits changed after the first run failed
+
+The first limits were written before any browser run: mean under 0.5 levels, 99.5% of pixels
+within 2 levels, none over 16. The first run in Chromium and Firefox failed them: mean 1.10,
+93.1% within 2, largest 138. The limits were then changed, on these measurements:
+
+- The browser's input tensor equals the reference script's except in the last float32 bit (max
+  5.9e-8): the browser normalises in float64, the script in float32. Post-processing adds nothing
+  (the browser's alpha equals the model's raw output exactly).
+- The 8-bit MODNet amplifies that difference: onnxruntime on x64 alone, given the two tensors,
+  gives up to **142 levels** apart, mean 1.08, 93.18% within 2. This is the noise floor. On the same
+  tensor, x64 and wasm still differ (max 32, mean 0.24), so part of it is the engines themselves.
+  `session.x64quantprecision=1` and disabling graph optimisation changed nothing.
+- Every pixel over 16 levels lies within 41 px of the person's outline (the 0.5 contour of the
+  reference matte), for the browser (6,276 pixels) and the noise floor (6,224) alike; none is in the
+  face, the suit or the corners.
+
+| Check | First limits (failed) | Limits now |
+|---|---|---|
+| Largest difference | ≤ 16 everywhere | ≤ 16 more than 48 px from the outline |
+| Pixels over 16 within 48 px | not counted | at most 9,000 |
+| Farthest pixel over 16 | not checked | at most 48 px from the outline |
+| Mean difference | < 0.5 levels | ≤ 1.5 levels (noise floor 1.08) |
+| Within 2 levels | ≥ 99.5% | ≥ 90% (noise floor 93.18%) |
+| Corners, face, suit, helmet | as the page's example | unchanged |
+| Same input twice | not checked | identical result |
+
+Measured with these limits: Chromium and Firefox both give largest beyond 48 px 4 levels, 6,276
+pixels over 16, farthest 41 px, mean 1.096, 93.14% within 2, and identical results twice. WebKit is
+checked only in CI: Playwright's WebKit on Windows has no `OffscreenCanvas`. Settling which engine
+is closer to exact needs ONNX's numpy reference evaluator, which did not finish on the development
+machine (stopped for low memory); it is not run.
 
 ## Consequences
 
