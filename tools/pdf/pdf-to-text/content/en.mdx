@@ -1,0 +1,31 @@
+PDF to Text pulls the words out of a PDF and gives them back as plain text you can copy or save as a .txt file. Use it to quote a report, paste a contract clause into an email, search a long manual, or feed a document to another program that only reads text. It reads the text the PDF already holds, so the result keeps the exact spelling of the original, with no guessing.
+
+## How to use
+
+1. Drop one PDF on the box, or click the box to choose it. The number of pages shows under it.
+2. Under Pages, keep All pages, or pick Only the pages I choose and type them, for example 2, 5-7, or 9- for page 9 to the end.
+3. Tick the page line option if you want every page to start with a marker such as --- Page 2 ---, which helps when you must cite a page.
+4. Press Get text. The text appears in a box with the number of pages read and a word count.
+5. Press Copy text to put it on the clipboard, or Download .txt to save it, named after the PDF.
+
+## Examples
+
+A three-page test file whose pages read Page 1, Page 2 and Page 3 gives exactly those three lines, separated by blank lines, and a count of six words. With the page line option ticked, the first lines become --- Page 1 --- followed by Page 1. Choosing only page 2 gives the single line Page 2. Notice that a page with no text is named in the note above the result instead of being silently skipped.
+
+## Limits
+
+One PDF at a time, up to 50 MB, as Quick facts shows. A scanned PDF holds pictures of pages rather than text, so there is nothing to pull out: the tool says so and points you to OCR. Text is given in the order the PDF stores it, which for columns, tables and footnotes may not be the order you read it; tables come out as lines, not cells. Password-protected and damaged PDFs are refused with a message. Phones have less memory than computers and may fail earlier on a large PDF.
+
+## FAQ
+
+### Why does the tool say no text was found?
+
+The pages are most likely pictures, which is what a scanner or a phone camera makes. A picture of a letter is not a letter the computer can read. The OCR tool on this site recognises printed words in a picture, and it handles one picture at a time.
+
+### Is my PDF sent anywhere to read the text?
+
+No. A background worker in this browser tab opens the file with the PDF.js library served by this site, and the text never leaves your device.
+
+### Can it keep bold, fonts and layout?
+
+No. The result is plain text, so styling, pictures, colours and exact positions are dropped. Line breaks follow the lines PDF.js finds on each page.

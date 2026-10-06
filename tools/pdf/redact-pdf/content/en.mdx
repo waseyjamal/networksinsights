@@ -1,0 +1,31 @@
+Redact PDF blacks out the parts of a PDF you cover with boxes, for real: the text under each box is removed, not just hidden behind a black shape. Use it before you share a bank statement, a contract, a medical letter or an ID scan, when names, numbers or addresses must not be read. A black box drawn in most PDF editors only sits on top, and the words under it can still be copied; here they are gone.
+
+## How to use
+
+1. Drop one PDF on the box, or click it to choose it. Page 1 appears as a preview.
+2. With Draw boxes on, drag across what you want to hide, from one corner to the other. Draw as many boxes as you need.
+3. To fix a box, choose Move boxes and drag it, or select it and use the arrow keys; Delete or Remove selected box takes it away. Add a box places one in the middle without dragging.
+4. Use Previous page and Next page to reach other pages. The line under the page lists which pages have boxes.
+5. Press Redact, then Download. The file is named after yours, ending in -redacted.pdf.
+
+## Examples
+
+A three-page file whose pages read Secret 1, Secret 2 and Secret 3, with one box over the words on page 2, gives a three-page PDF in which page 2 is a picture with a black bar and no text at all: copying from it or searching it finds nothing. Pages 1 and 3 still hold their text, Secret 1 and Secret 3, and can be searched and copied as before.
+
+## Limits
+
+Every page with a box becomes a picture: all of its text, not only the covered part, can no longer be selected, searched or read aloud by a screen reader. It is drawn at 150 dpi and at most 4,096 pixels on its longer side, so very large pages lose sharpness, and it is saved as JPG, so the file may grow. Pages without boxes are copied unchanged. From the document properties, only the title, author, subject and keywords are kept; files attached to the PDF are removed. One PDF of up to 50 MB and 100 pages, with up to 50 boxes on a page, our own choices. Password-protected PDFs are refused. Phones have less memory than computers and may fail earlier.
+
+## FAQ
+
+### Is the hidden text really gone?
+
+Yes, on the pages you put boxes on. Those pages are rebuilt from a picture in which the box is painted into the pixels, and the original page, with its text, is not copied into the new file. Check the result before you send it, as anything you did not cover stays readable.
+
+### Why is the whole page a picture and not only the box?
+
+Removing exactly the letters under a box from a PDF is hard to do safely, because text can be stored in many ways. Turning the page into a picture leaves nothing behind to recover, at the cost of selectable text on that page.
+
+### Is my PDF uploaded to redact it?
+
+No. A background worker in this tab draws the pages with PDF.js and builds the new file with pdf-lib, on your device. Nothing is sent to a server.
