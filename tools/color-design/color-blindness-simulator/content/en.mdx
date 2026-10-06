@@ -1,0 +1,30 @@
+Color Blindness Simulator shows how a picture may look to people with protanopia, deuteranopia, tritanopia or achromatopsia, next to the original. Designers use it to check a chart, a map, a logo or a page screenshot before it goes out: if two colours that carry meaning become the same in a view, people with that kind of colour vision cannot tell them apart. It is an approximation from a published model, not a medical test.
+
+## How to use
+
+1. Drop a JPG, PNG or WebP picture on the box, or click it to choose one. A screenshot of your design works well.
+2. Five views appear: the original, then protanopia (no red cones), deuteranopia (no green cones), tritanopia (no blue cones) and achromatopsia (no colour vision at all).
+3. Compare them. Look for lines, labels or areas that blend into each other in a view but not in the original.
+4. Drop another picture to compare it the same way.
+
+## Examples
+
+A pure red square becomes a dark olive in the deuteranopia view, with its red and green channels close together, so a red warning next to a green success looks much the same. In the achromatopsia view every colour turns to a grey of the same lightness, and pure white and pure black stay as they are in every view. Notice that a design using lightness as well as hue still reads clearly in every view.
+
+## Limits
+
+The views use the matrices of Machado, Oliveira and Fernandes (2009) at full severity, as published on the authors' page, and the BT.709 luminance weights for achromatopsia. Many people have a milder form, such as protanomaly, which this tool does not show. Your screen, its settings and the light in the room change what you see. Pictures up to 25 MB are accepted, and each view is drawn at most 1000 pixels on its longer side, our own choice for speed. Phones have less memory than computers and may fail earlier.
+
+## FAQ
+
+### Can this tell me whether I am colour blind?
+
+No. It only changes the colours of a picture by a formula. A colour vision test must be done by an eye care professional, with tested plates or instruments under controlled light.
+
+### Which colours are hardest for most colour blind people?
+
+Red and green, by far: protan and deutan forms are the common ones. Pair colour with text, shapes or patterns, and check text contrast with the Contrast Checker too.
+
+### Is my picture uploaded?
+
+No. The page decodes the picture and changes its pixels in your browser. Nothing is sent to a server.
