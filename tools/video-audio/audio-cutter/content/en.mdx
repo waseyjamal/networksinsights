@@ -1,0 +1,31 @@
+Audio Cutter cuts the start and the end off a recording, so you keep only the part between two times you type. Use it to shorten a voice memo before you send it, keep one answer from a recorded interview, or trim the silence a phone leaves before and after a clip. It tells you plainly whether your cut is copied as it is or decoded again, and it only offers the ways your browser can really do.
+
+## How to use
+
+1. Drop one recording on the box, or click it to choose one: WAV, M4A, OGG or WebM.
+2. Read the line under the box: the length, the sample rate and the channels of the recording. A note appears if your browser cannot do one of the two ways to cut.
+3. Type the Start and the End, as seconds such as 12.5 or as minutes and seconds such as 1:05. The End starts filled in with the full length.
+4. Choose how to cut. Keep the format copies the sound with no re-encoding and makes an M4A file. Exact cut as WAV decodes the sound and makes a WAV file.
+5. Press Cut, then press Download on the new file.
+
+## Examples
+
+A 3-second WAV tone, cut from 0.5 to 1.75 as an exact WAV cut, gives tone-cut.wav, exactly 1.25 seconds long, with the same sample rate and channels. A 1-second M4A cut from 0.25 to 0.75 while keeping the format gives about half a second of M4A, a few hundredths of a second longer or shorter, because a copied cut can only fall on the small packets the sound is stored in.
+
+## Limits
+
+One file at a time, up to 300 MB, as Quick facts shows. An exact WAV cut can be at most 10 minutes long, our own choice, since WAV is uncompressed and built in memory; a cut must be at least 0.1 seconds long. Only M4A files can be cut without re-encoding. The WAV cut needs your browser to decode the sound: WAV always works, while OGG, WebM and M4A depend on the browser, and Safari decodes fewer formats. The tool does not fade, join or change the volume. Phones have less memory than computers and may fail earlier.
+
+## FAQ
+
+### Does keeping the format lower the quality?
+
+No. The sound is copied packet by packet, exactly as it was stored, so nothing is decoded and nothing is lost. The cost is precision: the start and end move to the nearest packet edge.
+
+### Why is the WAV file so much bigger than my recording?
+
+WAV stores every sample with no compression, 16 bits each. A minute of stereo sound at 48 kHz takes about 11 MB, while the same minute in M4A or OGG is often under 1 MB.
+
+### Why can I not cut my OGG file without re-encoding?
+
+The media library used here can only copy a cut of sound stored in an M4A file. For OGG and WebM the only way is the exact WAV cut, and it works only where the browser can decode that sound.
