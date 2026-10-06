@@ -1,0 +1,31 @@
+Images to GIF makes one animated GIF from several of your own pictures, showing them one after another with the delay you choose. It suits a before and after pair, the steps of a recipe or a craft, a product seen from several sides, or a short slideshow for a chat or a forum that takes GIF but not video. You set the order, the time each picture stays, the width and whether it loops.
+
+## How to use
+
+1. Drop two or more JPG, PNG or WebP pictures on the box, or click it to choose them. You can add more later.
+2. Put them in order with Up and Down, or take one out with Remove. Each row shows a small preview.
+3. Set the Frame delay in milliseconds: 500 shows each picture for half a second, 1000 for a second.
+4. Set the Width in pixels. The height follows the shape of the first picture.
+5. Choose Loop forever or Play once, press Make GIF, check the preview, then press Download.
+
+## Examples
+
+Four pictures of 400 by 300 pixels with a 500 millisecond delay and a width of 480 give beach-animation.gif, named after the first picture: 480 by 360 pixels, 4 frames, 2 seconds a loop. A tall picture placed first gives a tall GIF, never more than 800 pixels high. A square picture in a wide GIF sits in the middle with white at its sides.
+
+## Limits
+
+GIF can only hold 256 colours in each frame, so photos lose smooth shading and may show bands or dots, and GIF files are large for what they show; for photos, a short video is often a better choice. These limits are our own choices: 2 to 100 pictures, up to 25 MB each, a width of 50 to 800 pixels, and a delay of 20 to 10,000 milliseconds, stored in hundredths of a second. Transparent areas become white. Phones have less memory than computers and may fail earlier.
+
+## FAQ
+
+### Why do my photos look grainy in the GIF?
+
+A GIF frame can use only 256 colours, picked from that picture. A photo has many more, so the nearest ones are used and nearby pixels mix them. Bold drawings and screenshots keep their look better.
+
+### Does the GIF play everywhere?
+
+GIF89a animation is read by every common browser, chat app and image viewer. Some sites turn an uploaded GIF into a video and may change its speed or loop.
+
+### Are my pictures uploaded to make the GIF?
+
+No. A background worker in this tab draws each frame and the gifenc library writes the file, on your device. Nothing is sent to a server.
