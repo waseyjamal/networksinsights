@@ -77,6 +77,19 @@ export default defineConfig({
           find: /^zod$/,
           replacement: fileURLToPath(new URL("./src/lib/zod-jitless.ts", import.meta.url)),
         },
+        // ONNX Runtime Web's build that loads its WebAssembly from a URL, not the one that bundles
+        // it: the AI image tools' workers fetch the engine from /vendor/onnxruntime-web/, so the
+        // 14 MB file is served once, unmodified and versioned, never inside a hashed bundle
+        // (ADR 0066).
+        {
+          find: /^onnxruntime-web\/wasm$/,
+          replacement: fileURLToPath(
+            new URL(
+              "../../tools/node_modules/onnxruntime-web/dist/ort.wasm.min.mjs",
+              import.meta.url,
+            ),
+          ),
+        },
       ],
     },
   },

@@ -80,7 +80,9 @@ function fakeFetch(fake: Fake = {}): typeof fetch {
     if (
       path.startsWith("/vendor/pdfjs/") ||
       path.startsWith("/vendor/libheif/") ||
-      path.startsWith("/vendor/wasm-media-encoders/")
+      path.startsWith("/vendor/wasm-media-encoders/") ||
+      path.startsWith("/vendor/onnxruntime-web/") ||
+      path.startsWith("/models/")
     ) {
       return respond(200, "x", { "cache-control": fake.vendorCache ?? IMMUTABLE });
     }
@@ -148,10 +150,16 @@ describe("everything else on the site", () => {
   it("wants the versioned vendor folders cached for good, and Tesseract revalidated (ADR 0061)", async () => {
     const pass = await runProductionChecks({ fetchFn: fakeFetch(), launched: false });
     const vendor = pass.filter((check) => check.name.startsWith("/vendor/"));
+    const model = pass.find((check) => check.name.startsWith("/models/"));
+    expect(model?.name).toBe(
+      "/models/modnet/7bad6522b3cde602/LICENSE.txt (a content-addressed model) is cached for good",
+    );
+    expect(model?.ok).toBe(true);
     expect(vendor.map((check) => check.name)).toEqual([
       "/vendor/pdfjs/6.3.289/cmaps/LICENSE.txt (a versioned vendor folder) is cached for good",
       "/vendor/libheif/1.23.2/LICENSE.txt (a versioned vendor folder) is cached for good",
       "/vendor/wasm-media-encoders/0.7.0/mp3.wasm (a versioned vendor folder) is cached for good",
+      "/vendor/onnxruntime-web/1.30.0/ort-wasm-simd-threaded.mjs (a versioned vendor folder) is cached for good",
       "/vendor/tesseract/7.0.0/LICENSE-tesseract.js.txt is revalidated on every visit",
     ]);
     expect(vendor.every((check) => check.ok)).toBe(true);
@@ -160,7 +168,7 @@ describe("everything else on the site", () => {
       launched: false,
     });
     const failed = fail.filter((check) => check.name.startsWith("/vendor/") && !check.ok);
-    expect(failed).toHaveLength(3);
+    expect(failed).toHaveLength(4);
     expect(failed[0]?.detail).toContain("versionedVendorPaths");
   });
 

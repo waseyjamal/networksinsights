@@ -18,3 +18,4 @@
 *.pdf binary
 *.wasm binary
 *.zip binary
+*.onnx binary

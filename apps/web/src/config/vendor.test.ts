@@ -1,11 +1,16 @@
+import { createHash } from "node:crypto";
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import * as remover from "../../../../tools/image/background-remover/logic";
 import { readHeifInfo } from "../../../../tools/image/heic-to-jpg/logic";
+import * as upscaler from "../../../../tools/image/image-upscaler/logic";
 import { ENGINE_BYTES, LANGUAGES } from "../../../../tools/image/ocr/logic";
 import { IMMUTABLE, immutablePaths, versionedVendorPaths } from "./headers";
 import { LAME_BASE, LAME_FILES } from "./lame";
 import { LIBHEIF_BASE, LIBHEIF_FILES } from "./libheif";
+import { MODEL_PATHS, MODELS, modelBase } from "./models";
+import { ONNXRUNTIME_BASE, ONNXRUNTIME_FILES } from "./onnxruntime";
 import { PDFJS_BASE } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES } from "./tesseract";
 
@@ -27,6 +32,22 @@ describe("vendored files", () => {
   it("copies the LAME encoder's files from wasm-media-encoders, each under 25 MiB", () => {
     for (const from of Object.keys(LAME_FILES)) {
       expect(statSync(installed("wasm-media-encoders", from)).size).toBeLessThan(25 * MiB);
+    }
+  });
+
+  it("copies only ONNX Runtime's plain wasm backend, under 25 MiB, and states its real size", () => {
+    let bytes = 0;
+    for (const from of Object.keys(ONNXRUNTIME_FILES)) {
+      expect(from, from).not.toMatch(/jsep|jspi|asyncify|webgpu/);
+      const size = statSync(installed("onnxruntime-web", from)).size;
+      expect(size, from).toBeLessThan(25 * MiB);
+      bytes += size;
+    }
+    for (const tool of [upscaler, remover]) {
+      expect(tool.ENGINE.base).toBe(ONNXRUNTIME_BASE);
+      expect(Object.values(ONNXRUNTIME_FILES) as string[]).toContain(tool.ENGINE.mjs);
+      expect(Object.values(ONNXRUNTIME_FILES) as string[]).toContain(tool.ENGINE.wasm);
+      expect(tool.ENGINE.bytes).toBe(bytes);
     }
   });
 
@@ -67,12 +88,20 @@ describe("cache headers of vendored files (ADR 0061)", () => {
 
   it("caches each versioned vendor folder for good, named with the installed package version", () => {
     expect(IMMUTABLE).toBe("public, max-age=31536000, immutable");
-    expect(versionedVendorPaths).toEqual([`${PDFJS_BASE}*`, `${LIBHEIF_BASE}*`, `${LAME_BASE}*`]);
+    expect(versionedVendorPaths).toEqual([
+      `${PDFJS_BASE}*`,
+      `${LIBHEIF_BASE}*`,
+      `${LAME_BASE}*`,
+      `${ONNXRUNTIME_BASE}*`,
+    ]);
     for (const path of versionedVendorPaths) expect(immutablePaths).toContain(path);
     expect(versionedVendorPaths[0]).toBe(`/vendor/pdfjs/${installedVersion("pdfjs-dist")}/*`);
     expect(versionedVendorPaths[1]).toBe(`/vendor/libheif/${installedVersion("libheif-js")}/*`);
     expect(versionedVendorPaths[2]).toBe(
       `/vendor/wasm-media-encoders/${installedVersion("wasm-media-encoders")}/*`,
+    );
+    expect(versionedVendorPaths[3]).toBe(
+      `/vendor/onnxruntime-web/${installedVersion("onnxruntime-web")}/*`,
     );
   });
 
@@ -82,6 +111,48 @@ describe("cache headers of vendored files (ADR 0061)", () => {
     expect(immutablePaths.some((path) => path.startsWith("/vendor/tesseract"))).toBe(false);
     for (const path of immutablePaths.filter((entry) => entry.startsWith("/vendor/"))) {
       expect(path, path).toMatch(/^\/vendor\/[a-z]+(-[a-z]+)*\/\d+\.\d+\.\d+\/\*$/);
+    }
+  });
+});
+
+describe("the AI models (ADR 0066)", () => {
+  const file = (id: string, name: string) => join(repo, "models", id, name);
+
+  it("holds every model file with the size and SHA-256 stated, under 25 MiB, with its licence", () => {
+    for (const model of Object.values(MODELS)) {
+      const bytes = readFileSync(file(model.id, "model.onnx"));
+      expect(createHash("sha256").update(bytes).digest("hex"), model.id).toBe(model.sha256);
+      expect(bytes.length, model.id).toBe(model.bytes);
+      expect(bytes.length, model.id).toBeLessThan(25 * MiB);
+      expect(statSync(file(model.id, "LICENSE.txt")).size, model.id).toBeGreaterThan(1000);
+    }
+    expect(readFileSync(file("realesr-general-x4v3", "LICENSE.txt"), "utf8")).toContain(
+      "BSD 3-Clause License",
+    );
+    expect(readFileSync(file("modnet", "LICENSE.txt"), "utf8")).toContain(
+      "Version 2.0, January 2004",
+    );
+  });
+
+  it("gives each tool the model's real path, hash and size", () => {
+    const upscale = MODELS["realesr-general-x4v3"];
+    expect(upscaler.MODEL).toEqual({
+      url: `${modelBase(upscale)}model.onnx`,
+      sha256: upscale.sha256,
+      bytes: upscale.bytes,
+    });
+    const matte = MODELS.modnet;
+    expect(remover.MODEL).toEqual({
+      url: `${modelBase(matte)}model.onnx`,
+      sha256: matte.sha256,
+      bytes: matte.bytes,
+    });
+  });
+
+  it("caches the models for good, since each path holds the start of the file's hash", () => {
+    expect(immutablePaths).toContain(MODEL_PATHS);
+    for (const model of Object.values(MODELS)) {
+      expect(modelBase(model)).toBe(`/models/${model.id}/${model.sha256.slice(0, 16)}/`);
     }
   });
 });

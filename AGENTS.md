@@ -68,6 +68,12 @@ Tools:
   tool's `worker.ts`; `logic.ts` takes the library as a parameter and imports nothing (ADR 0062).
   Compress PDF uses `@embedpdf/pdfium` 2.15.1 only from `worker.ts`; its wasm is the hashed file Vite
   emits. FreeType inside it is used under the FTL, never the GPLv2, with its notice in `credits.ts`.
+- AI models run with `onnxruntime-web` 1.30.0 (MIT), plain wasm backend on one thread, only from a tool's
+  `worker.ts`, importing `onnxruntime-web/wasm` (ADR 0066). Its wasm is served unmodified from
+  `/vendor/onnxruntime-web/<version>/`; `pnpm check:budgets` fails if any other page can load it. Each model is
+  `models/<id>/model.onnx` with its licence, listed in `apps/web/src/config/models.ts` with its SHA-256, served
+  at `/models/<id>/<hash prefix>/` and checked by hash in the worker. Never transformers.js; a model over
+  25 MiB, R2 or a CSP change needs its own ADR.
 - `/vendor/<name>/<version>/*` is cached for a year only when the folder holds unmodified files of the one
   package whose exact version it names (`versionedVendorPaths`, ADR 0061). Tesseract's folder is not.
 - A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.

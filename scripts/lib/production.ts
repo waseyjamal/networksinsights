@@ -13,6 +13,8 @@
 
 import { LAME_BASE } from "../../apps/web/src/config/lame";
 import { LIBHEIF_BASE } from "../../apps/web/src/config/libheif";
+import { MODELS, modelBase } from "../../apps/web/src/config/models";
+import { ONNXRUNTIME_BASE } from "../../apps/web/src/config/onnxruntime";
 import { PDFJS_BASE } from "../../apps/web/src/config/pdfjs";
 import { site } from "../../apps/web/src/config/site";
 import { TESSERACT_BASE } from "../../apps/web/src/config/tesseract";
@@ -144,6 +146,8 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
     { path: `${PDFJS_BASE}cmaps/LICENSE.txt`, immutable: true },
     { path: `${LIBHEIF_BASE}LICENSE.txt`, immutable: true },
     { path: `${LAME_BASE}mp3.wasm`, immutable: true },
+    { path: `${ONNXRUNTIME_BASE}ort-wasm-simd-threaded.mjs`, immutable: true },
+    { path: `${modelBase(MODELS.modnet)}LICENSE.txt`, immutable: true },
     { path: `${TESSERACT_BASE}LICENSE-tesseract.js.txt`, immutable: false },
   ];
   for (const { path, immutable } of vendorFiles) {
@@ -152,7 +156,7 @@ export async function runProductionChecks(options: ProductionOptions = {}): Prom
     const long = /\bimmutable\b/.test(cache) && /\bmax-age=\d{7,}\b/.test(cache);
     add(
       immutable
-        ? `${path} (a versioned vendor folder) is cached for good`
+        ? `${path} (${path.startsWith("/models/") ? "a content-addressed model" : "a versioned vendor folder"}) is cached for good`
         : `${path} is revalidated on every visit`,
       response.status === 200 && long === immutable,
       `answered ${response.status} with Cache-Control: ${cache || "(none)"}. Expected 200 and ${immutable ? '"public, max-age=31536000, immutable"' : "no long cache"}: check versionedVendorPaths in apps/web/src/config/headers.ts.`,

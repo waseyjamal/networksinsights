@@ -6,7 +6,8 @@
 // search fetched before a visitor shows intent; in a build with analytics, the two analytics files
 // (ADR 0051); and the installable app: the service worker, its registration script, the manifest
 // and its icons (ADR 0052); and that the LAME MP3 encoder is in the build exactly once, as its
-// vendored wasm (ADR 0064). Run it after `pnpm build`. CI runs it on every
+// vendored wasm (ADR 0064), and that ONNX Runtime reaches only the AI image tools, its wasm once
+// (ADR 0066). Run it after `pnpm build`. CI runs it on every
 // pull request. Exit code 0 means every page is within budget; 1 means a page is over; 2 means the
 // command was used wrongly.
 
@@ -22,6 +23,7 @@ import {
   measurePageWeight,
 } from "./lib/budgets";
 import { checkLameCopies, formatLameReport } from "./lib/lame-copies";
+import { checkOnnxruntimePages, formatOnnxruntimeReport } from "./lib/onnxruntime-pages";
 import { checkPwa, formatPwaReport } from "./lib/pwa";
 import { checkSearchLoader, formatSearchLoaderReport } from "./lib/search-loader";
 import { defaultToolsRoot, loadTools, repoRoot } from "./lib/tools";
@@ -86,8 +88,10 @@ async function main(): Promise<number> {
   const analytics = checkAnalytics(distDir);
   const pwa = checkPwa(distDir);
   const lame = checkLameCopies(distDir);
+  const onnxruntime = checkOnnxruntimePages(distDir);
   const ok =
     lame.ok &&
+    onnxruntime.ok &&
     report.ok &&
     loader.violations.length === 0 &&
     analytics.violations.length === 0 &&
@@ -127,6 +131,7 @@ async function main(): Promise<number> {
             })),
           },
           lame: { ok: lame.ok, copies: lame.copies },
+          onnxruntime,
           pwa: {
             ok: pwa.violations.length === 0,
             pages: pwa.pages,
@@ -150,6 +155,8 @@ ${formatAnalyticsReport(analytics)}`);
 ${formatPwaReport(pwa)}`);
     console.log(`
 ${formatLameReport(lame)}`);
+    console.log(`
+${formatOnnxruntimeReport(onnxruntime)}`);
     const sections: Array<[string, typeof loader.violations]> = [
       ["search", loader.violations],
       ["analytics", analytics.violations],

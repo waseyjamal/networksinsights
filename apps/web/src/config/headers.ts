@@ -8,6 +8,8 @@
 import { UMAMI_HOST } from "./analytics";
 import { LAME_BASE } from "./lame";
 import { LIBHEIF_BASE } from "./libheif";
+import { MODEL_PATHS } from "./models";
+import { ONNXRUNTIME_BASE } from "./onnxruntime";
 import { PDFJS_BASE } from "./pdfjs";
 
 /**
@@ -153,15 +155,22 @@ export const versionedVendorPaths = [
   `${PDFJS_BASE}*`,
   `${LIBHEIF_BASE}*`,
   `${LAME_BASE}*`,
+  `${ONNXRUNTIME_BASE}*`,
 ] as const;
 
 /**
- * Content-hashed files and versioned vendor files: a change of content is a change of name.
+ * Content-hashed files, versioned vendor files and the AI models, whose path holds the start of
+ * their SHA-256 (ADR 0066): a change of content is a change of name.
  * Everything else (every HTML page included) keeps Cloudflare's default,
  * `public, max-age=0, must-revalidate` with an ETag, so a visit always revalidates and an
  * unchanged page answers 304 (ADR 0048).
  */
-export const immutablePaths = ["/_astro/*", "/search-index.*", ...versionedVendorPaths] as const;
+export const immutablePaths = [
+  "/_astro/*",
+  "/search-index.*",
+  ...versionedVendorPaths,
+  MODEL_PATHS,
+] as const;
 
 /** What Cloudflare sends for HTML when no rule sets Cache-Control. check:production expects it. */
 export const HTML_CACHE_CONTROL = "public, max-age=0, must-revalidate";

@@ -1,0 +1,34 @@
+Image Upscaler makes a JPG, PNG or WebP picture four times wider and four times taller with Real-ESRGAN, an open-source AI model, run in your browser. Use it when a small photo, a screenshot or a thumbnail has to fill a bigger space, and plain stretching would leave it soft and blocky. The result is a PNG you can download at once.
+
+## How to use
+
+1. Drop one picture on the box, or click it to choose one. It starts at once.
+2. The first time, the page fetches the model and the engine that runs it; the line above the box says how much that is. Your browser keeps both, so the next picture starts sooner.
+3. Watch the progress: the picture is worked on in parts of 192 by 192 pixels, and the line under the bar says which part is being done. Cancel stops it.
+4. When it is done, check the preview and press Download PNG. Drop another picture to start again.
+
+## Examples
+
+A crop of a portrait photo, 224 by 96 pixels, comes back as a PNG of 896 by 384 pixels. It is worked on in two parts, and each part is given 34 pixels of the picture around it, so the two halves meet without a visible join. A file named team-photo.jpg is saved as team-photo-4x.png. A PNG with a transparent background keeps its transparency: each original pixel's transparency covers the four by four block it becomes.
+
+## Limits
+
+The scale is always four; there is no two or three. On a computer the picture may be up to 1 megapixel, such as 1000 by 1000 pixels, and on a phone or a device with 4 GB of memory or less up to half that, so the result stays within 16 megapixels. One picture is upscaled at a time. The engine runs on a single processor core, so a large picture can take minutes, longer on a phone. The model draws detail that looks likely; it cannot bring back detail the camera never caught, and it can smooth fine texture such as hair or fabric.
+
+## FAQ
+
+### Is my picture uploaded?
+
+No. A background worker on this page runs the model with ONNX Runtime Web, and the model file and the engine come from this site. The picture itself is never sent anywhere.
+
+### Why is the first run slower than the next ones?
+
+The first run downloads the model and the engine before it can start. Your browser then keeps them in its cache, so later pictures begin as soon as they are read.
+
+### What happens if my device runs out of memory?
+
+The tool stops and says the image is too large for the memory of this device. Make the picture smaller first, for example with Resize Image, then try again.
+
+### Why is my picture refused before it starts?
+
+It has more pixels than the limit for this device. A phone or a device that reports 4 GB of memory or less gets half the limit of a computer, because a result of 16 megapixels already takes a lot of memory.

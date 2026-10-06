@@ -113,7 +113,7 @@ export function edgesOf(distDir: string, file: string): Edges {
 }
 
 /** Everything reachable from a chunk. `dynamic` and `assets` choose which edges are followed. */
-function reach(
+export function reach(
   distDir: string,
   entry: string,
   follow: { dynamic: boolean; assets: boolean },
