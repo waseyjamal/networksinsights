@@ -90,7 +90,7 @@ test("puts two photos side by side on the background, and swaps them", async ({ 
   await expect(page.getByRole("img", { name: "Preview of the collage" })).toBeVisible();
   await page.locator("#photo-collage-maker-background").fill("#00ff00");
   await save(page).click();
-  await expect(result(page)).toContainText("1080 × 1080 pixels, PNG");
+  await expect(result(page)).toContainText("1080 × 1080 pixels, PNG", { timeout: 30_000 });
   const first = await pixels(page, await download(page, "red-collage.png"), [
     [10, 10],
     [275, 540],
@@ -204,7 +204,7 @@ test("refuses a photo one byte over 25 MB and uses one of exactly 25 MB", async 
   await expect(page.getByText("over.png: This file is larger than 25 MB.")).toBeVisible();
   await expect(rows(page)).toHaveCount(2);
   await save(page).click();
-  await expect(result(page)).toContainText("full-collage.png");
+  await expect(result(page)).toContainText("full-collage.png", { timeout: 30_000 });
 });
 
 for (const theme of ["light", "dark"] as const) {
@@ -216,7 +216,9 @@ for (const theme of ["light", "dark"] as const) {
       await photo(page, "b.png", "#0000ff", 100, 100),
     ]);
     await save(page).click();
-    await expect(result(page)).toBeVisible();
+    // Saving encodes a full-size 1080 by 1080 PNG; on a busy CI runner that alone has taken more
+    // than the 5-second default, with Save still showing as busy. Wait for the result itself.
+    await expect(result(page)).toBeVisible({ timeout: 30_000 });
     await expectNoAxeViolations(page);
   });
 }

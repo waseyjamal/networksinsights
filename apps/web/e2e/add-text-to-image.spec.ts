@@ -57,6 +57,31 @@ async function inspect(page: Page, bytes: Buffer, box: [number, number, number, 
   );
 }
 
+/** How many pixels in a box are near white (text) and near black (outline and shadow). */
+async function tally(page: Page, bytes: Buffer, box: [number, number, number, number]) {
+  return page.evaluate(
+    async ({ base64, box }) => {
+      const data = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+      const bitmap = await createImageBitmap(new Blob([data]));
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("no 2d context");
+      context.drawImage(bitmap, 0, 0);
+      const pixels = context.getImageData(...box).data;
+      let white = 0;
+      let black = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const low = Math.min(pixels[i] ?? 0, pixels[i + 1] ?? 0, pixels[i + 2] ?? 0);
+        const high = Math.max(pixels[i] ?? 0, pixels[i + 1] ?? 0, pixels[i + 2] ?? 0);
+        if (low > 230) white++;
+        if (high < 12) black++;
+      }
+      return { white, black };
+    },
+    { base64: bytes.toString("base64"), box },
+  );
+}
+
 /** A plain dark grey picture, so white text shows clearly where it is drawn. */
 async function darkPicture(
   page: Page,
@@ -149,7 +174,14 @@ test("draws several layers with outline and shadow, up to 10 layers", async ({ p
   const corner = (box: [number, number, number, number]) => inspect(page, saved, box);
   const plain = (await corner([150, 120, 100, 60])).light;
   expect((await corner([0, 0, 120, 70])).light).toBeGreaterThan(plain + 40);
-  expect((await corner([280, 220, 120, 80])).light).toBeGreaterThan(plain + 30);
+  // The second layer has a black outline and a shadow, which pull its average brightness down by
+  // an amount that depends on the system font: count white letter pixels and black outline pixels
+  // instead. The plain #202020 picture has neither.
+  const second = await tally(page, saved, [280, 220, 120, 80]);
+  const background = await tally(page, saved, [150, 120, 100, 60]);
+  expect(second.white).toBeGreaterThan(100);
+  expect(second.black).toBeGreaterThan(100);
+  expect(background).toEqual({ white: 0, black: 0 });
 
   // Layers 3 to 9 are added in one go; the 10th by a real click; the 11th is refused.
   await page.evaluate(() => {
