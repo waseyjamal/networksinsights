@@ -1,0 +1,26 @@
+Audio Joiner combines several recordings into one WAV file, one after another in the order you choose. It is handy for stitching together voice memos, the parts of an interview, or the clips of a podcast episode, even when they were recorded on different devices with different settings.
+
+## How to use
+
+1. Drop two or more recordings on the box, or click it to choose them. Each one is listed with its length, sample rate and whether it is mono or stereo.
+2. Put them in order with the Up and Down buttons, and remove any you do not want.
+3. A line under the list says how long the joined file will be and its format.
+4. Press Join, then Download. The file is named after the first recording, with `-joined` added.
+
+## Examples
+
+A 1-second mono voice memo recorded at 22,050 Hz followed by a 1.5-second stereo clip at 48,000 Hz gives a 2.5-second stereo WAV at 48,000 Hz. The memo is converted up to 48,000 Hz and is heard equally on both channels; the stereo clip is kept exactly as it decodes.
+
+## Limits
+
+The output is always a 16-bit WAV, which is large: about 10 MB a minute in stereo at 48,000 Hz. Only mono and stereo recordings can be joined; one with more channels is refused. Together the recordings may last at most 20 minutes. WAV files open in every browser, but M4A, MP3, OGG and FLAC need the browser to decode them, and the page says so when it cannot. Clips are joined end to end with no crossfade.
+
+## FAQ
+
+### What happens when the recordings have different sample rates?
+
+The joined file uses the highest sample rate among them, and the others are converted up to it by linear interpolation between neighbouring samples. Nothing is converted down, and the pitch and length of every recording stay the same.
+
+### What happens when I join mono and stereo recordings?
+
+The joined file is stereo, and each mono recording is copied to both the left and right channels, so it sounds centred. If every recording is mono, the joined file stays mono.

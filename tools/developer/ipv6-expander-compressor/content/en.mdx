@@ -1,0 +1,27 @@
+IPv6 Address Expander and Compressor writes any IPv6 address in full, as eight groups of four digits, and in the canonical short form RFC 5952 defines. The same address can be typed many ways, so comparing logs, firewall rules or DNS records by eye is unreliable; this page gives every spelling one full form and one short form you can compare as plain text.
+
+## How to use
+
+1. Paste one or more IPv6 addresses into the box, one on each line. Upper or lower case, missing leading zeros and a `::` anywhere are all accepted, as is a dotted IPv4 ending such as `::ffff:192.0.2.1`.
+2. The table updates as you type. For each line it shows what you typed, the expanded form with all 32 hexadecimal digits, and the compressed form.
+3. A line that is not an address shows the reason in the Expanded column, and the other lines still work.
+
+## Examples
+
+`2001:0DB8:0000:0000:0001:0000:0000:0001` has two runs of two zero groups. RFC 5952 shortens only the first run when they tie, so the compressed form is `2001:db8::1:0:0:1`, in lowercase and without leading zeros. The expanded form is `2001:0db8:0000:0000:0001:0000:0000:0001`.
+
+`2001:db8:0:1:1:1:1:1` keeps its single zero group: a `::` never stands for just one group.
+
+## Limits
+
+It reads plain addresses only. A prefix such as `/64` or a zone such as `%eth0` is refused with a message; remove it first. It does not check whether an address is assigned, reachable or in a reserved range, and at most 500 lines are read at a time.
+
+## FAQ
+
+### Why is there only one correct short form?
+
+RFC 4291 lets an address be written many ways, which made search and comparison error prone. RFC 5952 picks one: lowercase digits, no leading zeros, and `::` replacing the longest run of zero groups, the leftmost when two runs are the same length.
+
+### How are IPv4-mapped addresses written?
+
+An address from `::ffff:0:0/96` is shown with its last 32 bits as a dotted IPv4 address, such as `::ffff:192.0.2.128`, as section 5 of RFC 5952 recommends. The expanded form still shows those bits as two hexadecimal groups.

@@ -1,0 +1,27 @@
+Subnet Calculator takes an IPv4 address with a prefix or a subnet mask and shows its network, broadcast, masks and usable host range. It is for network engineers, students working through subnetting exercises and anyone setting up a router, a firewall rule or a cloud network who wants to check the numbers before typing them into a device.
+
+## How to use
+
+1. Type an address followed by a slash and a prefix length, such as `192.168.1.10/24`. You can also type the address, a space and a dotted mask, such as `192.168.1.10 255.255.255.0`.
+2. The table updates as you type. It lists the network address with its prefix, the subnet mask, the wildcard mask used in access lists, the broadcast address, the first and last usable host, how many addresses the subnet holds and how many of them hosts can use.
+3. If the input cannot be read, a message under the box says which part is wrong.
+
+## Examples
+
+`172.16.35.123/20` gives the network `172.16.32.0/20`, the mask `255.255.240.0`, the wildcard `0.0.15.255`, the broadcast `172.16.47.255` and usable hosts from `172.16.32.1` to `172.16.47.254`: 4,094 of them. Notice that the network starts at 32 in the third number, because a /20 moves in steps of 16 there.
+
+`10.0.0.1/31` gives two usable addresses, `10.0.0.0` and `10.0.0.1`, and no broadcast, as RFC 3021 defines for point-to-point links. `203.0.113.9/32` is a single host.
+
+## Limits
+
+It works with IPv4 only; for IPv6 blocks use the CIDR to IP Range Converter. Leading zeros such as `010.0.0.1` are refused, because some programs read them as octal and others as decimal. It describes one subnet at a time and does not split a network into smaller ones.
+
+## FAQ
+
+### Why are there two fewer usable hosts than addresses?
+
+In an ordinary subnet the first address names the network and the last is the broadcast address, so neither is given to a device. A /24 has 256 addresses and 254 usable hosts. The exceptions are /31, where both addresses are usable on a point-to-point link, and /32, which is one host.
+
+### What is the wildcard mask for?
+
+The wildcard mask is the subnet mask with every bit flipped. Cisco access lists and OSPF network statements use it to say which bits of an address must match: `0.0.0.255` means the first three numbers must match and the last can be anything.

@@ -1,0 +1,26 @@
+Crop PDF trims the margins of every page in a PDF: you set how many millimetres to cut from each side and see the kept area on the first page. Use it to remove wide white borders from a scan, cut printer marks off a proof, or make a document easier to read on a small screen.
+
+## How to use
+
+1. Drop a PDF on the box, or click it to choose one. The first page appears with its size in millimetres.
+2. Type how much to cut from the top, right, bottom and left, in millimetres. An empty box means nothing is cut on that side. The outlined area on the page is what stays.
+3. To move the kept area without changing its size, drag the outline, or focus it and use the arrow keys. The four margins update to match.
+4. Press Crop, then Download. The file is named after the original, with `-cropped` added.
+
+## Examples
+
+An A4 page is 210 by 297 mm. Cutting 20 mm from the top and 10 mm from each of the other sides gives pages of 190 by 267 mm. A page that is turned in the PDF, such as a landscape page stored upright, is cut on the sides you see, not the sides it was stored with.
+
+## Limits
+
+The same margins apply to every page; it cannot crop pages by different amounts. Cropping hides what lies outside the kept area but does not delete it: the text and pictures there are still in the file and can come back if someone resets the page boxes, so do not use cropping to remove private content. Password-protected PDFs are refused. A browser that cannot draw pages in the background shows the outline on a blank page instead of the first page; the crop is the same.
+
+## FAQ
+
+### Is the cut-off part removed from the file?
+
+No. The tool changes the boxes that tell a reader which part of each page to show and print. The drawing outside them stays in the file, which is why the file size barely changes. To remove content for good, use Redact PDF instead.
+
+### Why does a cropped page still print on a full sheet?
+
+Most printing software scales a page to the paper you choose. The cropped page itself is smaller, but the printer may enlarge it or centre it on the sheet. Check the scaling setting in your print dialog.

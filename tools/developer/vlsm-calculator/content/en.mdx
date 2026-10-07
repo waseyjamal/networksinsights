@@ -1,0 +1,25 @@
+VLSM Calculator splits one IPv4 network into subnets of different sizes, each just large enough for the hosts it needs. Variable length subnet masking avoids wasting a /24 on a two-host link; it is a staple of network design courses and of planning addressing for an office, a lab or a cloud network.
+
+## How to use
+
+1. Type the network you have been given, with its prefix, such as `192.168.1.0/24`.
+2. List the subnets you need, one per line: a name and the number of hosts, such as `Office 50`. A line with only a number gets a name like Subnet 3.
+3. The plan updates as you type. The subnets are placed largest first from the start of the network, and the table shows each one's network and prefix, mask, usable range and broadcast address. A line under the table says how much of the network is still free.
+
+## Examples
+
+`192.168.1.0/24` with Engineering 100, Office 50, Sales 20 and Link 2 gives `192.168.1.0/25` for Engineering (126 hosts), `192.168.1.128/26` for Office (62), `192.168.1.192/27` for Sales (30) and `192.168.1.224/30` for Link (2). That leaves 28 addresses free from `192.168.1.228`. Notice that each subnet starts on a multiple of its own size.
+
+## Limits
+
+Each subnet keeps a network and a broadcast address, so the smallest one it makes is a /30, and it does not use /31 or /32. It works with IPv4 only, refuses leading zeros such as `010.0.0.0`, and plans up to 256 subnets. It always places the largest first and does not let you choose where a subnet goes.
+
+## FAQ
+
+### Why are the largest subnets placed first?
+
+A subnet must start on a multiple of its own size. Placing the biggest blocks first means every smaller one that follows lands on a boundary it can use, so no addresses are skipped between subnets and none overlap.
+
+### Why did my subnet of 60 hosts get room for 62?
+
+Subnet sizes are powers of two. Sixty hosts plus the network and broadcast addresses need 62 addresses, and the next power of two is 64, a /26, which leaves 62 usable host addresses.

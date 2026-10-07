@@ -1,0 +1,27 @@
+Mute Video removes the sound from a video by copying its picture into a new file without the audio track, so nothing is re-encoded. It suits a clip with background noise or private conversation you want to share silently, a video that will get new music later, or footage for a page where sound would play unexpectedly.
+
+## How to use
+
+1. Drop a video on the box, or click it to choose one. A line under it shows the kind of file, its length, its size in pixels and how many audio tracks it has.
+2. If the video has sound, press Remove sound. A bar shows the progress while the video track is copied.
+3. Press Download. The new file is the same kind as the original, with `-muted` added to its name.
+
+If the video has no audio track, the page says so and there is nothing to do.
+
+## Examples
+
+`beach.mp4`, an MP4 with H.264 video and AAC sound, becomes `beach-muted.mp4` with the same H.264 video packets and no audio track. A WebM with VP9 and Opus becomes a WebM with only the VP9 video. The muted file is a little smaller than the original, by about the size of the sound it held.
+
+## Limits
+
+Only the main video track is kept; subtitles, chapters and any second video track are left out. Files up to 500 MB are accepted, and the new file is built in your device's memory, so a phone may run out of room with a large video. If the video track cannot be copied into a file of the same kind, the tool says so and saves nothing, rather than re-encoding.
+
+## FAQ
+
+### Does muting lower the quality of the picture?
+
+No. The encoded video is copied as it is stored, packet for packet, without being decoded or compressed again, so every frame is identical to the original. That is also why it works in browsers that cannot encode video.
+
+### Can I remove only one of several audio tracks?
+
+No. Every audio track is left out, so the new file has no sound at all. To keep some sound and drop the rest, use a desktop video editor.
