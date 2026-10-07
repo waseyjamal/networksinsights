@@ -20,6 +20,7 @@ import {
   measurePageWeight,
 } from "./lib/budgets";
 import { LAME_WASM_PATH } from "./lib/lame-copies";
+import { ONNXRUNTIME_PAGES, ONNXRUNTIME_WASM_PATH } from "./lib/onnxruntime-pages";
 import { scratchRoot } from "./lib/test-support";
 import { repoRoot } from "./lib/tools";
 
@@ -336,6 +337,27 @@ describe("the command", () => {
       join(repoRoot, "tools", "node_modules", "wasm-media-encoders", "wasm", "mp3.wasm"),
       join(dist, LAME_WASM_PATH),
     );
+    // And ONNX Runtime once, as its vendored wasm, reached only from the AI image tools' pages.
+    mkdirSync(dirname(join(dist, ONNXRUNTIME_WASM_PATH)), { recursive: true });
+    copyFileSync(
+      join(
+        repoRoot,
+        "tools",
+        "node_modules",
+        "onnxruntime-web",
+        "dist",
+        "ort-wasm-simd-threaded.wasm",
+      ),
+      join(dist, ONNXRUNTIME_WASM_PATH),
+    );
+    put("_astro/worker-ort.js", "/*! ONNX Runtime Web v1.30.0 */ export {};");
+    put(
+      "_astro/ui-ort.js",
+      'new Worker(new URL("/_astro/worker-ort.js", "" + import.meta.url), { type: "module" });',
+    );
+    const ortPage = page.replace(/component-url="[^"]+"/, 'component-url="/_astro/ui-ort.js"');
+    expect(ortPage).not.toBe(page);
+    for (const path of ONNXRUNTIME_PAGES) put(path, ortPage);
     const result = spawnSync(
       process.execPath,
       ["--import", "tsx", "scripts/check-budgets.ts", "--dist", dist],

@@ -13,6 +13,7 @@
     "gifenc": "1.0.3",
     "libheif-js": "1.23.2",
     "mediabunny": "1.61.0",
+    "onnxruntime-web": "1.30.0",
     "pdf-lib": "1.17.1",
     "pdfjs-dist": "6.3.289",
     "react": "19.3.0",

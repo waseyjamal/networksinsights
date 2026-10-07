@@ -1,0 +1,34 @@
+Background Remover cuts the background out of a photo of a person and saves the person on a transparent PNG, using the MODNet portrait model in your browser. It is best for people: portraits, profile pictures and photos where someone is the clear subject. Use it to put yourself on a plain colour, a slide or a new scene without tracing an outline by hand.
+
+## How to use
+
+1. Drop one photo of a person on the box, or click it to choose one. It starts at once.
+2. The first time, the page fetches the model and the engine that runs it; the line above the box says how much that is. Your browser keeps both for the next photo.
+3. Wait for the steps to finish: reading the photo, loading the model, finding the person and writing the result. Cancel stops it.
+4. Check the preview and press Download PNG. The picture keeps its full size; only the background turns transparent.
+
+## Examples
+
+A portrait of an astronaut, 512 by 640 pixels, standing in front of a blue backdrop, a flag and a model rocket, comes back as a PNG of the same size. The face and the suit stay opaque, and the backdrop in the top corners becomes fully transparent. The helmet the astronaut holds is only partly kept, because the model looks for people, not objects. A file named me.jpg is saved as me-no-background.png.
+
+## Limits
+
+This mode is made for people. Products, pets, cars or a drawing may be cut badly or vanish, and an object a person holds may be lost. The photo may be up to 30 MB and 24 megapixels. The model looks at a copy whose shorter side is 512 pixels, so very fine strands of hair can blur at the edge. One photo is done at a time, and the result is always a PNG with transparency.
+
+## FAQ
+
+### Is my photo uploaded?
+
+No. A background worker on this page runs the model with ONNX Runtime Web, and the model file and the engine come from this site. The photo itself never leaves your device.
+
+### Can it remove the background behind a product or a pet?
+
+Not reliably. MODNet was trained to separate people from what is behind them, so it may cut other subjects badly or leave them out entirely.
+
+### Can I put a colour behind the person?
+
+The download has a transparent background. Open it in any picture editor that has layers and place a colour or a new picture underneath it.
+
+### Why does the first photo take longer?
+
+The first photo waits for the model and the engine to download. After that your browser keeps them, so the next photo starts as soon as it is read.

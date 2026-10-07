@@ -1,8 +1,9 @@
 # E2E fixtures
 
 Small binary files the browser under test cannot make itself. Every one was made for this
-repository by the project, from drawings and text we wrote; none is copied from anywhere. They are
-dedicated to the public domain under CC0-1.0, like the code that made them.
+repository by the project, from drawings and text we wrote, except the four AI image fixtures:
+those are made from one public-domain photo, named below, because a portrait model needs a real
+person. They are dedicated to the public domain under CC0-1.0, like the code that made them.
 
 | File | What it is | Used by |
 |---|---|---|
@@ -17,6 +18,10 @@ dedicated to the public domain under CC0-1.0, like the code that made them.
 | `target-h264-aac.mp4` | 8 s, 480 × 270, 24 fps test pattern at 1 Mbit/s, H.264, with a 330 Hz stereo tone in AAC: about 1 MB, so a 0.5 MB target can be tested | `video-compressor.spec.ts` |
 | `tone-aac.m4a` | 1 s, 440 Hz stereo tone, AAC in M4A | `audio-converter.spec.ts` |
 | `tone-opus.ogg` | 1 s, 440 Hz stereo tone, Opus in Ogg | `audio-converter.spec.ts` |
+| `upscale-face.png` | 224 × 96 crop of the face in NASA's portrait of Ellen Ochoa (below), scaled with Lanczos | `image-upscaler.spec.ts` |
+| `upscale-face-4x.png` | 896 × 384, the original PyTorch Real-ESRGAN model run on `upscale-face.png` in one piece | `image-upscaler.spec.ts` |
+| `portrait.png` | The whole portrait scaled to 512 × 640, the size the MODNet model sees | `background-remover.spec.ts` |
+| `portrait-matte.png` | 512 × 640 greyscale, MODNet's matte for `portrait.png` from onnxruntime 1.23.0 | `background-remover.spec.ts` |
 
 ## How they were made (2026-10-04)
 
@@ -76,3 +81,10 @@ ffmpeg -f lavfi -i "$A1" -ac 2 -c:a libopus -b:a 64k -map_metadata -1 -fflags +b
 
 PDFs for the OCR tests are written at run time by `support/test-pdf.ts`, and files over a size
 limit are made at run time by each spec; none is kept here.
+
+## The AI image fixtures (2026-10-06)
+
+Source: "Ellen Ochoa.jpg", NASA's official astronaut portrait of Ellen Ochoa, 3256 × 4072,
+https://commons.wikimedia.org/wiki/File:Ellen_Ochoa.jpg. Public domain: a work of the US federal
+government (NASA). `scripts/models/make-fixtures.py` makes all four files from it and prints the
+numbers ADR 0066 bases the test tolerances on.

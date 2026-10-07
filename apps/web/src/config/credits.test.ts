@@ -12,6 +12,8 @@ import { MP3_WASM_URL } from "../../../../tools/video-audio/video-to-mp3/logic";
 import { credits, FREETYPE_NOTICE, LIBFLAC_NOTICE, ZLIB_NOTICE } from "./credits";
 import { LAME_BASE, LAME_FILES, LAME_PACKAGE_VERSION, LAME_SOURCE } from "./lame";
 import { LIBHEIF_BASE, LIBHEIF_FILES, LIBHEIF_VERSION } from "./libheif";
+import { MODELS, modelBase } from "./models";
+import { ONNXRUNTIME_VERSION } from "./onnxruntime";
 import { PDFJS_BASE, PDFJS_VENDOR_FOLDERS, PDFJS_VERSION } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES, TESSERACT_VERSION } from "./tesseract";
 
@@ -132,6 +134,13 @@ describe("credits", () => {
         expect(Object.values(LAME_FILES) as string[], url).toContain(url.slice(LAME_BASE.length));
         continue;
       }
+      if (url.startsWith("/models/")) {
+        const model = Object.values(MODELS).find(
+          (entry) => url === `${modelBase(entry)}LICENSE.txt`,
+        );
+        expect(model, url).toBeDefined();
+        continue;
+      }
       if (url.startsWith(TESSERACT_BASE)) {
         expect(Object.keys(TESSERACT_FILES), url).toContain(url.slice(TESSERACT_BASE.length));
         continue;
@@ -180,5 +189,17 @@ describe("credits of the video and audio tools (ADR 0061)", () => {
     expect(declared("mediabunny")).toBe("MPL-2.0");
     expect(declared("@mediabunny/flac-encoder")).toBe("MPL-2.0");
     expect(declared("gifenc")).toBe("MIT");
+  });
+});
+
+describe("credits of the AI image tools (ADR 0066)", () => {
+  it("credits ONNX Runtime Web at the installed version, and both models with their licences", () => {
+    const find = (name: string) => credits.find((credit) => credit.name.startsWith(name));
+    expect(ONNXRUNTIME_VERSION).toBe(toolsPackage.dependencies["onnxruntime-web"]);
+    expect(find("onnxruntime-web")?.version).toBe(toolsPackage.dependencies["onnxruntime-web"]);
+    expect(find("onnxruntime-web")?.notice).toContain("Copyright (c) Microsoft Corporation");
+    expect(find("Real-ESRGAN")?.license).toBe("BSD-3-Clause");
+    expect(find("Real-ESRGAN")?.notice).toContain("Copyright (c) 2021, Xintao Wang");
+    expect(find("MODNet")?.license).toBe("Apache-2.0");
   });
 });

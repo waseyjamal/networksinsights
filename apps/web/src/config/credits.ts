@@ -4,6 +4,8 @@
 
 import { LAME_BASE, LAME_SOURCE } from "./lame";
 import { LIBHEIF_BASE } from "./libheif";
+import { MODELS, modelBase } from "./models";
+import { ONNXRUNTIME_BASE, ONNXRUNTIME_VERSION } from "./onnxruntime";
 import { PDFJS_BASE, publishedName } from "./pdfjs";
 import { TESSERACT_BASE } from "./tesseract";
 
@@ -257,5 +259,40 @@ export const credits: readonly Credit[] = [
     usedFor:
       "Colour management, JPEG 2000, JPEG, PNG and Deflate decoding and vector drawing inside PDFium's WebAssembly in Compress PDF",
     notice: `Little CMS: Copyright (c) 2023 Marti Maria Saguer, under the MIT licence. OpenJPEG: Copyright (c) 2002-2014, Universite catholique de Louvain (UCL), Belgium, Copyright (c) 2002-2014, Professor Benoit Macq, and the other OpenJPEG contributors, under the 2-clause BSD licence. libjpeg-turbo: This software is based in part on the work of the Independent JPEG Group. Copyright (C)2009-2024 D. R. Commander, Copyright (C)2015 Viktor Szathmáry, under the IJG licence and the 3-clause BSD licence. libpng: Copyright (c) 1995-2019 The PNG Reference Library Authors, Copyright (c) 2018-2019 Cosmin Truta, under the PNG Reference Library License version 2. zlib: Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler, under the zlib licence. Anti-Grain Geometry 2.3: Copyright (C) 2002-2005 Maxim Shemanarev (McSeem). Permission to copy, use, modify, sell and distribute this software is granted provided this copyright notice appears in all copies. This software is provided "as is" without express or implied warranty, and with no claim as to its suitability for any purpose. The full licence texts are in the source linked here.`,
+  },
+  {
+    name: "onnxruntime-web (ONNX Runtime Web)",
+    version: ONNXRUNTIME_VERSION,
+    license: "MIT",
+    url: "https://github.com/microsoft/onnxruntime",
+    usedFor: `Running the AI models of Image Upscaler and Background Remover in the browser: the plain WebAssembly backend, on one thread, served unmodified from ${ONNXRUNTIME_BASE}`,
+    sourceUrls: [
+      `https://github.com/microsoft/onnxruntime/tree/v${ONNXRUNTIME_VERSION}`,
+      `https://github.com/microsoft/onnxruntime/blob/v${ONNXRUNTIME_VERSION}/ThirdPartyNotices.txt`,
+    ],
+    notice: `Copyright (c) Microsoft Corporation. ${MIT_TERMS} The WebAssembly file also holds code from other projects (among them ONNX, Protocol Buffers, Abseil, FlatBuffers, Eigen under the MPL-2.0, and Microsoft's MLAS), each under its own licence. Their notices are in ONNX Runtime's ThirdPartyNotices.txt for this version, linked here.`,
+  },
+  {
+    name: "Real-ESRGAN (realesr-general-x4v3 model)",
+    version: "v0.2.5.0",
+    license: MODELS["realesr-general-x4v3"].license,
+    url: "https://github.com/xinntao/Real-ESRGAN",
+    usedFor:
+      "The model of Image Upscaler, converted by this project from PyTorch to ONNX without changing its weights (scripts/models/convert-realesrgan.py)",
+    licenseFiles: [`${modelBase(MODELS["realesr-general-x4v3"])}LICENSE.txt`],
+    sourceUrls: [MODELS["realesr-general-x4v3"].source],
+    notice:
+      'Copyright (c) 2021, Xintao Wang. All rights reserved. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.',
+  },
+  {
+    name: "MODNet (portrait matting model)",
+    version: "Xenova/modnet fa2fa54, model_uint8.onnx",
+    license: MODELS.modnet.license,
+    url: "https://github.com/ZHKKKe/MODNet",
+    usedFor:
+      "The model of Background Remover: MODNet by Zhanghan Ke and others, in the 8-bit ONNX export published by Xenova on Hugging Face, unmodified",
+    licenseFiles: [`${modelBase(MODELS.modnet)}LICENSE.txt`],
+    sourceUrls: ["https://github.com/ZHKKKe/MODNet", MODELS.modnet.source],
+    notice: `MODNet: Trimap-Free Portrait Matting in Real Time, by Zhanghan Ke, Jiayu Sun, Kaican Li, Qiong Yan and Rynson W.H. Lau. The code and models are released under the Apache License 2.0. ${APACHE_TERMS}`,
   },
 ];
