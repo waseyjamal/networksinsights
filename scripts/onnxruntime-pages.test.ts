@@ -9,7 +9,7 @@ import {
 } from "./lib/onnxruntime-pages";
 
 // The ONNX Runtime check (ADR 0066) on small fake builds: the engine may be reached only from the
-// two AI image tool pages, they must reach it, and its wasm must be the one vendored file.
+// three AI tool pages, they must reach it, and its wasm must be the one vendored file.
 
 const made: string[] = [];
 afterEach(() => {
@@ -37,17 +37,20 @@ const good = {
   "_astro/client.js": "export {};",
   "_astro/ui-up.js": ui("/_astro/worker-up.js"),
   "_astro/ui-bg.js": ui("/_astro/worker-bg.js"),
+  "_astro/ui-st.js": ui("/_astro/worker-st.js"),
   "_astro/worker-up.js": engine,
   "_astro/worker-bg.js": engine,
+  "_astro/worker-st.js": engine,
   "image-upscaler/index.html": island("/_astro/ui-up.js"),
   "background-remover/index.html": island("/_astro/ui-bg.js"),
+  "speech-to-text/index.html": island("/_astro/ui-st.js"),
   "word-counter/index.html": island("/_astro/client.js"),
   "index.html": '<script type="module" src="/_astro/client.js"></script>',
   [ONNXRUNTIME_WASM_PATH]: wasm,
 };
 
 describe("checkOnnxruntimePages", () => {
-  it("passes when only the two tool pages reach the engine and its wasm is vendored once", () => {
+  it("passes when only the three tool pages reach the engine and its wasm is vendored once", () => {
     const report = checkOnnxruntimePages(dist(good));
     expect(report).toEqual({
       strayPages: [],
@@ -56,7 +59,7 @@ describe("checkOnnxruntimePages", () => {
       ok: true,
     });
     expect(formatOnnxruntimeReport(report)).toContain(
-      "only /image-upscaler/ and /background-remover/",
+      "only /image-upscaler/, /background-remover/ and /speech-to-text/",
     );
   });
 

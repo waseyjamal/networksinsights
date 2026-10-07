@@ -6,8 +6,8 @@
 // search fetched before a visitor shows intent; in a build with analytics, the two analytics files
 // (ADR 0051); and the installable app: the service worker, its registration script, the manifest
 // and its icons (ADR 0052); and that the LAME MP3 encoder is in the build exactly once, as its
-// vendored wasm (ADR 0064), and that ONNX Runtime reaches only the AI image tools, its wasm once
-// (ADR 0066). Run it after `pnpm build`. CI runs it on every
+// vendored wasm (ADR 0064), and that ONNX Runtime reaches only the AI tools, its wasm once
+// (ADR 0066), and that no file in the build is over Cloudflare's 25 MiB (ADR 0068). Run it after `pnpm build`. CI runs it on every
 // pull request. Exit code 0 means every page is within budget; 1 means a page is over; 2 means the
 // command was used wrongly.
 
@@ -22,6 +22,7 @@ import {
   formatPageWeight,
   measurePageWeight,
 } from "./lib/budgets";
+import { checkFileSizes, formatFileSizeReport } from "./lib/file-sizes";
 import { checkLameCopies, formatLameReport } from "./lib/lame-copies";
 import { checkOnnxruntimePages, formatOnnxruntimeReport } from "./lib/onnxruntime-pages";
 import { checkPwa, formatPwaReport } from "./lib/pwa";
@@ -89,7 +90,9 @@ async function main(): Promise<number> {
   const pwa = checkPwa(distDir);
   const lame = checkLameCopies(distDir);
   const onnxruntime = checkOnnxruntimePages(distDir);
+  const fileSizes = checkFileSizes(distDir);
   const ok =
+    fileSizes.ok &&
     lame.ok &&
     onnxruntime.ok &&
     report.ok &&
@@ -132,6 +135,7 @@ async function main(): Promise<number> {
           },
           lame: { ok: lame.ok, copies: lame.copies },
           onnxruntime,
+          fileSizes,
           pwa: {
             ok: pwa.violations.length === 0,
             pages: pwa.pages,
@@ -157,6 +161,8 @@ ${formatPwaReport(pwa)}`);
 ${formatLameReport(lame)}`);
     console.log(`
 ${formatOnnxruntimeReport(onnxruntime)}`);
+    console.log(`
+${formatFileSizeReport(fileSizes)}`);
     const sections: Array<[string, typeof loader.violations]> = [
       ["search", loader.violations],
       ["analytics", analytics.violations],

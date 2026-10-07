@@ -74,6 +74,10 @@ Tools:
   `models/<id>/model.onnx` with its licence, listed in `apps/web/src/config/models.ts` with its SHA-256, served
   at `/models/<id>/<hash prefix>/` and checked by hash in the worker. Never transformers.js; a model over
   25 MiB, R2 or a CSP change needs its own ADR.
+- Speech to Text runs Whisper tiny (Xenova/whisper-tiny 5332fcc3, Apache-2.0), English only, at most 3 minutes
+  (ADR 0068). Its decoder is over 25 MiB, so it is served as two byte-exact parts, each at the start of its own
+  hash; the worker checks every part and the joined decoder before use, and keeps nothing on a mismatch. No file
+  in the build may pass 25 MiB: `pnpm check:budgets` fails on one. No R2, no Hindi, no BiRefNet (ADR 0068).
 - `/vendor/<name>/<version>/*` is cached for a year only when the folder holds unmodified files of the one
   package whose exact version it names (`versionedVendorPaths`, ADR 0061). Tesseract's folder is not.
 - A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.
@@ -135,7 +139,8 @@ Run from the repo root:
   tool, `--json` prints JSON. Part of `pnpm check`
 - `pnpm check:budgets` — the JavaScript budget of every tool page, the size and behaviour of the
   search loader every page carries, the analytics files when the build has them, and the installable
-  app (service worker, its registration script, manifest, icons), from the build output; run after
+  app (service worker, its registration script, manifest, icons), and that no file is over 25 MiB (ADR 0068),
+  from the build output; run after
   `pnpm build`. Runs in CI after the build (ADR 0037, ADR 0046, ADR 0051, ADR 0052)
 - `pnpm check:lighthouse` — Lighthouse on its mobile profile against the build (`astro preview`):
   the home page, `/tools/`, one category page and every tool page, median of 3 runs, failing over

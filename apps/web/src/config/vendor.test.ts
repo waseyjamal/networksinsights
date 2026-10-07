@@ -6,10 +6,11 @@ import * as remover from "../../../../tools/image/background-remover/logic";
 import { readHeifInfo } from "../../../../tools/image/heic-to-jpg/logic";
 import * as upscaler from "../../../../tools/image/image-upscaler/logic";
 import { ENGINE_BYTES, LANGUAGES } from "../../../../tools/image/ocr/logic";
+import * as speech from "../../../../tools/video-audio/speech-to-text/logic";
 import { IMMUTABLE, immutablePaths, versionedVendorPaths } from "./headers";
 import { LAME_BASE, LAME_FILES } from "./lame";
 import { LIBHEIF_BASE, LIBHEIF_FILES } from "./libheif";
-import { MODEL_PATHS, MODELS, modelBase } from "./models";
+import { MODEL_PATHS, MODELS, modelBase, modelFilePath, WHISPER } from "./models";
 import { ONNXRUNTIME_BASE, ONNXRUNTIME_FILES } from "./onnxruntime";
 import { PDFJS_BASE } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES } from "./tesseract";
@@ -43,7 +44,7 @@ describe("vendored files", () => {
       expect(size, from).toBeLessThan(25 * MiB);
       bytes += size;
     }
-    for (const tool of [upscaler, remover]) {
+    for (const tool of [upscaler, remover, speech]) {
       expect(tool.ENGINE.base).toBe(ONNXRUNTIME_BASE);
       expect(Object.values(ONNXRUNTIME_FILES) as string[]).toContain(tool.ENGINE.mjs);
       expect(Object.values(ONNXRUNTIME_FILES) as string[]).toContain(tool.ENGINE.wasm);
@@ -154,5 +155,103 @@ describe("the AI models (ADR 0066)", () => {
     for (const model of Object.values(MODELS)) {
       expect(modelBase(model)).toBe(`/models/${model.id}/${model.sha256.slice(0, 16)}/`);
     }
+  });
+
+  it("holds Whisper's files with the size and SHA-256 stated, each under 25 MiB (ADR 0068)", () => {
+    for (const entry of WHISPER.files) {
+      const bytes = readFileSync(file(WHISPER.id, entry.name));
+      expect(createHash("sha256").update(bytes).digest("hex"), entry.name).toBe(entry.sha256);
+      expect(bytes.length, entry.name).toBe(entry.bytes);
+      expect(bytes.length, entry.name).toBeLessThan(25 * MiB);
+    }
+    expect(WHISPER.decoder.bytes).toBeGreaterThan(25 * MiB);
+    const joined = Buffer.concat(
+      WHISPER.files
+        .filter((entry) => entry.name.startsWith(`${WHISPER.decoder.name}.part`))
+        .map((entry) => readFileSync(file(WHISPER.id, entry.name))),
+    );
+    expect(createHash("sha256").update(joined).digest("hex")).toBe(WHISPER.decoder.sha256);
+    expect(joined.length).toBe(WHISPER.decoder.bytes);
+    expect(readFileSync(file(WHISPER.id, "LICENSE.txt"), "utf8")).toContain(
+      "Version 2.0, January 2004",
+    );
+  });
+
+  it("gives Speech to Text Whisper's real paths, hashes and sizes", () => {
+    const entry = (name: string) => {
+      const found = WHISPER.files.find((f) => f.name === name);
+      if (!found) throw new Error(name);
+      return { url: modelFilePath(WHISPER.id, found), sha256: found.sha256, bytes: found.bytes };
+    };
+    expect(speech.MODEL.encoder).toEqual(entry("encoder_model_quantized.onnx"));
+    expect(speech.MODEL.decoderParts).toEqual([
+      entry("decoder_model_merged_quantized.onnx.part1"),
+      entry("decoder_model_merged_quantized.onnx.part2"),
+    ]);
+    expect(speech.MODEL.vocab).toEqual(entry("vocab.json"));
+    expect(speech.MODEL.decoder).toEqual({
+      sha256: WHISPER.decoder.sha256,
+      bytes: WHISPER.decoder.bytes,
+    });
+    for (const f of WHISPER.files)
+      expect(modelFilePath(WHISPER.id, f).startsWith("/models/")).toBe(true);
+  });
+});
+
+describe("Speech to Text's model files and vocabulary (ADR 0068)", () => {
+  const read = (name: string) => readFileSync(join(repo, "models", WHISPER.id, name));
+  const sha256 = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
+  const nameOf = (url: string) => url.slice(url.lastIndexOf("/") + 1);
+
+  it("are the files in models/whisper-tiny-en, at paths that hold the start of their hash", () => {
+    for (const file of speech.modelFiles()) {
+      const bytes = read(nameOf(file.url));
+      expect(bytes.length, file.url).toBe(file.bytes);
+      expect(sha256(bytes), file.url).toBe(file.sha256);
+      expect(file.url).toBe(
+        `/models/whisper-tiny-en/${file.sha256.slice(0, 16)}/${nameOf(file.url)}`,
+      );
+      expect(file.bytes, file.url).toBeLessThan(25 * MiB);
+    }
+    expect(speech.modelBytes()).toBe(41_889_259);
+  });
+
+  it("splits the decoder at the half, and the two parts join into the published decoder", () => {
+    const { MODEL } = speech;
+    expect(speech.splitPoints(MODEL.decoder.bytes, 2)).toEqual([MODEL.decoderParts[0].bytes]);
+    const joined = speech.joinParts(MODEL.decoderParts.map((part) => read(nameOf(part.url))));
+    expect(joined.length).toBe(MODEL.decoder.bytes);
+    expect(sha256(joined)).toBe(MODEL.decoder.sha256);
+    // The parts in the wrong order are not the decoder.
+    const swapped = speech.joinParts(
+      [...MODEL.decoderParts].reverse().map((part) => read(nameOf(part.url))),
+    );
+    expect(sha256(swapped)).not.toBe(MODEL.decoder.sha256);
+  });
+
+  describe("tokens", () => {
+    const vocab = JSON.parse(read("vocab.json").toString("utf8")) as Record<string, number>;
+    const table = speech.tokenTable(vocab);
+    const bytes = speech.byteDecoder();
+    const id = (text: string) => {
+      const found = vocab[text];
+      if (found === undefined) throw new Error(`no token ${text}`);
+      return found;
+    };
+
+    it("turns Whisper's own tokens back into text", () => {
+      const ids = ["ĠFour", "Ġscore", "Ġand", "Ġseven", "Ġyears", "Ġago", ","].map(id);
+      expect(speech.decodeTokens(ids, table, bytes)).toBe(" Four score and seven years ago,");
+    });
+
+    it("leaves out the end of text, timestamps and the prompt tokens", () => {
+      const ids = [speech.TOKENS.startOfTranscript, id("ĠHello"), speech.TOKENS.endOfText, 50_400];
+      expect(speech.decodeTokens(ids, table, bytes)).toBe(" Hello");
+    });
+
+    it("decodes UTF-8 split across tokens", () => {
+      // "é" is two bytes, C3 A9, each its own character in the byte-level vocabulary.
+      expect(speech.decodeTokens(["Ã", "©"].map(id), table, bytes)).toBe("é");
+    });
   });
 });
