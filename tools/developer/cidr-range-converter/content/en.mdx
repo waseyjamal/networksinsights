@@ -1,0 +1,27 @@
+CIDR to IP Range Converter turns a CIDR block into its first and last address, or a range of IPv4 or IPv6 addresses into the fewest CIDR blocks covering it. It helps when a firewall, a cloud security group or an allow list takes only CIDR notation but you were given a start and end address, or the other way round.
+
+## How to use
+
+1. To expand a block, type it with its prefix, such as `10.0.0.0/22` or `2001:db8::/48`. The table shows the first and last address, how many addresses the block holds and, for IPv4, the subnet mask.
+2. To turn a range into blocks, type the start and end joined by a dash or the word "to", such as `10.0.0.5 - 10.0.0.20`. Both ends are included.
+3. The blocks appear one per line, ready to copy into a configuration file. If an address is inside a block rather than at its start, a note names the block it belongs to.
+
+## Examples
+
+`192.168.0.5 - 192.168.0.20` holds 16 addresses, but they do not line up with one block, so the answer is five: `192.168.0.5/32`, `192.168.0.6/31`, `192.168.0.8/29`, `192.168.0.16/30` and `192.168.0.20/32`. Each block starts on a multiple of its own size, which is why the edges need small blocks.
+
+`2001:db8::/32` runs from `2001:db8::` to `2001:db8:ffff:ffff:ffff:ffff:ffff:ffff`, which is 79,228,162,514,264,337,593,543,950,336 addresses.
+
+## Limits
+
+The start and end of a range must be the same family; it does not mix IPv4 and IPv6. IPv6 addresses with a zone, such as `fe80::1%eth0`, are refused, and so are IPv4 numbers with leading zeros, because programs disagree on whether `010` is octal. IPv6 results are written in the short form of RFC 5952.
+
+## FAQ
+
+### Why does my range need more than one block?
+
+A CIDR block always holds a power of two addresses and starts at a multiple of that size. A range that starts or ends anywhere else can only be covered exactly by several blocks of different sizes. The tool picks the largest block that fits at each step, which gives the smallest list.
+
+### Can I type an IPv4 address embedded in IPv6?
+
+Yes. A form such as `::ffff:192.0.2.1` is read, and its last 32 bits come from the dotted part. IPv4-mapped addresses in the answer keep that dotted ending, as RFC 5952 recommends, so `::ffff:c000:201` is written `::ffff:192.0.2.1`.

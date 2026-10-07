@@ -1,0 +1,26 @@
+PDF Metadata Editor shows the title, author, subject, keywords, creator and producer stored inside a PDF, and lets you change or remove them. These fields travel with the file: readers show the title in the window bar, search engines may index it, and the author field can reveal a name you did not mean to share.
+
+## How to use
+
+1. Drop a PDF on the box, or click it to choose one. A table lists every field as it is now, with the creation and modification dates and whether the document has an XMP metadata stream.
+2. Change any field in the boxes below the table. Leave a box empty to remove that field from the file, or press Clear all fields to empty every box at once.
+3. Tick the box to remove the creation and modification dates as well, if you want them gone.
+4. Press Save. A second table shows the fields read back from the new file, and Download saves it with `-metadata` added to the name.
+
+## Examples
+
+A report whose Author says `jsmith` and whose Title says `Draft v3` can be saved with the title `Annual report 2025` and an empty author. The saved table then shows the new title, `(none)` for the author, and `None` for the XMP metadata stream, because the stream that held the old values was removed.
+
+## Limits
+
+Only the six fields and the two dates of the document information dictionary are edited. Other metadata may remain if the library cannot remove it: XMP attached to pages, pictures or fonts is not touched, and a PDF edited before may still hold older values that no reader shows. Password-protected PDFs are refused.
+
+## FAQ
+
+### Why is the XMP metadata stream removed?
+
+Many readers show the XMP values before the information fields. If it stayed, a reader could still show the old title or author after you changed them. Removing it means the fields you saved are the ones readers find.
+
+### Does saving change anything else in the PDF?
+
+The pages, fonts, pictures and bookmarks are carried over as they are, but the file is written out again, so its size can change a little. The tool does not add its own name as the producer or set a new modification date.
