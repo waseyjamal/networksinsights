@@ -12,7 +12,7 @@ import { MP3_WASM_URL } from "../../../../tools/video-audio/video-to-mp3/logic";
 import { credits, FREETYPE_NOTICE, LIBFLAC_NOTICE, ZLIB_NOTICE } from "./credits";
 import { LAME_BASE, LAME_FILES, LAME_PACKAGE_VERSION, LAME_SOURCE } from "./lame";
 import { LIBHEIF_BASE, LIBHEIF_FILES, LIBHEIF_VERSION } from "./libheif";
-import { MODELS, modelBase } from "./models";
+import { MODELS, modelBase, modelFilePath, WHISPER } from "./models";
 import { ONNXRUNTIME_VERSION } from "./onnxruntime";
 import { PDFJS_BASE, PDFJS_VENDOR_FOLDERS, PDFJS_VERSION } from "./pdfjs";
 import { TESSERACT_BASE, TESSERACT_FILES, TESSERACT_VERSION } from "./tesseract";
@@ -135,10 +135,11 @@ describe("credits", () => {
         continue;
       }
       if (url.startsWith("/models/")) {
-        const model = Object.values(MODELS).find(
-          (entry) => url === `${modelBase(entry)}LICENSE.txt`,
-        );
-        expect(model, url).toBeDefined();
+        const served = [
+          ...Object.values(MODELS).map((entry) => `${modelBase(entry)}LICENSE.txt`),
+          ...WHISPER.files.map((entry) => modelFilePath(WHISPER.id, entry)),
+        ];
+        expect(served, url).toContain(url);
         continue;
       }
       if (url.startsWith(TESSERACT_BASE)) {

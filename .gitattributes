@@ -19,3 +19,7 @@
 *.wasm binary
 *.zip binary
 *.onnx binary
+
+*.part1 binary
+*.part2 binary
+*.wav binary

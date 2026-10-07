@@ -1,4 +1,4 @@
-// The ONNX Runtime check (ADR 0066): the AI engine reaches only the pages of the tools that use it.
+// The ONNX Runtime check (ADR 0066, ADR 0068): the AI engine reaches only the pages of the tools that use it.
 // Every other page must load none of it, not even on demand, and the engine's WebAssembly must be
 // in the build exactly once, as the unmodified file in its vendor folder, never inside a bundle.
 // `pnpm check:budgets` runs it on the build output.
@@ -14,7 +14,15 @@ export const ONNXRUNTIME_SIGNATURE = "ONNX Runtime Web v";
 export const ONNXRUNTIME_WASM_PATH = "vendor/onnxruntime-web/1.30.0/ort-wasm-simd-threaded.wasm";
 
 /** The pages whose tools run the engine. */
-export const ONNXRUNTIME_PAGES = ["image-upscaler/index.html", "background-remover/index.html"];
+export const ONNXRUNTIME_PAGES = [
+  "image-upscaler/index.html",
+  "background-remover/index.html",
+  "speech-to-text/index.html",
+];
+
+/** "a", "a and b", "a, b and c". */
+const list = (items: readonly string[]) =>
+  items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
 
 function* walk(dir: string, pattern: RegExp): Generator<string> {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -89,11 +97,11 @@ export function checkOnnxruntimePages(distDir: string): OnnxruntimeReport {
 
 export function formatOnnxruntimeReport(report: OnnxruntimeReport): string {
   if (report.ok) {
-    return `ONNX Runtime: only ${ONNXRUNTIME_PAGES.map((page) => `/${page.replace(/index\.html$/, "")}`).join(" and ")} can load it, and its wasm is the one unmodified ${ONNXRUNTIME_WASM_PATH} (ADR 0066).`;
+    return `ONNX Runtime: only ${list(ONNXRUNTIME_PAGES.map((page) => `/${page.replace(/index\.html$/, "")}`))} can load it, and its wasm is the one unmodified ${ONNXRUNTIME_WASM_PATH} (ADR 0066).`;
   }
   const lines = ["ONNX Runtime (ADR 0066):"];
   for (const page of report.strayPages) {
-    lines.push(`  ${page} can load ONNX Runtime; only the AI image tools may.`);
+    lines.push(`  ${page} can load ONNX Runtime; only the AI tools may.`);
   }
   for (const page of report.missing) {
     lines.push(

@@ -1,0 +1,34 @@
+Speech to Text turns an English recording of up to three minutes into plain text, using OpenAI's Whisper tiny model inside your browser. It suits a voice memo, a short interview clip or a lecture excerpt that you want as text to copy, search or edit. The model is released under the Apache License 2.0. After a one-time download, your recording is processed on this device and is never uploaded.
+
+## How to use
+
+1. Drop one recording on the box, or click it to choose one: WAV, MP3, M4A, OGG or WebM. The page reads its length first and refuses anything over three minutes.
+2. Press the button that names the model's size, 39.9 MB. Nothing is downloaded before you press it. The engine that runs the model adds 13.6 MB unless your browser already has it from another tool on this site.
+3. Watch the steps: the download, decoding the recording, then each 30-second part in turn. Cancel stops at any step, and Retry starts again.
+4. Read the text in the box, copy it, or press Download TXT to save it as a text file.
+
+## Examples
+
+A 70-second WAV recording is heard as three parts: the first 30 seconds, the next 30 seconds and the last 10 seconds. The text of each part is joined to the next with one space, and the whole text appears in one box. A file named interview.wav is saved as interview-transcript.txt. A recording of 3 minutes and 1 second is refused before anything is downloaded, with a message that asks you to cut it into shorter parts.
+
+## Limits
+
+Only English is offered. Recordings may be up to three minutes long and 100 MB in size. The model listens in 30-second parts with no overlap, so a word spoken right at a join may be cut or repeated. Whisper tiny is the smallest Whisper model, so names, accents, noise and music can turn into wrong words: always read the text before you use it. It can be slow on an older device, and on a phone with little memory it may stop with a memory message. Which formats open depends on what your browser can decode; WAV works everywhere.
+
+## FAQ
+
+### Is my recording uploaded?
+
+No. The model files come from this site once, when you press the button, and each one is checked against its published checksum before it is used. The recording is decoded and transcribed by a background worker on this page, and it never leaves your device.
+
+### Why is the download so large?
+
+The encoder and the decoder of Whisper tiny together are almost 40 MB. The decoder alone is larger than our host allows for one file, so it is sent in two parts that your browser joins and checks before the model starts. Your browser usually keeps the files for your next visit.
+
+### Can it transcribe Hindi or other languages?
+
+Not on this page. We tried Hindi with this model, and the text it gave was not good enough to offer, so only English is offered.
+
+### Why does it stop at three minutes?
+
+Each 30-second part is a full run of the model, and a long recording is held in memory while it works. Three minutes keeps the work and the memory within reach of an ordinary device. Cut a longer recording into parts with an audio cutter, then transcribe each part.

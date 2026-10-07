@@ -4,7 +4,7 @@
 
 import { LAME_BASE, LAME_SOURCE } from "./lame";
 import { LIBHEIF_BASE } from "./libheif";
-import { MODELS, modelBase } from "./models";
+import { MODELS, modelBase, modelFilePath, WHISPER } from "./models";
 import { ONNXRUNTIME_BASE, ONNXRUNTIME_VERSION } from "./onnxruntime";
 import { PDFJS_BASE, publishedName } from "./pdfjs";
 import { TESSERACT_BASE } from "./tesseract";
@@ -265,7 +265,7 @@ export const credits: readonly Credit[] = [
     version: ONNXRUNTIME_VERSION,
     license: "MIT",
     url: "https://github.com/microsoft/onnxruntime",
-    usedFor: `Running the AI models of Image Upscaler and Background Remover in the browser: the plain WebAssembly backend, on one thread, served unmodified from ${ONNXRUNTIME_BASE}`,
+    usedFor: `Running the AI models of Image Upscaler, Background Remover and Speech to Text in the browser: the plain WebAssembly backend, on one thread, served unmodified from ${ONNXRUNTIME_BASE}`,
     sourceUrls: [
       `https://github.com/microsoft/onnxruntime/tree/v${ONNXRUNTIME_VERSION}`,
       `https://github.com/microsoft/onnxruntime/blob/v${ONNXRUNTIME_VERSION}/ThirdPartyNotices.txt`,
@@ -294,5 +294,22 @@ export const credits: readonly Credit[] = [
     licenseFiles: [`${modelBase(MODELS.modnet)}LICENSE.txt`],
     sourceUrls: ["https://github.com/ZHKKKe/MODNet", MODELS.modnet.source],
     notice: `MODNet: Trimap-Free Portrait Matting in Real Time, by Zhanghan Ke, Jiayu Sun, Kaican Li, Qiong Yan and Rynson W.H. Lau. The code and models are released under the Apache License 2.0. ${APACHE_TERMS}`,
+  },
+  {
+    name: "Whisper tiny (speech recognition model)",
+    version:
+      "Xenova/whisper-tiny 5332fcc, encoder_model_quantized.onnx and decoder_model_merged_quantized.onnx",
+    license: WHISPER.license,
+    url: "https://huggingface.co/openai/whisper-tiny",
+    usedFor:
+      "The model of Speech to Text: OpenAI's Whisper tiny, in the 8-bit ONNX export published by Xenova on Hugging Face, unmodified; the decoder is served in two parts that the browser joins back byte for byte (ADR 0068)",
+    licenseFiles: [
+      modelFilePath(
+        WHISPER.id,
+        WHISPER.files.find((file) => file.name === "LICENSE.txt") ?? WHISPER.decoder,
+      ),
+    ],
+    sourceUrls: ["https://huggingface.co/openai/whisper-tiny", WHISPER.source],
+    notice: `Whisper, by OpenAI: Robust Speech Recognition via Large-Scale Weak Supervision, by Alec Radford, Jong Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey and Ilya Sutskever. The whisper-tiny weights on Hugging Face and Xenova's ONNX export of them are released under the Apache License 2.0. ${APACHE_TERMS}`,
   },
 ];

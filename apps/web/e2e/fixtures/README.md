@@ -1,9 +1,9 @@
 # E2E fixtures
 
 Small binary files the browser under test cannot make itself. Every one was made for this
-repository by the project, from drawings and text we wrote, except the four AI image fixtures:
-those are made from one public-domain photo, named below, because a portrait model needs a real
-person. They are dedicated to the public domain under CC0-1.0, like the code that made them.
+repository by the project, from drawings and text we wrote, except the four AI image fixtures and the two speech recordings: those are made from a
+public-domain photo and a public-domain recording, named below, because a portrait model needs a
+real person and a speech model needs a real voice. They are dedicated to the public domain under CC0-1.0, like the code that made them.
 
 | File | What it is | Used by |
 |---|---|---|
@@ -22,6 +22,8 @@ person. They are dedicated to the public domain under CC0-1.0, like the code tha
 | `upscale-face-4x.png` | 896 × 384, the original PyTorch Real-ESRGAN model run on `upscale-face.png` in one piece | `image-upscaler.spec.ts` |
 | `portrait.png` | The whole portrait scaled to 512 × 640, the size the MODNet model sees | `background-remover.spec.ts` |
 | `portrait-matte.png` | 512 × 640 greyscale, MODNet's matte for `portrait.png` from onnxruntime 1.23.0 | `background-remover.spec.ts` |
+| `speech-13s.wav` | 13 s of English speech, the opening sentence of the Gettysburg Address, 24 kHz mono 16-bit PCM | `speech-to-text.spec.ts` |
+| `speech-70s.wav` | 70 s of the same reading from the same point, 16 kHz mono 16-bit PCM: three 30-second windows | `speech-to-text.spec.ts` |
 
 ## How they were made (2026-10-04)
 
@@ -88,3 +90,21 @@ Source: "Ellen Ochoa.jpg", NASA's official astronaut portrait of Ellen Ochoa, 32
 https://commons.wikimedia.org/wiki/File:Ellen_Ochoa.jpg. Public domain: a work of the US federal
 government (NASA). `scripts/models/make-fixtures.py` makes all four files from it and prints the
 numbers ADR 0066 bases the test tolerances on.
+
+## The speech fixtures (2026-10-07)
+
+Source: LibriVox's recording of Abraham Lincoln's Gettysburg Address,
+https://archive.org/details/gettysburg_address4_librivox, file `lincoln_gettysburg_address_64kb.mp3`
+(SHA-256 `ff307fc2579e31e1ccae7304455a525922e11a87aaa14ac688764ab347eb5a72`). Public domain: every
+LibriVox recording is dedicated to the public domain (the item's licence is
+http://creativecommons.org/licenses/publicdomain/), and the text is an 1863 speech. Both clips start
+at 21.0 s, after LibriVox's spoken introduction, so they hold only the speech and no name of a
+reader. Cut with FFmpeg N-124300 (not a dependency of this project):
+
+```bash
+ffmpeg -ss 21.0 -t 13.0 -i lincoln_gettysburg_address_64kb.mp3 -ac 1 -ar 24000 -c:a pcm_s16le -map_metadata -1 -fflags +bitexact speech-13s.wav
+ffmpeg -ss 21.0 -t 70.0 -i lincoln_gettysburg_address_64kb.mp3 -ac 1 -ar 16000 -c:a pcm_s16le -map_metadata -1 -fflags +bitexact speech-70s.wav
+```
+
+The short clip is 24 kHz so the browser test also runs the tool's resampler. The words the spec
+expects are ones Whisper tiny (ADR 0068) gave for each 30-second window of these files.
