@@ -14,9 +14,11 @@ import {
 
 // The Web Worker of "Audio Joiner" (ADR 0051, ADR 0061). Mediabunny reads each recording from the
 // visitor's file and decodes it: WAV needs no codec, other formats use the browser's WebCodecs,
-// asked first with canDecode. A probe decodes the first piece of sound, so the sample rate and
-// channels it reports are the ones the decoder really gives. Joining decodes one clip at a time,
-// matches it to the joined file's rate and channels in logic.ts, and keeps it as 16-bit samples;
+// asked first with canDecode. A probe reads the sample rate and channels from the track's header,
+// decoding nothing. Joining decodes one clip at a time from time 0, not from before it (AAC's
+// priming), which stalled AAC in WebKit as Audio Cutter found; a clip that decodes at another
+// rate or with more channels than its header said is refused, never garbled. Each clip is then
+// matched to the joined file's rate and channels in logic.ts, and kept as 16-bit samples;
 // the WAV header is written last, when the length is known.
 
 /** Every decoded sample of the clip, one Float32Array per channel. */
@@ -34,7 +36,7 @@ async function decode(
     let channels = 0;
     let sampleRate = 0;
     let frames = 0;
-    for await (const sample of new AudioSampleSink(track).samples()) {
+    for await (const sample of new AudioSampleSink(track).samples(0)) {
       try {
         signal.throwIfAborted();
         if (channels === 0) {
@@ -81,18 +83,10 @@ async function probe(file: Blob): Promise<ClipInfo> {
     if (!track) throw new ToolError(MESSAGES.noAudio);
     if (!(await track.canDecode()))
       throw new ToolError(MESSAGES.cannotDecode(track.codec ?? "this"));
-    let sampleRate = track.sampleRate;
-    let channels = track.numberOfChannels;
-    for await (const sample of new AudioSampleSink(track).samples()) {
-      sampleRate = sample.sampleRate;
-      channels = sample.numberOfChannels;
-      sample.close();
-      break;
-    }
     const clip = {
       durationSeconds: await input.computeDuration(),
-      sampleRate,
-      channels,
+      sampleRate: track.sampleRate,
+      channels: track.numberOfChannels,
       codec: track.codec,
     };
     const problem = checkClip(clip);
