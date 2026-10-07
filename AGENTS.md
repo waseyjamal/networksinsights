@@ -78,6 +78,10 @@ Tools:
   (ADR 0068). Its decoder is over 25 MiB, so it is served as two byte-exact parts, each at the start of its own
   hash; the worker checks every part and the joined decoder before use, and keeps nothing on a mismatch. No file
   in the build may pass 25 MiB: `pnpm check:budgets` fails on one. No R2, no Hindi, no BiRefNet (ADR 0068).
+- EXIF Viewer & Remover reads tags with `exifr` 7.1.3 (MIT, lite build) and Image to SVG traces with
+  `imagetracerjs` 1.2.6 (Unlicense), each only by a dynamic `import()` in its `worker.ts` (ADR 0069). A JPEG is
+  cleaned without re-encoding and keeps only its orientation tag; an SVG is written by `toSvg` and must pass
+  `isSafeSvg` (only `<svg>` and filled `<path>`s), never the library's own SVG string.
 - `/vendor/<name>/<version>/*` is cached for a year only when the folder holds unmodified files of the one
   package whose exact version it names (`versionedVendorPaths`, ADR 0061). Tesseract's folder is not.
 - A raised JavaScript budget goes in the manifest's `budget` field with a reason; never in the page.

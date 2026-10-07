@@ -1,0 +1,41 @@
+Image to SVG traces a JPG, PNG or WebP picture into an SVG vector file, with 2, 4, 8 or 16 colours, inside your browser. It groups the pixels into the colours you choose, follows the edge of every patch of colour, and writes each patch as a filled path. The picture is never uploaded: the tracing runs in a background worker on your device, and the page shows the size of the SVG before you save it.
+
+## How to use
+
+1. Choose how many colours the SVG may use: 2, 4, 8 or 16. Each colour becomes one layer of shapes, so more colours keep more of the picture and make a larger file.
+2. Drop a JPG, PNG or WebP image on the box, or click it to choose one. A picture above about 2 megapixels is first scaled down, and the page says to what size.
+3. Look at the preview and at the SVG size shown with it. Pick another number of colours to trace the same picture again.
+4. Press Download SVG to save the file, named after your image.
+
+## Examples
+
+A 40 by 40 pixel white PNG with a red square from pixel 10 to pixel 30, traced with 2 colours, gives this file of two paths:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+<path fill="rgb(255,255,255)" d="M 0 0 L 40 0 L 40 40 L 0 40 L 0 0 Z M 10 10 L 10 30 L 30 30 L 30 10 L 10 10 Z"/>
+<path fill="rgb(255,0,0)" d="M 10 10 L 30 10 L 30 30 L 10 30 L 10 10 Z"/>
+</svg>
+```
+
+Notice that the white background is one path with a square hole cut in it, and the red square is a second path that fills the hole. Every colour is written as plain red, green and blue numbers.
+
+## Limits
+
+- It accepts JPG, PNG and WebP files up to 30 MB and 50 megapixels. Above about 2 megapixels the picture is scaled down before tracing, and the SVG has the scaled size.
+- The SVG holds at most the number of colours you chose. Gradients and fine texture are cut into flat patches, and a busy photo can give a large file with many shapes.
+- The SVG holds only an svg element and filled paths: no text, no embedded picture, no script and no link to another file.
+
+## FAQ
+
+### Is my image uploaded to a server?
+
+No. Your browser decodes the picture, and a worker on your own device traces it with the imagetracerjs library, which this site serves itself. Nothing about the image is sent anywhere.
+
+### Why is my image smaller in the SVG?
+
+Pictures above about 2 megapixels are scaled down before tracing, so the work and the file stay a sensible size. The page tells you the original size and the size that was traced, and the SVG keeps that traced width and height.
+
+### Is the SVG safe to put on a website?
+
+The page writes the SVG itself from the traced shapes, then checks the text before offering it: only an svg element with filled paths, colours and coordinates may pass. A file with a script, a style or an outside reference would be refused.

@@ -198,6 +198,23 @@ export const credits: readonly Credit[] = [
     notice: `Copyright (c) 2017 Matt DesLauriers. ${MIT_TERMS}`,
   },
   {
+    name: "exifr",
+    version: "7.1.3",
+    license: "MIT",
+    url: "https://github.com/MikeKovarik/exifr",
+    usedFor: "Reading the camera, date and GPS tags of a photo in EXIF Viewer & Remover",
+    notice: `Copyright (c) 2020 Mike Kovařík, Mutiny.cz. ${MIT_TERMS}`,
+  },
+  {
+    name: "imagetracerjs",
+    version: "1.2.6",
+    license: "Unlicense",
+    url: "https://github.com/jankovicsandras/imagetracerjs",
+    usedFor: "Tracing the outlines of each colour in Image to SVG",
+    notice:
+      "imagetracerjs by András Jankovics. This is free and unencumbered software released into the public domain (The Unlicense, https://unlicense.org).",
+  },
+  {
     name: "yaml",
     version: "2.9.1",
     license: "ISC",
