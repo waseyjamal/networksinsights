@@ -21,6 +21,8 @@ overrides:
   "source-map-js@1.2.1": "1.2.2"
   # GHSA-r4xh-jqrq-34v2: @astrojs/internal-helpers resolves smol-toml 1.8.0; remove once it resolves >=1.9.0 (ADR 0065).
   "smol-toml@1.8.0": "1.9.0"
+  # GHSA-wq5f-xc86-pv6w (CVE-2026-96889): astro, @astrojs/mdx and wrangler > miniflare resolve sharp 0.35.4; remove once miniflare and astro resolve >=0.35.5 (ADR 0067).
+  "sharp@0.35.4": "0.35.5"
 auditConfig:
   # GHSA-ch52-4w7c-c8xp: no patched http-cache-semantics; build-time only via astro (ADR 0059). Re-check by 2026-10-17.
   ignoreGhsas:
