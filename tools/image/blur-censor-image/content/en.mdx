@@ -1,0 +1,35 @@
+Blur & Censor Image hides parts of a JPG, PNG or WebP picture: draw boxes over faces, number plates or text, and fill, pixelate or blur each one. It is for anyone about to share a screenshot, a document photo or a street scene who needs a few areas made unreadable first. The picture is worked on in your browser, and the result is saved as a new PNG or JPG.
+
+## How to use
+
+1. Drop one JPG, PNG or WebP picture on the box, or click it to choose one. A photo taken sideways on a phone is shown the right way up.
+2. With **Draw regions** on, drag across the preview from one corner of an area to the other. Repeat for every area you want hidden.
+3. Or press **Add a region** and type its **Left**, **Top**, **Width** and **Height** as percents of the picture. In **Move regions**, drag a region or move it with the arrow keys; Delete removes it.
+4. For the selected region, choose **Hide with**: **Solid fill** with a **Fill colour**, **Pixelate** with a **Block size**, or **Blur** with a **Blur radius**.
+5. Choose **Save as** PNG or JPG and press **Censor picture**. The result shows its size in pixels and in bytes before you press **Download**.
+
+## Examples
+
+A 1,200 by 800 pixel `street.png` with one region at left 25%, top 25%, width 50% and height 50%, set to a black solid fill, gives `street-censored.png`. Every pixel from 300 to 899 across and 200 to 599 down is pure black, and every pixel outside that box is exactly as it was. Set the same region to Pixelate with a block size of 20 and the box becomes a grid of 20 by 20 pixel squares, each one the average colour of the pixels it replaced. Where two regions overlap, the one added later is drawn on top.
+
+## Limits
+
+One picture at a time, up to 25 MB and 50 megapixels. A picture over 16 megapixels is scaled down to 16 megapixels before it is worked on, and the page says so: the result has the smaller size. Pixelate and blur change the pixels but keep some of what was there, and a light blur or a small block size may not hide text reliably. Solid fill replaces the pixels completely, so it is the safest choice for anything that must not be read. Output is PNG or JPG only. JPG is saved at 92% quality, our own choice, so it loses a little, and transparent areas turn white.
+
+## FAQ
+
+### Is a blurred face or number plate really hidden?
+
+Not always. Blur and pixelate average nearby pixels, so large shapes and colours survive, and short text under a light blur can sometimes still be guessed. Use a large block size or radius, or use a solid fill when the area must be unreadable.
+
+### Are the camera details and GPS location of my photo kept?
+
+No. The result is a new file encoded from the pixels alone, so the EXIF data of the original, including any GPS position, is not carried over.
+
+### Why is my phone photo upright here when another app showed it sideways?
+
+Phones often store a photo sideways with a tag that says how to turn it. This tool reads that tag, turns the picture upright, and saves the result that way, so the saved file needs no tag to look right.
+
+### Can I undo a region after downloading?
+
+No. The download is a separate copy with the regions burned in, while your original file stays unchanged on your device. Open the original again to make a different version.
