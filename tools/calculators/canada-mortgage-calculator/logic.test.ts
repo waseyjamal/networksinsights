@@ -76,6 +76,27 @@ describe("CMHC minimum down payment", () => {
     expect(mortgage({ price: "600000", down: "35000" })).toMatchObject({ ok: true });
   });
 
+  it("CMHC's cap is $1,500,000 or more: one cent below is insurable, exactly on it is not", () => {
+    // $1,499,999.99: the minimum is 5% of $500,000 plus 10% of $999,999.99, $124,999.999, so
+    // $125,000.00 rounded up to the cent; that is under 20%, so insured.
+    expect(mortgage({ price: "1,499,999.99", down: "125,000" })).toMatchObject({
+      ok: true,
+      insured: true,
+      minimumDown: dollars(125_000),
+    });
+    expect(mortgage({ price: "1,500,000.00", down: "299,999.99" })).toEqual({
+      ok: false,
+      field: "down",
+      error: MESSAGES.uninsurable,
+    });
+    expect(mortgage({ price: "1,500,000.00", down: "300,000.00" })).toMatchObject({
+      ok: true,
+      insured: false,
+      premium: 0,
+      mortgage: dollars(1_200_000),
+    });
+  });
+
   it("needs 20% down at $1,500,000 or more, where insurance is not available", () => {
     expect(mortgage({ price: "1,500,000", down: "299,999.99" })).toEqual({
       ok: false,
