@@ -51,6 +51,12 @@ describe("credits", () => {
     );
   });
 
+  it("credits exifr and imagetracerjs at the versions installed (ADR 0069)", () => {
+    const version = (name: string) => credits.find((credit) => credit.name === name)?.version;
+    expect(version("exifr")).toBe(toolsPackage.dependencies.exifr);
+    expect(version("imagetracerjs")).toBe(toolsPackage.dependencies.imagetracerjs);
+  });
+
   it("carries the notice the FreeType License requires, and no GPL", () => {
     // FTL.TXT: the recommended credit line with the year of the release used, and section 2's
     // statement that the software is based in part on the work of the FreeType Team.

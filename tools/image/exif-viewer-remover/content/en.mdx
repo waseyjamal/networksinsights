@@ -1,0 +1,48 @@
+EXIF Viewer & Remover shows the camera, date, software, orientation and GPS location stored inside a photo, then saves a copy without that metadata, all in your browser. Use it before you post a picture or send it to a stranger: a phone photo often carries the exact place where it was taken. The file never leaves your device, and the page says exactly how each format is cleaned.
+
+## How to use
+
+1. Drop a JPG, PNG or WebP photo on the box, or click it to choose one.
+2. Read the table of what the photo holds: camera, lens, dates, software, orientation and GPS location, for a JPG. If the photo has a location, a red warning says so.
+3. Check the line that lists the metadata blocks found, such as EXIF, XMP, IPTC or a comment.
+4. Press Download to save the copy without metadata. Its name ends in -no-metadata.
+
+How each format is cleaned:
+
+- **JPG**: the EXIF, XMP, IPTC, comment and other application blocks are cut out of the file. The compressed picture is copied byte for byte and is not re-encoded, so the pixels stay identical. The colour profile is kept.
+- **PNG and WebP**: the picture is redrawn through the browser's canvas and saved as a new PNG. Every metadata block of the original is gone and the picture is re-encoded, so a WebP becomes a PNG file. Some browsers write their own standard colour profile into the new file.
+
+## Examples
+
+A JPG from a test camera called TestCam Model X1, taken on 2024-05-06 at 07:08:09 and stored turned on its side, shows these rows:
+
+```text
+Camera        TestCam Model X1
+Date taken    2024-05-06 07:08:09
+Software      Synthetic 1.0
+Orientation   6: Turned 90° clockwise
+GPS location  0.250000° N, 0.500000° W
+```
+
+The red location warning appears. The copy has no camera, date, software, location, XMP or IPTC left. It keeps one tag, the orientation, so it still shows the right way up.
+
+## Limits
+
+- The table of tags is shown for JPG files. For PNG and WebP the page lists the metadata blocks by name and does not read the tags inside them.
+- Files up to 50 MB, one at a time. HEIC, TIFF and RAW files are not accepted.
+- Anything stored after the end of a JPG picture, such as a second picture some phones add, is left out of the copy.
+- No map is shown and nothing is looked up online: a location is given as numbers only.
+
+## FAQ
+
+### Why is the orientation tag kept in the JPG copy?
+
+Cameras often store a photo sideways and add a tag that tells viewers to turn it. Without that tag the copy would appear on its side, so the copy gets a fresh EXIF block holding that one tag and nothing else. When the photo needs no turning, the copy has no EXIF block at all.
+
+### Does removing metadata from a JPG lower its quality?
+
+No. For a JPG only the metadata blocks are cut out and the compressed picture data is copied unchanged, so a decoder draws exactly the same pixels from the copy as from the original.
+
+### Is my photo uploaded anywhere?
+
+No. The photo is read by a worker in your browser with the exifr library, served by this site, and the copy is made on your device. Nothing is sent over the network.
