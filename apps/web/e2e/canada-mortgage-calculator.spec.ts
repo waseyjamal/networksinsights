@@ -71,6 +71,11 @@ test("enforces CMHC's minimum down payment and the $1,500,000 limit", async ({ p
   );
   await field(page, "down").fill("300,000");
   await expect(cell(page, "premium")).toHaveText("None: 20% or more down");
+  await field(page, "price").fill("2,000,000");
+  await field(page, "down").fill("399,999.99");
+  await expect(field(page, "down-error")).toHaveText(
+    "Mortgage loan insurance is not available on a home of $1,500,000 or more, so the down payment must be at least 20%.",
+  );
 });
 
 test("shows the compounding, the review date and the official sources", async ({ page }) => {

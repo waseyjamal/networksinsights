@@ -87,6 +87,23 @@ describe("CMHC minimum down payment", () => {
       insured: false,
       premium: 0,
     });
+    // Any price over the cap, with less than 20% down, gets the same message.
+    const overCap: ReadonlyArray<[string, string]> = [
+      ["1,500,000.01", "150,000"],
+      ["2,000,000", "399,999.99"],
+      ["50,000,000", "5,000,000"],
+    ];
+    for (const [price, down] of overCap) {
+      expect(mortgage({ price, down })).toEqual({
+        ok: false,
+        field: "down",
+        error: MESSAGES.uninsurable,
+      });
+    }
+    expect(mortgage({ price: "2,000,000", down: "400,000" })).toMatchObject({
+      ok: true,
+      insured: false,
+    });
     // One dollar below the cap, the minimum (5% and 10%) is $124,999.90 and insurance applies.
     expect(mortgage({ price: "1,499,999", down: "124,999.90" })).toMatchObject({
       ok: true,
@@ -128,6 +145,38 @@ describe("CMHC premium", () => {
     expect(premiumRate(dollars(90_000), price)).toBe(310);
     expect(premiumRate(dollars(90_000.01), price)).toBe(400);
     expect(premiumRate(dollars(95_000), price)).toBe(400);
+  });
+
+  // CMHC's table: "Up to and including 65%" 0.60%, "65.01% to 75%" 1.70%, "75.01% to 80%"
+  // 2.40%, "80.01% to 85%" 2.80%, "85.01% to 90%" 3.10%, "90.01% to 95%" 4.00%. On a $100,000
+  // price one cent of loan is 0.00001% of loan to value. Exactly on an edge and below it are
+  // stated by CMHC. One cent above an edge (such as 75.00001%) lies between two bands CMHC lists
+  // to two decimals; CMHC does not say where it falls, and this calculator puts it in the next
+  // band (said under Limits on the page). X.01% exactly is stated again.
+  const EDGES: ReadonlyArray<[number, number, number]> = [
+    [65, 60, 170],
+    [75, 170, 240],
+    [80, 240, 280],
+    [85, 280, 310],
+    [90, 310, 400],
+    [95, 400, 0],
+  ];
+  for (const [edge, below, above] of EDGES) {
+    it(`at ${edge}% loan to value: ${below / 100}% on and below, ${above ? `${above / 100}%` : "no band"} above`, () => {
+      const price = dollars(100_000);
+      const on = dollars(edge * 1_000);
+      expect(premiumRate(on - 1, price)).toBe(below);
+      expect(premiumRate(on, price)).toBe(below);
+      // Not stated by CMHC: our choice, the next band.
+      expect(premiumRate(on + 1, price)).toBe(above);
+      // Stated: X.01% is the first figure of the next band.
+      expect(premiumRate(on + dollars(10), price)).toBe(above);
+    });
+  }
+
+  it("never reaches above 95%, because the minimum down payment is at least 5%", () => {
+    expect(mortgage({ price: "100000", down: "4999.99" })).toMatchObject({ field: "down" });
+    expect(mortgage({ price: "100000", down: "5000" })).toMatchObject({ premiumRate: 400 });
   });
 
   it("is not charged at exactly 20% down, and is charged one cent below", () => {
