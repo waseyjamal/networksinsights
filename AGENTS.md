@@ -11,6 +11,7 @@ NetworksInsights.com is a free online tools platform. It starts at 500+ tools an
 1. Plan first. Show the full plan and wait for the owner's approval before changing anything.
    The owner's prompt may itself give the approval, but only when it states the full plan and scope.
 2. One mission = one branch, named `mission/NN-short-name`. One tool = one branch, named `tool/<tool-id>`.
+   Batch PRs of several tools used branches named `tool/batch-NN` (for example `tool/batch-9a`); each tool is still one folder.
 3. Never commit to `main`. Never merge; the owner merges. Pushing the branch and opening a pull request
    into `main` is expected at the end of the work (a push alone starts no CI); merging stays with the owner.
 4. Work only inside this repository.
@@ -97,7 +98,9 @@ Tools:
   naming an ADR the owner accepted (ADR 0047). Never widen the site-wide policy for one tool.
 - A `server` runtime tool follows the server contract of ADR 0050: validate with the manifest
   schema, size limits, per-IP rate limit, daily spending cap, no body logging, no stored user data.
-- Test limits, tolerances and timeouts are never loosened to make a test pass (ADR 0070).
+- Test limits, tolerances and timeouts are never loosened to make a test pass. The only exception is a
+  measured reason with the old and new limits side by side, in an ADR section or the PR; a spec fix must
+  not make the check weaker (ADR 0070).
 - Official figures (tax rates, bands, thresholds) come only from a data file with the source URL, the tax
   year and the read date, all shown on the page; never from memory. If the source blocks access, skip the tool.
 - Never add a tool to make a page look fuller. The first real tool, `word-counter`, shipped in Mission 13.

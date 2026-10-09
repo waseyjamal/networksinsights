@@ -27,6 +27,11 @@ to read the output, or a loop that makes thousands of `expect` calls.
 4. A spec mistake (wrong fixture, wrong library, thousands of `expect` calls) may be fixed when the
    check is not weaker. The mission or pull request report says what changed and why.
 
+## Owner approval in the prompt
+
+The owner's prompt may itself give the plan approval that AGENTS.md workflow rule 1 asks for, but only
+when the prompt states the full plan and scope. Otherwise the agent shows its plan and waits.
+
 ## Consequences
 
 A red test is fixed in the code, or by fixing a spec mistake that keeps the check as strong. Every
