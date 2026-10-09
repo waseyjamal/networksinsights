@@ -9,8 +9,10 @@ NetworksInsights.com is a free online tools platform. It starts at 500+ tools an
 ## Workflow
 
 1. Plan first. Show the full plan and wait for the owner's approval before changing anything.
+   The owner's prompt may itself give the approval, but only when it states the full plan and scope.
 2. One mission = one branch, named `mission/NN-short-name`. One tool = one branch, named `tool/<tool-id>`.
-3. Never commit to `main`. Never merge; the owner merges.
+3. Never commit to `main`. Never merge; the owner merges. Pushing the branch and opening a pull request
+   into `main` is expected at the end of the work (a push alone starts no CI); merging stays with the owner.
 4. Work only inside this repository.
 5. End every mission with the report format that the mission asks for.
 
@@ -25,6 +27,8 @@ Dependencies:
 
 UI:
 - UI must use design tokens and existing components; new components go into the design system first.
+- Tailwind scans `tools/` for classes through `@source "../../../../tools";` in `apps/web/src/styles/global.css`.
+  A class used only in a tool's `ui.tsx` is generated only because of it; do not remove it.
 
 Content:
 - Never invent content: no fake counts, ratings, testimonials or claims.
@@ -93,6 +97,9 @@ Tools:
   naming an ADR the owner accepted (ADR 0047). Never widen the site-wide policy for one tool.
 - A `server` runtime tool follows the server contract of ADR 0050: validate with the manifest
   schema, size limits, per-IP rate limit, daily spending cap, no body logging, no stored user data.
+- Test limits, tolerances and timeouts are never loosened to make a test pass (ADR 0070).
+- Official figures (tax rates, bands, thresholds) come only from a data file with the source URL, the tax
+  year and the read date, all shown on the page; never from memory. If the source blocks access, skip the tool.
 - Never add a tool to make a page look fuller. The first real tool, `word-counter`, shipped in Mission 13.
 
 Security (ADR 0047 to 0050, `docs/runbooks/security.md`):
@@ -139,6 +146,7 @@ Run from the repo root:
   stops at the first failure. About two minutes
 - `pnpm new:tool` — create a tool folder (interactive, or with flags for an agent; see
   `docs/adding-a-tool.md`)
+- Tool count: `ls tools/*/*/tool.config.ts | wc -l` (counting folders also counts `tools/node_modules`)
 - `pnpm check:tools` — every tool gate on its own with a readable summary; `--tool <id>` checks one
   tool, `--json` prints JSON. Part of `pnpm check`
 - `pnpm check:budgets` — the JavaScript budget of every tool page, the size and behaviour of the
