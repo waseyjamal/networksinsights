@@ -47,6 +47,12 @@ To run one shard locally: `pnpm build`, then `pnpm check:lighthouse --shard 1/6`
 
 **Rule:** when any measured Lighthouse shard passes 12 minutes, add one shard (a new ADR).
 
+## A job stalls during Playwright install
+
+A red job whose log shows `Ign` lines, or "The operation was canceled" during `playwright install`, is the
+package mirror stalling, not the change. Use **Re-run failed jobs** once. If it fails the same way again, wait
+and re-run later.
+
 ## Run the full suite by hand
 
 On GitHub: Actions, CI, Run workflow, pick the branch. Or:
@@ -59,7 +65,7 @@ Locally, from the repo root: `pnpm test:e2e` (all specs, all browsers). One tool
 
 ## Billed minutes
 
-GitHub bills each job rounded up to the whole minute.
+GitHub bills each job rounded up to the whole minute. `gh repo view` showed the repository as public on 2026-10-09; the billed-minutes limit matters again if it goes private.
 
 MEASURED, run 37000596636 (pull request #46, 32 tools, full suite, one job per browser, before sharding; the e2e jobs were slowed by about 20 minutes each by one failing `csp.spec` assumption, and WebKit was cancelled at its 40-minute timeout): lockfile 1, scope 1, supply-chain 1, quality 3, lighthouse 14, e2e-chromium 34, e2e-firefox 40, e2e-webkit 41, e2e gate 1: **136 minutes**. Test minutes per browser in that run: shared specs other than `csp.spec` 4.1 / 4.7 / 2.2 (Chromium / Firefox / WebKit, partial), tool specs 5.4 / 6.0 / 12.1 (WebKit partial). Job setup before the first test: about 1.2 minutes.
 
@@ -71,5 +77,11 @@ ESTIMATED, with sharding (ADR 0058): fixed jobs 7 (measured), Lighthouse 14 for 
 | Non-tool pull request (full, 3 shards per browser) | 86 ESTIMATED | 117 ESTIMATED | 202 ESTIMATED |
 | Full run on `main` (3 shards per browser) | 86 ESTIMATED | 117 ESTIMATED | 202 ESTIMATED |
 | Full run, before sharding (run 37000596636) | 136 MEASURED | | |
+
+MEASURED at 100 tools (`gh run view`, wall time from job start to end):
+
+- Run 37775145082, pull request #67, tool-only (scoped): scope 0.1, lockfile 0.1, supply-chain 0.7, quality 4.2, lighthouse-1 1.7, e2e-chromium-1 8.2, e2e-firefox-1 12.0, e2e-webkit-1 15.5 minutes.
+- Run 37820220168, push to `main` (E2E skipped by tree): quality 4.6, supply-chain 1.2, lighthouse-1 to 6 between 6.1 and 8.6 minutes, deploy 1.0, verify-production 0.7.
+- Full E2E shards (3 per browser) at 100 tools: to re-measure; no full run at 100 tools was checked.
 
 Replace the estimates with measured numbers as runs happen. At about 100 tools a WebKit shard is estimated near 22 minutes, check it against the rule above. Lighthouse is sharded since ADR 0063, so its estimates above are for one job.

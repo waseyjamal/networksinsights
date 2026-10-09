@@ -42,3 +42,12 @@ Do these once the site is live. Search Console is how Google learns about the si
 - [ ] **Google Search Console**: add the *Domain* property `networksinsights.com` and verify it with the **DNS TXT record** that Search Console gives you (Cloudflare dashboard, DNS, add a TXT record on the apex). A Domain property covers `https`, `http` and every subdomain. Then submit `https://networksinsights.com/sitemap-index.xml` under Sitemaps.
 - [ ] **Bing Webmaster Tools**: the simplest way is **Import from Google Search Console** once step one is done; the imported site is verified automatically. Bing's own DNS method is a **CNAME** record (not a TXT record): Bing Webmaster Tools shows the name and value to add in Cloudflare DNS, with the proxy turned off. Then submit the same sitemap index.
 - [ ] **Watch the first weeks**: Search Console, Pages, shows why a page is not indexed; a category page with no tool is "Excluded by 'noindex' tag" on purpose.
+
+## Yearly and dated reviews
+
+- [ ] **Official figures**: once a year, re-read the source of every tool with official figures and update its data file, tax year and read date. Never from memory ([adding-a-tool.md](adding-a-tool.md#official-figures)).
+- [ ] **US Federal Income Tax**: update the tax year when the IRS publishes the new figures, usually in October.
+- [ ] **Australia Income Tax**: skipped because ato.gov.au returned 403. Try again only if the source can be read.
+- [ ] **http-cache-semantics ([ADR 0059](adr/0059-http-cache-semantics-audit-ignore.md))**: re-check by 2026-10-17; `scripts/audit-ignores.test.ts` fails after that date.
+- [ ] **Dependabot pull requests**: some are known red. Review them; never merge one that fails CI.
+- [ ] **Repository visibility**: `gh repo view` showed the repository as public on 2026-10-09. The Actions minutes limit applies again if it goes private ([runbooks/ci.md](runbooks/ci.md#billed-minutes)).

@@ -116,3 +116,9 @@ Cloudflare Workers with static assets, served on https://networksinsights.com. D
 | 16 | Observability | Done |
 | 17 | Offline + site-wide budgets | Done |
 | 18 | Launch audit | |
+| 19 | Agent handoff docs | Done |
+
+Work outside the numbered missions: CI scope (#41, #42; ADR 0054, 0055, 0058) and Lighthouse shards
+(#54, ADR 0063) cut CI minutes; tools ship in batches on `tool/batch-NN` branches (batches 1 to 10,
+#45 to #67), and batch 1 added the Tailwind `@source` for `tools/`. The current tool count comes from
+`ls tools/*/*/tool.config.ts | wc -l`.

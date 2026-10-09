@@ -170,6 +170,31 @@ Quality gate "min-words": tools/text/word-counter — the "Limits" section has 1
 
 `--json` prints the same as JSON.
 
+### Run the E2E spec locally
+
+Run each new spec in Chromium and in Firefox, one browser at a time, after `pnpm build`:
+`pnpm --filter web exec playwright test --project=chromium e2e/<tool-id>.spec.ts`, then `--project=firefox`.
+Local WebKit on Windows has no `OffscreenCanvas` in workers, so Linux CI is the WebKit check. Never run
+two heavy sessions (E2E, build, Lighthouse) at once.
+
+### Writing checks
+
+- Never loosen a limit, tolerance or timeout to make a test pass ([ADR 0070](adr/0070-test-limits-are-never-loosened-to-pass.md)).
+  A spec mistake may be fixed if the check stays as strong; the report says what changed and why.
+- Per-pixel checks: compare the buffers in plain code, collect the mismatches, and assert once on the
+  mismatch list. Thousands of `expect` calls make a spec slow and its failure unreadable.
+- PNG output: browsers add their own chunks (Firefox adds `deBG`). Check metadata by parsing the
+  chunks, searching the bytes for the fixture's strings, and comparing outputs byte for byte; do not
+  read a PNG with exifr.
+
+### Official figures
+
+A tool that uses official figures (tax rates, bands, allowances) keeps them in a data file in its
+folder with the source URL, the tax year and the date the source was read, and shows all three on the
+page. Never write figures from memory. If the source blocks access, skip the tool: Australia Income
+Tax was skipped because ato.gov.au returned 403. Each such tool gets a yearly review line in
+`docs/launch-checklist.md`.
+
 ## 7. The whole check, as CI runs it
 
 ```bash
@@ -217,6 +242,9 @@ budget, with its reason.
 - `related` lists up to six existing tools worth linking.
 - Every `TODO(new-tool)` marker is gone.
 - Title: the tool's name. Do not merge: the owner merges.
+- Push the branch and open the pull request into `main`; a push alone starts no CI.
+- For a scoped CI run, change only `tools/<category>/<tool-id>/` and `apps/web/e2e/<tool-id>.spec.ts`
+  ([runbooks/ci.md](runbooks/ci.md)). Any other file runs the full suite.
 
 ## What the gates check
 
@@ -287,8 +315,8 @@ HOW TO WORK
 DONE WHEN
 `pnpm check:tools --tool <tool-id>`, `pnpm check`, `pnpm test:slow`, `pnpm build`,
 `pnpm check:budgets` and `pnpm check:seo` all pass,
-and the tool works in `pnpm dev`. Then push, open a pull request titled "<Name>", wait for green
-checks, and do not merge.
+and the tool works in `pnpm dev`. Then push, open a pull request into main titled "<Name>" (a push
+alone starts no CI), wait for green checks, and do not merge.
 
 REPORT
 State: the files created; the tests and their results; the output of
@@ -305,4 +333,5 @@ State: the files created; the tests and their results; the output of
 | `Quality gate "min-words"` | A section is too short. | Write more real prose; the message says how many words. |
 | `Quality gate "placeholders"` | Placeholder text or an empty section. | Replace it with real content. |
 | `Quality gate "near-duplicate"` | The page is too close to another tool's. | Rewrite it around what only this tool does. The message names both tools and the score. |
+| The pre-push hook fails with no clear test error | Memory pressure on the machine. | Save its output to a file first, close other heavy processes, then push again. |
 | `JavaScript budget: … initial island JavaScript` | Too much code loads with the page. | Move the heavy part behind `await import(...)`, or raise the budget with a reason. |
