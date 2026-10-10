@@ -29,10 +29,10 @@
     "indexnow": "tsx scripts/indexnow.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "2.5.15",
     "husky": "9.1.7",
     "lighthouse": "13.5.0",
-    "tsx": "4.23.13",
-    "vitest": "5.0.1"
+    "tsx": "4.23.15",
+    "vitest": "5.0.3"
   }
 }
