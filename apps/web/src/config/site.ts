@@ -66,10 +66,10 @@ export const staticPagePaths = [
 export const pageUpdated = {
   home: "2026-09-21",
   tools: "2026-09-21",
-  about: "2026-10-04",
-  contact: "2026-09-21",
-  privacy: "2026-09-28",
-  terms: "2026-09-21",
+  about: "2026-10-10",
+  contact: "2026-10-10",
+  privacy: "2026-10-10",
+  terms: "2026-10-10",
 } as const;
 
 /** The site-level pages linked from the header menu and the footer. Paths end in a slash. */

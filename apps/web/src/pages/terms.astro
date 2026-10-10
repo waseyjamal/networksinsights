@@ -12,15 +12,14 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Terms" }];
 <Page
   breadcrumbs={breadcrumbs}
   title={pageTitle("Terms")}
-  description="The terms for using NetworksInsights. This page is a draft and still needs owner input before launch."
+  description="The terms for using NetworksInsights: free tools provided as they are, you keep your files, and the laws of India apply."
 >
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />
     <PageHeader title="Terms" intro={`The terms for using ${site.name}.`}>
       <Alert tone="warning" title="Draft: owner input needed">
-        This page is a draft and a structure only. It has not had a legal review. It still needs the
-        owner's public name and the legal jurisdiction, and every section needs the owner's
-        approval. All of this is listed in the launch checklist.
+        These terms have not had a legal review and the owner has not yet approved them as final. It
+        is listed in the launch checklist.
       </Alert>
     </PageHeader>
   </div>
@@ -50,9 +49,13 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Terms" }];
     <p>The site and these terms can change. The current version is always the one on this page.</p>
 
     <h2>Who is responsible</h2>
-    <p>[The name of the responsible party: to be provided.]</p>
+    <p>
+      {site.name}{" "}
+      is run by Wasey Jamal, an individual in India. It is not a registered company. You can write
+      to <a href="mailto:contact@networksinsights.com">contact@networksinsights.com</a>.
+    </p>
 
     <h2>Governing law</h2>
-    <p>[The legal jurisdiction: to be provided.]</p>
+    <p>These terms are governed by the laws of India.</p>
   </div>
 </Page>

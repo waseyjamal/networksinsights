@@ -1,5 +1,4 @@
 ---
-import Alert from "../components/ui/Alert.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { credits } from "../config/credits";
@@ -20,12 +19,7 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
     <PageHeader
       title="About"
       intro={`${site.name} is a free online tools platform: ${site.tagline.toLowerCase()} for everyday jobs, in your browser.`}
-    >
-      <Alert tone="warning" title="Draft: owner input needed">
-        This page is a draft. It still needs the public name of the person or organization that runs
-        the site. It is listed in the launch checklist.
-      </Alert>
-    </PageHeader>
+    />
   </div>
 
   <div class="ni-prose">
@@ -53,12 +47,21 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
 
     <h2>Where things stand</h2>
     <p>
-      The site is under construction. No tools are live yet, so the category pages are empty for
-      now.
+      New tools are added over time. Each tool has its own page that says what it does, how to use
+      it, what its limits are and where it does its work.
     </p>
 
     <h2>Who runs it</h2>
-    <p>[The public name of the person or organization behind {site.name}: to be provided.]</p>
+    <p>
+      {site.name}{" "}
+      is built and run by Wasey Jamal, founder and developer, an individual in India. It is not a
+      registered company. Wasey holds a B.Tech in Computer Science and Engineering (2025).
+    </p>
+    <p>
+      Find Wasey on <a href="https://github.com/waseyjamal">GitHub</a> and
+      <a href="https://www.linkedin.com/in/wasey-jamal-472996253/">LinkedIn</a>. To write to the
+      site, see the <a href="/contact/">contact page</a>.
+    </p>
 
     <h2 id="open-source">Open-source credits</h2>
     <p>
