@@ -24,6 +24,6 @@ overrides:
   # GHSA-wq5f-xc86-pv6w (CVE-2026-96889): astro, @astrojs/mdx and wrangler > miniflare resolve sharp 0.35.4; remove once miniflare and astro resolve >=0.35.5 (ADR 0067).
   "sharp@0.35.4": "0.35.5"
 auditConfig:
-  # GHSA-ch52-4w7c-c8xp: no patched http-cache-semantics; build-time only via astro (ADR 0059). Re-check by 2026-10-17.
+  # GHSA-ch52-4w7c-c8xp: no patched http-cache-semantics; build-time only via astro (ADR 0059, ADR 0071). Re-check by 2026-11-16.
   ignoreGhsas:
     - GHSA-ch52-4w7c-c8xp
