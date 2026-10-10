@@ -14,6 +14,7 @@ import {
   openGraphTags,
   twitterTags,
 } from "../../apps/web/src/lib/seo/html";
+import { SECURITY_TXT_PATH } from "../../apps/web/src/lib/seo/security-txt";
 import { readSitemapIndex, readUrlset } from "../../apps/web/src/lib/seo/sitemap";
 
 export interface SeoOptions {
@@ -193,6 +194,28 @@ export function checkSeo(options: SeoOptions): SeoReport {
     if (/^Disallow:\s*\/\s*$/m.test(robots.split(/\n\s*\n/)[0] ?? "")) {
       problems.push("/robots.txt: the default group blocks the whole site (ADR 0029)");
     }
+  }
+
+  // security.txt (RFC 9116) must exist, name a contact and its canonical, and not be expired.
+  const securityFile = join(dist, SECURITY_TXT_PATH);
+  if (!existsSync(securityFile)) problems.push(`${SECURITY_TXT_PATH}: was not built`);
+  else {
+    const lines = readFileSync(securityFile, "utf8").split("\n");
+    const field = (name: string) =>
+      lines
+        .find((line) => line.startsWith(`${name}:`))
+        ?.slice(name.length + 1)
+        .trim();
+    const expires = field("Expires");
+    if (!/^(mailto|https):\S+$/.test(field("Contact") ?? ""))
+      problems.push(`${SECURITY_TXT_PATH}: no Contact field`);
+    if (field("Canonical") !== `${site.url}${SECURITY_TXT_PATH}`)
+      problems.push(
+        `${SECURITY_TXT_PATH}: no Canonical field naming ${site.url}${SECURITY_TXT_PATH}`,
+      );
+    if (expires === undefined) problems.push(`${SECURITY_TXT_PATH}: no Expires field`);
+    else if (!(new Date(expires).getTime() > Date.now()))
+      problems.push(`${SECURITY_TXT_PATH}: Expires ${expires} has passed or is not a date`);
   }
 
   let sitemapUrls = 0;

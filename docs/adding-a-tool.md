@@ -245,6 +245,9 @@ budget, with its reason.
 - Push the branch and open the pull request into `main`; a push alone starts no CI.
 - For a scoped CI run, change only `tools/<category>/<tool-id>/` and `apps/web/e2e/<tool-id>.spec.ts`
   ([runbooks/ci.md](runbooks/ci.md)). Any other file runs the full suite.
+- Do not regenerate `docs/tools-list.md` in a tool pull request: it is another file and would turn the
+  scoped run into a full one. Regenerate it from time to time in a docs pull request with
+  `pnpm tools:list` (`pnpm tools:list --check` says whether it is out of date).
 
 ## What the gates check
 

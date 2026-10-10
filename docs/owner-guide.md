@@ -18,7 +18,7 @@ The full list is [launch-checklist.md](launch-checklist.md). Open items:
 - **Terms review**: have `/terms/` reviewed. It is plain wording, not legal advice. Then remove its "Draft" note.
 - **GitHub security settings**: Settings, Advanced Security: turn on Dependency graph, Dependabot alerts and Dependabot security updates.
 - **HSTS preload**: decide yes or no. HSTS tells browsers to always use HTTPS. Preload is hard to undo (months). Steps are in the checklist.
-- **security.txt**: publish it (the contact email now exists), so people who find a security problem know where to write.
+- **security.txt**: done. Renew its `Expires` date (`apps/web/src/lib/seo/security-txt.ts`) before 2027-10-10; the build check and a test fail once it has passed.
 - **Network Error Logging**: Cloudflare can make browsers report connection errors to it. Keep or remove; if kept, the privacy page must say so.
 - **Category copy**: read each category text in `apps/web/src/config/categories.ts`; remove "Coming soon" from categories that have tools.
 - **Home page claims**: the "Why NetworksInsights" points must all be true.
