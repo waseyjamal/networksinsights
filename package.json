@@ -20,6 +20,7 @@
     "prepare": "husky",
     "new:tool": "tsx scripts/new-tool.ts",
     "check:tools": "tsx scripts/check-tools.ts",
+    "tools:list": "tsx scripts/tools-list.ts",
     "check:budgets": "tsx scripts/check-budgets.ts",
     "check:seo": "tsx scripts/check-seo.ts",
     "check:production": "tsx scripts/check-production.ts",

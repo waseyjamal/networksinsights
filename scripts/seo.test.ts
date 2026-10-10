@@ -103,6 +103,11 @@ function build(options: { launched: boolean; tweak?: (dist: string) => void }) {
     `User-agent: *\nAllow: /\n${options.launched ? `\nSitemap: ${SITE}/sitemap-index.xml\n` : ""}`,
   );
 
+  write(
+    ".well-known/security.txt",
+    `Contact: mailto:a@example.test\nExpires: 2999-01-01T00:00:00.000Z\nCanonical: ${SITE}/.well-known/security.txt\n`,
+  );
+
   if (options.launched) {
     const entries = indexable.map((path) => ({
       path,
@@ -402,6 +407,40 @@ describe("robots.txt, sitemaps and llms.txt follow the launch flag", () => {
   it("catches a missing robots.txt", () => {
     const { dist } = build({ launched: false, tweak: (d) => rmSync(join(d, "robots.txt")) });
     expect(problemsOf(dist, false).join("\n")).toContain("/robots.txt: was not built");
+  });
+
+  it("catches a missing security.txt", () => {
+    const { dist } = build({
+      launched: false,
+      tweak: (d) => rmSync(join(d, ".well-known", "security.txt")),
+    });
+    expect(problemsOf(dist, false).join("\n")).toContain(
+      "/.well-known/security.txt: was not built",
+    );
+  });
+
+  it("catches an expired security.txt", () => {
+    const { dist } = build({
+      launched: false,
+      tweak: (d) =>
+        writeFileSync(
+          join(d, ".well-known", "security.txt"),
+          `Contact: mailto:a@example.test\nExpires: 2020-01-01T00:00:00.000Z\nCanonical: ${SITE}/.well-known/security.txt\n`,
+        ),
+    });
+    expect(problemsOf(dist, false).join("\n")).toContain("has passed");
+  });
+
+  it("catches a security.txt with no Contact", () => {
+    const { dist } = build({
+      launched: false,
+      tweak: (d) =>
+        writeFileSync(
+          join(d, ".well-known", "security.txt"),
+          `Expires: 2999-01-01T00:00:00.000Z\nCanonical: ${SITE}/.well-known/security.txt\n`,
+        ),
+    });
+    expect(problemsOf(dist, false).join("\n")).toContain("no Contact field");
   });
 
   it("catches a sitemap that lists a noindex page, the 404 page or a page that does not exist", () => {
