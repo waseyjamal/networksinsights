@@ -5,10 +5,10 @@ This guide is for the owner, not for AI agents. Agents follow [AGENTS.md](../AGE
 ## 1. Where the project stands today
 
 - **Tools**: 100 tools on 2026-10-10. To count them yourself, run `ls tools/*/*/tool.config.ts | wc -l` in Git Bash from the repo folder.
-- **What is live**: every merge into `main` deploys the site to `networksinsights.com` through CI (the automatic checks on GitHub). The pages answer, but search engines are told not to index them yet.
-- **What is not launched**: `launched` is `false` in `apps/web/src/config/site.ts`. While it is `false`, every page says `noindex, nofollow`, so Google and Bing leave it out. It stays `false` until the owner items in section 2 are done ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)).
+- **What is live**: every merge into `main` deploys the site to `networksinsights.com` through CI (the automatic checks on GitHub). The pages answer, and indexable pages are open to search engines.
+- **Launched**: `launched` is `true` in `apps/web/src/config/site.ts`, deployed on 2026-10-10. Indexable pages no longer say `noindex, nofollow`; the design-system page, the 404 page and category pages with no tool keep `noindex` ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)).
 
-## 2. What is left before launch
+## 2. What is left after launch
 
 The full list is [launch-checklist.md](launch-checklist.md). Open items:
 
@@ -23,7 +23,7 @@ The full list is [launch-checklist.md](launch-checklist.md). Open items:
 - **Category copy**: read each category text in `apps/web/src/config/categories.ts`; remove "Coming soon" from categories that have tools.
 - **Home page claims**: the "Why NetworksInsights" points must all be true.
 - **Static page dates**: when the text of the home, tools, about, contact, privacy or terms page changes, update `pageUpdated` in `apps/web/src/config/site.ts` the same day.
-- **AI training crawlers**: `trainingPolicy` is `"allow"`. Change to `"disallow"` before launch only if you change your mind.
+- **AI training crawlers**: `trainingPolicy` is `"allow"`. Change to `"disallow"` only if you change your mind.
 - **Categories with tools**: check that each category you want in Google has at least one tool.
 
 **Looks done, please verify**
@@ -33,7 +33,7 @@ The full list is [launch-checklist.md](launch-checklist.md). Open items:
 - **IndexNow key** (a public code that lets Bing learn about new pages fast): on GitHub, Settings, Secrets and variables, Actions, Variables tab: `INDEXNOW_KEY` must exist. After launch, `https://networksinsights.com/<key>.txt` shows the key ([runbooks/indexnow.md](runbooks/indexnow.md)).
 - **Analytics** (`UMAMI_WEBSITE_ID`): same Variables tab, the variable must exist. Then open `/privacy/`: its Analytics section must describe Umami. Open a tool and watch Umami's Realtime view ([runbooks/analytics.md](runbooks/analytics.md)).
 
-**Launch day**: set `launched` to `true` (through a pull request), let CI deploy, then follow the "Launch day" and "Search engines" parts of the checklist (Google Search Console, Bing Webmaster Tools).
+**Launch day**: done on 2026-10-10 (`launched` set to `true`, deployed by CI). Still to do: the "Launch day" and "Search engines" parts of the checklist (Google Search Console, Bing Webmaster Tools).
 
 ## 3. Dated duties
 

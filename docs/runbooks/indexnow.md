@@ -4,7 +4,7 @@ Why and how it works: [ADR 0042](../adr/0042-indexnow.md). After every productio
 
 It does nothing until the site is launched (`launched` in `apps/web/src/config/site.ts`) and a key exists.
 
-## Set it up (once, before launch)
+## Set it up (once)
 
 1. Make a key: 32 hexadecimal characters.
 

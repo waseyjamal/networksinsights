@@ -2,7 +2,7 @@
 
 Everything the owner must provide or decide before `networksinsights.com` is opened to search engines and visitors. Pages that still wait for one of these items carry a visible "Draft: owner input needed" note. Remove the note when the item is done. Today that is `/privacy/` and `/terms/`, for the two review items below.
 
-Until the last step is done, every page renders `noindex, nofollow` ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)).
+The site launched on 2026-10-10: `launched` is `true`, so indexable pages no longer render `noindex, nofollow` ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)). Open items below are owner follow-ups.
 
 ## Owner input
 
@@ -32,10 +32,10 @@ Until the last step is done, every page renders `noindex, nofollow` ([ADR 0029](
 
 ## Launch day
 
-- [ ] Set `launched` to `true` in `apps/web/src/config/site.ts` (Mission 18). Nothing else needs to change; `pnpm check` and the E2E tests cover both values of the flag.
-- [ ] Deploy through CI ([runbook](runbooks/deploy-and-rollback.md)) and check that a page on the production domain no longer has a `noindex, nofollow` robots meta, while `/404` and `/design-system/` keep `noindex`.
+- [x] Set `launched` to `true` in `apps/web/src/config/site.ts` (Mission 18). Nothing else needs to change; `pnpm check` and the E2E tests cover both values of the flag.
+- [x] Deploy through CI ([runbook](runbooks/deploy-and-rollback.md), deployed 2026-10-10) and check that a page on the production domain no longer has a `noindex, nofollow` robots meta, while `/404` and `/design-system/` keep `noindex`. Read from the live site on 2026-10-10: the home page has no robots meta, `/design-system/` has `noindex`.
 - [ ] Install the site from Chrome on a desktop and on an Android phone, open a tool once, turn on flight mode and use it ([runbooks/pwa-and-play-store.md](runbooks/pwa-and-play-store.md)). The Play Store app is a separate, later decision: its `assetlinks.json` step is in the same runbook.
-- [ ] Check what search engines now see: `https://networksinsights.com/robots.txt` has a `Sitemap:` line, `/sitemap-index.xml` and `/llms.txt` answer 200, the IndexNow key file `/<key>.txt` shows the key, and `pnpm check:production` passes.
+- [ ] Check what search engines now see (on 2026-10-10 `robots.txt` had its `Sitemap:` line and `/sitemap-index.xml` and `/llms.txt` answered 200; still to check: the IndexNow key file and `pnpm check:production`): `https://networksinsights.com/robots.txt` has a `Sitemap:` line, `/sitemap-index.xml` and `/llms.txt` answer 200, the IndexNow key file `/<key>.txt` shows the key, and `pnpm check:production` passes.
 
 ## Search engines (after launch day)
 

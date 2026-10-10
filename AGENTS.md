@@ -112,6 +112,7 @@ Security (ADR 0047 to 0050, `docs/runbooks/security.md`):
   last resort: a constant string whose hash goes in `astro.config.mjs`; the build fails without it.
 - `zod` in the web app is the jitless wrapper `src/lib/zod-jitless.ts`; do not import Zod around it.
 - Preview deployments send `X-Robots-Tag: noindex`; production must never send it.
+- The `security.txt` expiry is a fixed date (2027-10-10) in `apps/web/src/lib/seo/security-txt.ts` and must be renewed yearly; the check fails after it.
 - `pnpm audit --audit-level moderate` and `pnpm check:licenses` must pass. A licence outside the
   allowed set, or an ignored advisory, needs an owner-approved ADR.
 
@@ -150,6 +151,7 @@ Run from the repo root:
 - `pnpm new:tool` — create a tool folder (interactive, or with flags for an agent; see
   `docs/adding-a-tool.md`)
 - Tool count: `ls tools/*/*/tool.config.ts | wc -l` (counting folders also counts `tools/node_modules`)
+- `pnpm tools:list` — regenerate `docs/tools-list.md`; `--check` says if it is out of date. A tool pull request must not regenerate `docs/tools-list.md` (it would turn a scoped CI run into a full one); regenerate it in a separate docs pull request
 - `pnpm check:tools` — every tool gate on its own with a readable summary; `--tool <id>` checks one
   tool, `--json` prints JSON. Part of `pnpm check`
 - `pnpm check:budgets` — the JavaScript budget of every tool page, the size and behaviour of the

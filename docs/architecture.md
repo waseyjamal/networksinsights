@@ -76,9 +76,9 @@ Core Web Vitals at the 75th percentile:
 
 Internal target: LCP under 1.5 s on a mid-range Android phone over slow 4G.
 
-## Pre-launch protection
+## Launch flag
 
-`launched` in `apps/web/src/config/site.ts` is `false` until launch day. While it is false every page renders `noindex, nofollow` ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)). Everything the owner must do before flipping it is in [launch-checklist.md](launch-checklist.md).
+`launched` in `apps/web/src/config/site.ts` is `true` since 2026-10-10. While it is false every page renders `noindex, nofollow`; now only pages that are not meant to be indexed keep `noindex` ([ADR 0029](adr/0029-pre-launch-noindex-flag.md)). The owner's remaining follow-ups are in [launch-checklist.md](launch-checklist.md).
 
 ## Search and AI answers
 
