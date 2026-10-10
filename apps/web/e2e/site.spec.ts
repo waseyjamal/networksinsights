@@ -1,10 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { site } from "../src/config/site";
 import { collectErrors } from "./helpers";
-import { pages } from "./pages";
+import { notFoundPath, pages } from "./pages";
 
 // Every page, in light and dark: status, one H1, no console errors, axe, noindex, title.
-// Until launch every page is `noindex, nofollow` (ADR 0029).
+// Until launch every page is `noindex, nofollow` (ADR 0029). After launch only the 404, design-system
+// and offline pages stay noindex; every other page carries no robots tag at all.
 
 const wcagTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
@@ -28,10 +30,13 @@ for (const scheme of ["light", "dark"] as const) {
 
         await expect(page.getByRole("heading", { level: 1 }), "one H1").toHaveCount(1);
         await expect(page, "title").toHaveTitle(item.title);
-        await expect(page.locator('head meta[name="robots"]'), "noindex").toHaveAttribute(
-          "content",
-          /noindex/,
-        );
+        const robots = page.locator('head meta[name="robots"]');
+        const staysNoindex = item.path === notFoundPath || item.path === "/design-system/";
+        if (!site.launched || staysNoindex) {
+          await expect(robots, "noindex").toHaveAttribute("content", /noindex/);
+        } else {
+          await expect(robots, "indexable: no robots tag").toHaveCount(0);
+        }
         await expect(page.locator("main")).toHaveCount(1);
         await expect(page.locator("footer")).toHaveCount(1);
 
