@@ -236,6 +236,7 @@ CI scope (ADR 0054, ADR 0055, ADR 0058, ADR 0063): the `scope` job (`scripts/ci-
 - `docs/design-system.md` — the Signal design system: how to use tokens and components
 - `docs/adr/` — one file per architecture decision
 - `docs/launch-checklist.md` — every owner input and step needed before launch
+- `docs/owner-guide.md` — plain guide for the owner: project state, what is left, dated duties, CI, merging
 - `docs/runbooks/` — step-by-step procedures (deploy and rollback, the redirect rule, IndexNow, security, analytics, the installable app and the Play Store)
 
 ## Changing a decision
