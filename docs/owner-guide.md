@@ -14,14 +14,11 @@ The full list is [launch-checklist.md](launch-checklist.md). Open items:
 
 **You must provide or decide**
 
-- **Public name**: the person or company that runs the site. Goes on About, Privacy, Terms and the footer.
-- **Contact email**: set up the site address with Cloudflare Email Routing and publish it on `/contact/` and `/privacy/`.
-- **Legal jurisdiction**: which country's law governs the Terms and Privacy pages.
-- **Privacy review**: read `/privacy/` and confirm every sentence is true.
-- **Terms review**: have `/terms/` reviewed. It is a structure, not legal advice.
+- **Privacy review**: read `/privacy/` and confirm every sentence is true, then remove its "Draft" note. The public name (Wasey Jamal), the contact email (`contact@networksinsights.com`) and the governing law (India) are already written on About, Contact, Privacy and Terms.
+- **Terms review**: have `/terms/` reviewed. It is plain wording, not legal advice. Then remove its "Draft" note.
 - **GitHub security settings**: Settings, Advanced Security: turn on Dependency graph, Dependabot alerts and Dependabot security updates.
 - **HSTS preload**: decide yes or no. HSTS tells browsers to always use HTTPS. Preload is hard to undo (months). Steps are in the checklist.
-- **security.txt**: publish it once the contact email exists, so people who find a security problem know where to write.
+- **security.txt**: publish it (the contact email now exists), so people who find a security problem know where to write.
 - **Network Error Logging**: Cloudflare can make browsers report connection errors to it. Keep or remove; if kept, the privacy page must say so.
 - **Category copy**: read each category text in `apps/web/src/config/categories.ts`; remove "Coming soon" from categories that have tools.
 - **Home page claims**: the "Why NetworksInsights" points must all be true.
@@ -31,6 +28,7 @@ The full list is [launch-checklist.md](launch-checklist.md). Open items:
 
 **Looks done, please verify**
 
+- **Contact email** (`contact@networksinsights.com`): send a test message from another account and check that it reaches your inbox. Cloudflare Email Routing must forward it.
 - **Redirect rule** (`/tools` to `/tools/`): run `curl -sI https://networksinsights.com/tools`. It must print `301` and `location: /tools/`. Also the latest `verify-production` job on GitHub Actions must be green.
 - **IndexNow key** (a public code that lets Bing learn about new pages fast): on GitHub, Settings, Secrets and variables, Actions, Variables tab: `INDEXNOW_KEY` must exist. After launch, `https://networksinsights.com/<key>.txt` shows the key ([runbooks/indexnow.md](runbooks/indexnow.md)).
 - **Analytics** (`UMAMI_WEBSITE_ID`): same Variables tab, the variable must exist. Then open `/privacy/`: its Analytics section must describe Umami. Open a tool and watch Umami's Realtime view ([runbooks/analytics.md](runbooks/analytics.md)).

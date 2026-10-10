@@ -26,9 +26,8 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
       intro={`This page describes what ${site.name} does with your data today. It is short because the site does very little.`}
     >
       <Alert tone="warning" title="Draft: owner input needed">
-        This page is a draft and has not been reviewed. Before launch the owner must provide the
-        name of the party responsible for the site, a contact email and the legal jurisdiction, and
-        confirm the hosting paragraph. All of this is listed in the launch checklist.
+        The owner has not yet done the final read-through of this page. It is listed in the launch
+        checklist.
       </Alert>
     </PageHeader>
   </div>
@@ -120,8 +119,16 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
 
     <h2>Tools and your files</h2>
     <p>
-      Every tool page says where that tool does its work. Where a tool runs in your browser, your
-      files and text stay on your device and are never sent to us or to the analytics service.
+      Every tool page says where that tool does its work. The site has no tool that sends your files
+      or text to a server: they are processed in your browser, on your device, and are never sent to
+      us or to the analytics service.
+    </p>
+    <p>
+      Some tools need a larger file to do their job: a PDF engine, an image decoder, an audio
+      encoder, a text-recognition language file or an AI model (used by Background Remover, Image
+      Upscaler and Speech to Text). Your browser downloads that file from this site, and may keep it
+      for later. It is a download only: nothing you enter goes with it. Once downloaded, the tool
+      works on your device.
     </p>
 
     <h2>Hosting</h2>
@@ -133,9 +140,14 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
     </p>
 
     <h2>Who is responsible</h2>
-    <p>[The name of the responsible party and a contact email: to be provided.]</p>
+    <p>
+      {site.name}{" "}
+      is run by Wasey Jamal, an individual in India. It is not a registered company. For any
+      question about this page or about your data, write to
+      <a href="mailto:contact@networksinsights.com">contact@networksinsights.com</a>.
+    </p>
 
     <h2>Governing law</h2>
-    <p>[The legal jurisdiction: to be provided.]</p>
+    <p>This page is governed by the laws of India.</p>
   </div>
 </Page>

@@ -1,5 +1,4 @@
 ---
-import Alert from "../components/ui/Alert.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { pageTitle, site } from "../config/site";
@@ -12,26 +11,24 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Contact" }];
 <Page
   breadcrumbs={breadcrumbs}
   title={pageTitle("Contact")}
-  description="How to contact NetworksInsights. Contact details are not published yet."
+  description="How to contact NetworksInsights: one email address for bug reports, tool ideas and questions."
 >
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />
-    <PageHeader title="Contact" intro={`How to reach the people behind ${site.name}.`}>
-      <Alert tone="warning" title="Draft: owner input needed">
-        This page is a draft. It still needs a public contact email address. It is listed in the
-        launch checklist.
-      </Alert>
-    </PageHeader>
+    <PageHeader title="Contact" intro={`How to reach the person behind ${site.name}.`} />
   </div>
 
   <div class="ni-prose">
     <h2>Email</h2>
-    <p>Contact details are not published yet.</p>
+    <p>
+      Write to <a href="mailto:contact@networksinsights.com">contact@networksinsights.com</a>. The
+      site is run by one person, so replies can take a few days.
+    </p>
 
     <h2>What to write about</h2>
     <p>
-      Bug reports, ideas for tools and questions about how a tool works are all welcome once a
-      contact address is published here.
+      Bug reports, ideas for tools and questions about how a tool works are all welcome. Please do
+      not send files or personal documents by email; a description of the problem is enough.
     </p>
   </div>
 </Page>
