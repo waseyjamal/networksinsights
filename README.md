@@ -33,4 +33,5 @@ Run from the repo root:
 - [docs/adding-a-tool.md](docs/adding-a-tool.md) — how to add a tool, and the prompt to give an AI agent
 - [docs/adr/](docs/adr/) — architecture decision records
 - [docs/launch-checklist.md](docs/launch-checklist.md) — every owner input and step needed before launch
+- [docs/owner-guide.md](docs/owner-guide.md) — plain guide for the owner: project state, dated duties, CI, merging
 - [docs/runbooks/deploy-and-rollback.md](docs/runbooks/deploy-and-rollback.md) — how deploys work and how to roll back
