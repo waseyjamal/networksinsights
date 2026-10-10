@@ -1,5 +1,4 @@
 ---
-import Alert from "../components/ui/Alert.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { pageTitle, site } from "../config/site";
@@ -16,12 +15,7 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Terms" }];
 >
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />
-    <PageHeader title="Terms" intro={`The terms for using ${site.name}.`}>
-      <Alert tone="warning" title="Draft: owner input needed">
-        These terms have not had a legal review and the owner has not yet approved them as final. It
-        is listed in the launch checklist.
-      </Alert>
-    </PageHeader>
+    <PageHeader title="Terms" intro={`The terms for using ${site.name}.`} />
   </div>
 
   <div class="ni-prose">
