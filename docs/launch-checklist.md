@@ -48,6 +48,6 @@ Do these once the site is live. Search Console is how Google learns about the si
 - [ ] **Official figures**: once a year, re-read the source of every tool with official figures and update its data file, tax year and read date. Never from memory ([adding-a-tool.md](adding-a-tool.md#official-figures)).
 - [ ] **US Federal Income Tax**: update the tax year when the IRS publishes the new figures, usually in October.
 - [ ] **Australia Income Tax**: skipped because ato.gov.au returned 403. Try again only if the source can be read.
-- [ ] **http-cache-semantics ([ADR 0059](adr/0059-http-cache-semantics-audit-ignore.md))**: re-check by 2026-10-17; `scripts/audit-ignores.test.ts` fails after that date.
+- [ ] **http-cache-semantics ([ADR 0059](adr/0059-http-cache-semantics-audit-ignore.md), [ADR 0071](adr/0071-http-cache-semantics-recheck.md))**: re-check by 2026-11-16; `scripts/audit-ignores.test.ts` fails after that date.
 - [ ] **Dependabot pull requests**: some are known red. Review them; never merge one that fails CI.
 - [ ] **Repository visibility**: `gh repo view` showed the repository as public on 2026-10-09. The Actions minutes limit applies again if it goes private ([runbooks/ci.md](runbooks/ci.md#billed-minutes)).

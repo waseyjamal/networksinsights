@@ -2,9 +2,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// Every advisory that pnpm audit ignores, with the last day the ignore may stay (ADR 0059).
+// Every advisory that pnpm audit ignores, with the last day the ignore may stay (ADR 0059, ADR 0071).
 const recheckBy: Record<string, string> = {
-  "GHSA-ch52-4w7c-c8xp": "2026-10-17",
+  "GHSA-ch52-4w7c-c8xp": "2026-11-16",
 };
 
 const workspace = readFileSync(join(import.meta.dirname, "..", "pnpm-workspace.yaml"), "utf8");
@@ -23,7 +23,7 @@ describe("pnpm audit ignores", () => {
     for (const ghsa of ignored) {
       expect(
         today <= (recheckBy[ghsa] ?? ""),
-        `${ghsa}: re-check passed ${recheckBy[ghsa]}; see ADR 0059`,
+        `${ghsa}: re-check passed ${recheckBy[ghsa]}; see ADR 0059 and ADR 0071`,
       ).toBe(true);
     }
   });

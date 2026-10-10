@@ -1,6 +1,6 @@
 # 0059. Ignore GHSA-ch52-4w7c-c8xp until 2026-10-17
 
-Status: Accepted
+Status: Accepted; re-check date superseded by ADR 0071 (2026-11-16)
 Date: 2026-10-03
 
 ## Context
