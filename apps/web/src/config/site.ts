@@ -13,7 +13,7 @@ export const site = {
    * False until launch day. While false, every page renders `noindex, nofollow`. Flipping it to
    * true is the launch step in docs/launch-checklist.md (Mission 18): do not change it before.
    */
-  launched: false,
+  launched: true,
 } as const;
 
 /** The words at the top of the home page. The home page and its share image both use them. */
