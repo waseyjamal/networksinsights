@@ -1,6 +1,7 @@
 // The open-source code that reaches a visitor's browser inside a tool, with its licence and notice.
-// The About page shows this list. Keeping a notice is a condition of these licences (ADR 0057):
-// never remove an entry while the library is used, and never present the code as ours.
+// The Credits page (/credits/, ADR 0074) shows this list. Keeping a notice is a condition of these
+// licences (ADR 0057): never remove an entry while the library is used, and never present the code
+// as ours.
 
 import { LAME_BASE, LAME_SOURCE } from "./lame";
 import { LIBHEIF_BASE } from "./libheif";

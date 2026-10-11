@@ -69,6 +69,7 @@ export function indexablePages(tools: readonly Tool[]): {
       entry(sitePages.tools.href, withTools(pageUpdated.tools)),
       entry(sitePages.about.href, pageUpdated.about),
       entry(sitePages.contact.href, pageUpdated.contact),
+      entry(sitePages.credits.href, pageUpdated.credits),
       entry(sitePages.privacy.href, pageUpdated.privacy),
       entry(sitePages.terms.href, pageUpdated.terms),
     ],

@@ -1,0 +1,66 @@
+---
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import { credits } from "../config/credits";
+import { pageTitle, site, sitePages } from "../config/site";
+import Page from "../layouts/Page.astro";
+
+// The open-source code that the tools run in a visitor's browser, with every notice and licence
+// in full (ADR 0057, ADR 0074). Keeping these notices is a condition of the licences, and the
+// minifier drops them from the bundles, so this page is where they live.
+
+// The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
+const breadcrumbs = [{ label: "Home", href: "/" }, { label: sitePages.credits.label }];
+const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+---
+
+<Page
+  breadcrumbs={breadcrumbs}
+  title={pageTitle("Open-source credits")}
+  description={`The open-source code that ${site.name} tools run in your browser, with each project's licence and notice in full.`}
+>
+  <div class="grid gap-4">
+    <Breadcrumbs items={breadcrumbs} />
+    <PageHeader
+      title="Open-source credits"
+      intro="Some tools run open-source code in your browser. It is the work of its authors, used under their licences, which are kept here in full."
+    />
+  </div>
+
+  <div class="ni-prose">
+    {credits.map((credit) => (
+  <section aria-labelledby={`credit-${slug(credit.name)}`}>
+    <h2 id={`credit-${slug(credit.name)}`}>
+      {credit.name} {credit.version}
+    </h2>
+    <p>
+      {credit.usedFor}. Licence: {credit.license}. Source: <a href={credit.url}>{credit.url}</a>
+    </p>
+    <p class="text-sm" data-credit-notice={credit.name}>
+      {credit.notice}
+    </p>
+    {credit.licenseFiles && (
+      <ul>
+        {credit.licenseFiles.map((file) => (
+          <li>
+            <a href={file}>{file.split("/").slice(-2).join("/")}</a>
+          </li>
+        ))}
+      </ul>
+    )}
+    {credit.sourceUrls && (
+      <>
+        <p>Complete source code:</p>
+        <ul data-credit-source={credit.name}>
+          {credit.sourceUrls.map((url) => (
+            <li>
+              <a href={url}>{url}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+  </section>
+))}
+  </div>
+</Page>

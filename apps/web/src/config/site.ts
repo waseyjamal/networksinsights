@@ -57,6 +57,7 @@ export const staticPagePaths = [
   "404",
   "about",
   "contact",
+  "credits",
   "design-system",
   "offline",
   "privacy",
@@ -81,6 +82,7 @@ export const pageUpdated = {
   tools: "2026-09-21",
   about: "2026-10-11",
   contact: "2026-10-10",
+  credits: "2026-10-11",
   privacy: "2026-10-10",
   terms: "2026-10-10",
 } as const;
@@ -90,6 +92,7 @@ export const sitePages = {
   tools: { label: "All tools", href: "/tools/" },
   about: { label: "About", href: "/about/" },
   contact: { label: "Contact", href: "/contact/" },
+  credits: { label: "Credits", href: "/credits/" },
   privacy: { label: "Privacy", href: "/privacy/" },
   terms: { label: "Terms", href: "/terms/" },
 } as const;

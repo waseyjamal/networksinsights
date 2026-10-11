@@ -12,6 +12,7 @@ import Category from "../../pages/[slug].astro";
 import FourOhFour from "../../pages/404.astro";
 import About from "../../pages/about.astro";
 import Contact from "../../pages/contact.astro";
+import Credits from "../../pages/credits.astro";
 import Home from "../../pages/index.astro";
 import Privacy from "../../pages/privacy.astro";
 import Terms from "../../pages/terms.astro";
@@ -107,6 +108,7 @@ const cases: Case[] = [
   },
   ...[
     ["/contact/", Contact],
+    ["/credits/", Credits],
     ["/privacy/", Privacy],
     ["/terms/", Terms],
   ].map(

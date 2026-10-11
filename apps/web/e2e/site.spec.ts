@@ -74,10 +74,10 @@ for (const scheme of ["light", "dark"] as const) {
 }
 
 // ADR 0057: the minifier drops licence comments from the bundles, so the notices of the libraries
-// the tools ship live on the About page. The built page must still carry them, and the licence
-// files of PDF.js's data files must be served.
-test("the About page keeps the open-source notices", async ({ page, request }) => {
-  await page.goto("/about/");
+// the tools ship live on the Credits page (ADR 0074). The built page must still carry them, and
+// the licence files of PDF.js's data files must be served.
+test("the Credits page keeps the open-source notices", async ({ page, request }) => {
+  await page.goto("/credits/");
   const pako = page.locator('[data-credit-notice="pako"]');
   await expect(pako).toContainText("Jean-loup Gailly and Mark Adler");
   await expect(pako).toContainText("This notice may not be removed or altered");
@@ -95,4 +95,14 @@ test("the About page keeps the open-source notices", async ({ page, request }) =
     .evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute("href") ?? ""));
   expect(links.length).toBeGreaterThan(0);
   for (const href of links) expect((await request.get(href)).status(), href).toBe(200);
+});
+
+test("the About page links to the Credits page, and the footer does on every page", async ({
+  page,
+}) => {
+  await page.goto("/about/");
+  await expect(page.locator('main a[href="/credits/"]')).toHaveText("credits page");
+  await expect(page.locator('footer a[href="/credits/"]')).toHaveText("Credits");
+  await page.goto("/merge-pdf/");
+  await expect(page.locator('footer a[href="/credits/"]')).toHaveText("Credits");
 });
