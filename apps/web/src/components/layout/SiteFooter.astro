@@ -1,6 +1,7 @@
 ---
 import { categories, categoryHref } from "../../config/categories";
 import { site, sitePages } from "../../config/site";
+import InstallButton from "../ui/InstallButton.astro";
 import Wordmark from "../ui/Wordmark.astro";
 
 // The year is fixed when the site is built, which is when the page is generated.
@@ -9,6 +10,7 @@ const pages = [
   sitePages.tools,
   sitePages.about,
   sitePages.contact,
+  sitePages.credits,
   sitePages.privacy,
   sitePages.terms,
 ];
@@ -39,6 +41,7 @@ const pages = [
     <a href={page.href}>{page.label}</a>
   </li>
 ))}
+          <li><InstallButton /></li>
         </ul>
       </div>
     </nav>

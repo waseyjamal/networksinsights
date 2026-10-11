@@ -9,7 +9,7 @@ export default defineTool({
     "Write title, description, canonical, robots, Open Graph and Twitter card tags, see an approximate search preview and copy the HTML.",
   tags: ["seo", "meta-tags", "open-graph", "twitter-card", "html"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     title: z.string().max(2000),
     description: z.string().max(2000),

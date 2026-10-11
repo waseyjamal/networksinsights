@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["JPG", "PNG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({}),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
   related: ["compress-image", "image-converter", "crop-image"],

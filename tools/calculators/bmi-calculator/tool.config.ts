@@ -9,7 +9,7 @@ export default defineTool({
     "Calculate body mass index from height and weight in metric or imperial units, and see the adult category of the World Health Organization.",
   tags: ["bmi", "body-mass-index", "health", "weight", "height", "calculator"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     system: z.enum(["metric", "imperial"]),
     cm: z.string(),

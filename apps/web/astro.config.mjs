@@ -53,12 +53,14 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     build: {
-      // Astro inlines a small bundled script that imports nothing. The analytics script and the
-      // service worker's registration are two, and they must stay files: pages carry no inline
-      // script but the theme script (ADR 0046, ADR 0051, ADR 0052), and a file is cached across
-      // pages. Everything else keeps the default.
+      // Astro inlines a small bundled script that imports nothing. The analytics script, the
+      // service worker's registration and the app shell are three, and they must stay files:
+      // pages carry no inline script but the theme script (ADR 0046, ADR 0051, ADR 0052,
+      // ADR 0072), and a file is cached across pages. Everything else keeps the default.
       assetsInlineLimit: (path) =>
-        /(?:Analytics|ServiceWorker)\.astro_astro_type_script_/.test(path) ? false : undefined,
+        /(?:Analytics|ServiceWorker|AppShell)\.astro_astro_type_script_/.test(path)
+          ? false
+          : undefined,
     },
     resolve: {
       alias: [

@@ -9,7 +9,7 @@ export default defineTool({
     "Work out a percentage of a number, what percent one number is of another, a percentage change, or add and subtract a percent.",
   tags: ["percentage", "percent", "calculator", "math", "change", "discount"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     mode: z.enum(["of", "whatPercent", "change", "addSub"]),
     a: z.string(),

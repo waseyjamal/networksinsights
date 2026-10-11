@@ -22,6 +22,7 @@ export const iconPaths = {
   "check-circle": ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M8.5 12.5l2.5 2.5 4.5-5"],
   alert: ["M12 3.5l9.5 16.5h-19z", "M12 10v4.5M12 17.2v.1"],
   "x-circle": ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M9 9l6 6M15 9l-6 6"],
+  share: ["M12 14.5V3.5M8 7.5l4-4 4 4", "M8.5 10.5H6v10h12v-10h-2.5"],
 
   // Tool categories
   pdf: [

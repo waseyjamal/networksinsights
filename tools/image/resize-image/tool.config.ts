@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["JPG", "PNG", "WebP"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     mode: z.enum(["pixels", "percent"]),
     width: z.number().int().min(1).optional(),

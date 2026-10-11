@@ -10,7 +10,7 @@ export default defineTool({
     "Split one IPv4 network into subnets of different sizes, largest first, each sized for the hosts you need, with no overlap.",
   tags: ["vlsm", "subnet", "ipv4", "network", "cidr"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ network: z.string().max(100), needs: z.string().max(MAX_CHARS) }),
   limits: { maxInputBytes: MAX_CHARS },
   related: ["subnet-calculator", "cidr-range-converter"],

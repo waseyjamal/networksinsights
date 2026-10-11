@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["MP4", "WebM", "MOV"],
   produces: ["GIF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     start: z.number().min(0),
     length: z.number().min(LIMITS.minClipSeconds).max(LIMITS.maxClipSeconds),

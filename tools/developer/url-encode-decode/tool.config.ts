@@ -9,7 +9,7 @@ export default defineTool({
     "Percent-encode or decode a URL or a URL component as you type, with a choice between encodeURI and encodeURIComponent behaviour.",
   tags: ["url", "encode", "decode", "percent-encoding", "encodeuri", "query-string"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     mode: z.enum(["encode", "decode"]),
     scope: z.enum(["url", "component"]),

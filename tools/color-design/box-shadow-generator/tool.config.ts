@@ -19,7 +19,7 @@ export default defineTool({
     "Design CSS box shadows with up to five layers, inset shadows and a glass card preset, see them live and copy the CSS.",
   tags: ["css", "box-shadow", "shadow", "design"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ layers: z.array(layer).min(1).max(5), glass: z.boolean() }),
   related: ["css-gradient-generator", "color-converter", "contrast-checker"],
   added: "2026-10-03",

@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WEBP"],
   produces: ["PNG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({}),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
   related: ["image-upscaler", "passport-photo-maker", "crop-image"],

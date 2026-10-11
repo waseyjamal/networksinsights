@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["ZIP", "Any file"],
   produces: ["ZIP"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ mode: z.enum(["create", "extract"]), method: z.enum(["deflate", "store"]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["file-encrypt-decrypt", "compress-pdf", "compress-image"],

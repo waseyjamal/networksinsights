@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PNG", "JPG", "WebP", "PDF"],
   produces: ["TXT"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ language: z.enum(["eng", "hin", "both"]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   budget: {

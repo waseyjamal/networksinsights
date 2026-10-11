@@ -1,18 +1,27 @@
 ---
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
-import { credits } from "../config/credits";
-import { pageTitle, site } from "../config/site";
+import { owner, pageTitle, site, sitePages } from "../config/site";
 import Page from "../layouts/Page.astro";
+import { tools } from "../lib/registry";
+import { aboutNodes } from "../lib/seo/jsonld";
 
 // The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
 const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
+const description =
+  "About NetworksInsights: a free online tools platform that works in your browser, with no accounts and no sign-up.";
+
+// Counted from the registry, so the page never states a number the site does not have.
+const toolCount = tools.length;
+const categoryCount = new Set(tools.map((tool) => tool.manifest.category)).size;
+const [github, linkedin] = owner.profiles;
 ---
 
 <Page
   breadcrumbs={breadcrumbs}
   title={pageTitle("About")}
-  description="About NetworksInsights: a free online tools platform that works in your browser, with no accounts and no sign-up."
+  description={description}
+  nodes={aboutNodes({ path: sitePages.about.href, name: "About", description })}
 >
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />
@@ -27,16 +36,10 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
     <p>
       {site.name}{" "}
       collects small, single-purpose tools in one place: converting, compressing, calculating and
-      creating things without installing anything. The tools are grouped into categories, and the
-      collection grows over time.
+      creating things without having to install anything. The tools are grouped into categories, and
+      the collection grows over time.
     </p>
-
-    <h2>How it works</h2>
     <ul>
-      <li>
-        <strong>Private by design.</strong>
-        Where the browser can do the job, files are processed on your device and are not uploaded.
-      </li>
       <li><strong>Free.</strong> Every tool is free to use.</li>
       <li><strong>No sign-up.</strong> There are no accounts.</li>
       <li>
@@ -45,62 +48,69 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
       </li>
     </ul>
 
+    <h2>How your files are processed</h2>
+    <p>
+      Every tool page says where that tool does its work, in its Quick facts. Today no tool sends
+      your files or your text to a server: the work happens in your browser, on your device. Light
+      tools run on the page itself. Heavier ones, such as the PDF, image, video and audio tools, run
+      in a background worker inside your browser, so the page stays responsive while they work.
+    </p>
+    <p>
+      Some tools first download a larger file from this site: a PDF engine, an image decoder, an
+      audio encoder, a text-recognition language file or an AI model. That is a download only;
+      nothing you enter goes with it. Each AI model is checked against its fixed SHA-256 fingerprint
+      before it is used, and is not used if it does not match.
+    </p>
+    <p>
+      The site can be installed as an app, and it keeps a copy of the pages you open so that they
+      work without a connection. It never keeps what you type or the files you open in a tool. The
+      <a href={sitePages.privacy.href}>privacy page</a>
+      has the details.
+    </p>
+
+    <h2>How the tools are built and tested</h2>
+    <p>
+      Every tool follows the same contract: one folder with its logic, its interface, its page text
+      and its tests. The logic is plain code with no access to the network or to the page, so it can
+      be tested on its own, and every tool has unit tests for it. Every tool also has an end-to-end
+      test that uses it in a real browser, in Chromium, Firefox and WebKit.
+    </p>
+    <p>
+      No change reaches the site until automated checks pass: type checks, the tests, checks on each
+      tool's page text and structure, limits on how much JavaScript a page may load, a Lighthouse
+      speed test of the pages on a mobile profile, and checks on the site's search data, security
+      headers and the licences of the code it uses. The site is deployed only by those checks, never
+      from a personal computer.
+    </p>
+    <p>
+      Each tool page states the tool's limits. Official figures, such as tax rates and bands, come
+      from a data file that names the official source, the tax year and the date it was read, and
+      the page shows all three.
+    </p>
+
     <h2>Where things stand</h2>
     <p>
-      New tools are added over time. Each tool has its own page that says what it does, how to use
-      it, what its limits are and where it does its work.
+      The site went live in October 2026. It has {toolCount} tools in {categoryCount} categories,
+      all free and none needing an account. New tools are added over time, and each one gets its own
+      page that says what it does, how to use it, what its limits are and where it does its work.
     </p>
 
     <h2>Who runs it</h2>
     <p>
       {site.name}{" "}
-      is built and run by Wasey Jamal, founder and developer, an individual in India. It is not a
+      is built and run by {owner.name}, founder and developer, an individual in India. It is not a
       registered company. Wasey holds a B.Tech in Computer Science and Engineering (2025).
     </p>
     <p>
-      Find Wasey on <a href="https://github.com/waseyjamal">GitHub</a> and
-      <a href="https://www.linkedin.com/in/wasey-jamal-472996253/">LinkedIn</a>. To write to the
-      site, see the <a href="/contact/">contact page</a>.
+      Find Wasey on <a href={github.url}>{github.label}</a> and
+      <a href={linkedin.url}>{linkedin.label}</a>. To write to the site, see the
+      <a href={sitePages.contact.href}>contact page</a>.
     </p>
 
-    <h2 id="open-source">Open-source credits</h2>
+    <h2>Open-source credits</h2>
     <p>
-      Some tools run open-source code in your browser. It is the work of its authors, used under
-      their licences, which are kept here in full.
+      Some tools run open-source code in your browser. The projects, their licences and their
+      notices are listed in full on the <a href={sitePages.credits.href}>credits page</a>.
     </p>
-    {credits.map((credit) => (
-  <section aria-labelledby={`credit-${credit.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
-    <h3 id={`credit-${credit.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
-      {credit.name} {credit.version}
-    </h3>
-    <p>
-      {credit.usedFor}. Licence: {credit.license}. Source: <a href={credit.url}>{credit.url}</a>
-    </p>
-    <p class="text-sm" data-credit-notice={credit.name}>
-      {credit.notice}
-    </p>
-    {credit.licenseFiles && (
-      <ul>
-        {credit.licenseFiles.map((file) => (
-          <li>
-            <a href={file}>{file.split("/").slice(-2).join("/")}</a>
-          </li>
-        ))}
-      </ul>
-    )}
-    {credit.sourceUrls && (
-      <>
-        <p>Complete source code:</p>
-        <ul data-credit-source={credit.name}>
-          {credit.sourceUrls.map((url) => (
-            <li>
-              <a href={url}>{url}</a>
-            </li>
-          ))}
-        </ul>
-      </>
-    )}
-  </section>
-))}
   </div>
 </Page>

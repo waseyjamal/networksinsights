@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string().min(1).max(MAX_TEXT),
     fontSize: z.number().int().min(FONT_SIZE.min).max(FONT_SIZE.max),

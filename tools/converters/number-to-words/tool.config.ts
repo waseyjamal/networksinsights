@@ -10,7 +10,7 @@ export default defineTool({
     "Write a number in English words in the Indian (lakh, crore) or international (million, billion) system, or as rupees and paise or dollars and cents.",
   tags: ["number", "words", "cheque", "lakh", "crore", "spell"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ text: z.string(), system: z.enum(SYSTEMS), style: z.enum(STYLES) }),
   related: ["unit-converter", "case-converter", "gst-calculator"],
   added: "2026-10-03",

@@ -16,6 +16,19 @@ export const site = {
   launched: true,
 } as const;
 
+/**
+ * The person who runs the site, as the About page introduces them, and the two profiles it links
+ * to. The About page and the structured data (ADR 0039) both read this, so they cannot disagree.
+ * Nothing about this person goes anywhere else: no city, no email, no other profile.
+ */
+export const owner = {
+  name: "Wasey Jamal",
+  profiles: [
+    { label: "GitHub", url: "https://github.com/waseyjamal" },
+    { label: "LinkedIn", url: "https://www.linkedin.com/in/wasey-jamal-472996253/" },
+  ],
+} as const;
+
 /** The words at the top of the home page. The home page and its share image both use them. */
 export const homeHero = {
   headline: "Free online tools. Private by design.",
@@ -30,9 +43,24 @@ export function pageTitle(page: string): string {
 /** The home page title: "NetworksInsights — Free online tools". */
 export const homeTitle = `${site.name} — ${site.tagline}`;
 
-/** "<Tool name> — Free online tool | NetworksInsights": the title of every tool page. */
+/**
+ * The most characters a tool page's title may have. Google cuts a title by its width, and around
+ * 60 characters is where a long one starts to lose its end. `pnpm check:seo` fails a longer one.
+ */
+export const TOOL_TITLE_MAX_LENGTH = 60;
+
+/**
+ * The title of a tool page: "<Tool name> — Free online tool | NetworksInsights". A name too long
+ * for that falls back to "<Tool name> — Free online | NetworksInsights", then to
+ * "<Tool name> | NetworksInsights". A title that fits is never shortened.
+ */
 export function toolTitle(name: string): string {
-  return pageTitle(`${name} — Free online tool`);
+  const titles = [
+    pageTitle(`${name} — Free online tool`),
+    pageTitle(`${name} — Free online`),
+    pageTitle(name),
+  ];
+  return titles.find((title) => title.length <= TOOL_TITLE_MAX_LENGTH) ?? pageTitle(name);
 }
 
 /**
@@ -44,6 +72,7 @@ export const staticPagePaths = [
   "404",
   "about",
   "contact",
+  "credits",
   "design-system",
   "offline",
   "privacy",
@@ -64,10 +93,11 @@ export const staticPagePaths = [
  * category page is the newest of `categoriesUpdated` and the `updated` date of its tools.
  */
 export const pageUpdated = {
-  home: "2026-09-21",
+  home: "2026-10-11",
   tools: "2026-09-21",
-  about: "2026-10-10",
+  about: "2026-10-11",
   contact: "2026-10-10",
+  credits: "2026-10-11",
   privacy: "2026-10-10",
   terms: "2026-10-10",
 } as const;
@@ -77,6 +107,7 @@ export const sitePages = {
   tools: { label: "All tools", href: "/tools/" },
   about: { label: "About", href: "/about/" },
   contact: { label: "Contact", href: "/contact/" },
+  credits: { label: "Credits", href: "/credits/" },
   privacy: { label: "Privacy", href: "/privacy/" },
   terms: { label: "Terms", href: "/terms/" },
 } as const;

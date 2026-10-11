@@ -1,0 +1,32 @@
+---
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+
+// How to install the site where the browser has no install prompt of its own (ADR 0072). It is a
+// native <dialog> opened with showModal(): the rest of the page is inert while it is open, so
+// focus stays inside it, and Esc closes it. The app shell script names this browser's platform
+// in `data-platform`, and components.css shows only the steps for it.
+---
+
+<dialog class="ni-install-dialog" aria-labelledby="ni-install-title" data-ni-install-dialog>
+  <h2 class="ni-install-dialog__title" id="ni-install-title">Install the app</h2>
+  <p data-steps="ios">
+    Tap <strong class="ni-install-dialog__key">Share <Icon name="share" size="sm" /></strong>, then{" "}
+    <strong class="ni-install-dialog__key">Add to Home Screen</strong>.
+  </p>
+  <p data-steps="mac-safari">
+    In the menu bar, choose <strong class="ni-install-dialog__key">File</strong>, then{" "}
+    <strong class="ni-install-dialog__key">Add to Dock</strong>.
+  </p>
+  <p data-steps="firefox-android">
+    Open the browser <strong class="ni-install-dialog__key">menu</strong>, then choose{" "}
+    <strong class="ni-install-dialog__key">Install</strong>{" "}
+    or{" "}
+    <strong class="ni-install-dialog__key">Add to Home screen</strong>.
+  </p>
+  <p data-steps="in-app">
+    This app's built-in browser cannot install websites. Open this page in Chrome or Safari to
+    install it.
+  </p>
+  <Button variant="primary">Close</Button>
+</dialog>

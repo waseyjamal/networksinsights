@@ -10,7 +10,7 @@ export default defineTool({
     "Turn a Unix timestamp in seconds or milliseconds into a UTC, local and ISO 8601 date, or a date and time into a Unix timestamp.",
   tags: ["unix", "timestamp", "epoch", "iso-8601", "utc", "date"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     timestamp: z.string(),
     unit: z.enum(UNITS),

@@ -11,7 +11,7 @@ export default defineTool({
   tags: ["color-blindness", "accessibility", "cvd", "simulation", "colour"],
   accepts: ["JPG", "PNG", "WebP"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     views: z.array(z.enum(["protanopia", "deuteranopia", "tritanopia", "achromatopsia"])),
   }),

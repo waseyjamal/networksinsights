@@ -9,7 +9,7 @@ export default defineTool({
     "Make JSON-LD structured data for Article, FAQPage, Product, LocalBusiness and Organization from a form, and copy it into your page.",
   tags: ["seo", "schema", "json-ld", "structured-data"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     type: z.enum(["Article", "FAQPage", "Product", "LocalBusiness", "Organization"]),
     values: z.record(z.string(), z.string().max(2000)),

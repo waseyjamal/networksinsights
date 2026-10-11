@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     size: z.enum(["a4", "letter", "fit"]),
     orientation: z.enum(["auto", "portrait", "landscape"]),

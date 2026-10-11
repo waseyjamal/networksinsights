@@ -9,7 +9,7 @@ export default defineTool({
     "Build linear, radial and conic CSS gradients with 2 to 6 colour stops, a live preview and the CSS ready to copy.",
   tags: ["css", "gradient", "color", "design"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     kind: z.enum(["linear", "radial", "conic"]),
     angle: z.number().min(0).max(360),

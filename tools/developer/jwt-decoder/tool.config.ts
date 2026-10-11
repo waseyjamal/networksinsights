@@ -10,7 +10,7 @@ export default defineTool({
     "Decode a JSON Web Token in your browser and read its header, payload and signature as JSON, with the expiry checked against your clock.",
   tags: ["jwt", "json-web-token", "decode", "header", "payload", "verify", "developer"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ text: z.string() }),
   limits: { maxInputBytes: MAX_CHARS },
   related: ["json-formatter", "base64"],

@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF", "PNG", "JPG"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     source: z.enum(["draw", "type", "upload"]),
     page: z.number().int().min(1),

@@ -9,7 +9,7 @@ export default defineTool({
     "Work out the monthly EMI, total interest and total payment of a loan from its amount, yearly interest rate and tenure, with a month-by-month schedule.",
   tags: ["emi", "loan", "interest", "mortgage", "calculator", "amortization"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     amount: z.string(),
     rate: z.string(),

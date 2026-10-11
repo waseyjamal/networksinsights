@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["JPG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     which: z.enum(["all", "chosen"]),
     pages: z.string().max(1000),

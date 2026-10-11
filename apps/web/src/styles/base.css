@@ -99,6 +99,12 @@
   @view-transition {
     navigation: auto;
   }
+
+  /* A short cross-fade between pages (ADR 0072): long enough to notice, short enough not to wait. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--duration-base);
+  }
 }
 
 /*

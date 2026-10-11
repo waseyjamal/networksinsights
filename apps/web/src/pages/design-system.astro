@@ -24,6 +24,7 @@ import FileResultList from "../components/ui/FileResultList.astro";
 import Hero from "../components/ui/Hero.astro";
 import Icon from "../components/ui/Icon.astro";
 import Input from "../components/ui/Input.astro";
+import InstallButton from "../components/ui/InstallButton.astro";
 import Kbd from "../components/ui/Kbd.astro";
 import LinkList from "../components/ui/LinkList.astro";
 import MatchText from "../components/ui/MatchText.astro";
@@ -471,6 +472,23 @@ const themes = ["light", "dark"] as const;
             and a Menu disclosure (a native <code>details</code> element, so it needs no
             JavaScript). The footer lists every category and the site pages.
           </p>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl">Press feedback, navigation bar and Install app</h3>
+          <p class="max-w-2xl text-fg-muted">
+            Every tappable element darkens at once when pressed and, where motion is allowed, scales
+            to 0.97 for a moment; with reduced motion only the colour changes. A tap on a link to
+            another page shows a thin bar at the top of the window until the next page appears. The
+            Install app control sits in the footer and the menu: it is hidden until the app shell
+            script finds that this browser can install the site, and then either opens the browser's
+            own prompt or a dialog with the steps for this browser (ADR 0072). This copy is shown
+            for the style guide only.
+          </p>
+          <div class="flex flex-wrap items-center gap-4">
+            <Button>Press me</Button>
+            <InstallButton demo />
+          </div>
         </div>
 
         <div class="space-y-4">

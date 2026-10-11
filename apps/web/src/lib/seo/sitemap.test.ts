@@ -31,6 +31,7 @@ describe("which pages are in the sitemaps", () => {
       "/tools/",
       "/about/",
       "/contact/",
+      "/credits/",
       "/privacy/",
       "/terms/",
     ]);
@@ -145,6 +146,7 @@ describe("the maintained page dates are not stale", () => {
   const files = {
     about: "src/pages/about.astro",
     contact: "src/pages/contact.astro",
+    credits: "src/pages/credits.astro",
     privacy: "src/pages/privacy.astro",
     terms: "src/pages/terms.astro",
   } as const;

@@ -10,7 +10,7 @@ export default defineTool({
     "Generate MD5, SHA-1, SHA-256 and SHA-512 hashes of any text or file, all four at once, in lowercase hex, right in your browser.",
   tags: ["hash", "md5", "sha1", "sha256", "sha512", "checksum", "developer"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ text: z.string() }),
   limits: { maxInputBytes: MAX_BYTES, maxFiles: 1 },
   related: ["jwt-decoder", "base64", "password-generator"],

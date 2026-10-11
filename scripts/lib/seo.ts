@@ -6,12 +6,13 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { categories, categoryHref } from "../../apps/web/src/config/categories";
-import { site, sitePages } from "../../apps/web/src/config/site";
+import { site, sitePages, TOOL_TITLE_MAX_LENGTH } from "../../apps/web/src/config/site";
 import { structuredDataProblems } from "../../apps/web/src/lib/seo/consistency";
 import {
   canonicalLinks,
   metaName,
   openGraphTags,
+  titleOf,
   twitterTags,
 } from "../../apps/web/src/lib/seo/html";
 import { SECURITY_TXT_PATH } from "../../apps/web/src/lib/seo/security-txt";
@@ -143,6 +144,17 @@ export function checkSeo(options: SeoOptions): SeoReport {
       } else {
         const imagePath = image.slice(site.url.length);
         images.add(imagePath);
+      }
+    }
+
+    // A tool page's title fits in a search result (config/site.ts, toolTitle).
+    if (html.includes('"@type":"WebApplication"')) {
+      const title = titleOf(html);
+      if (title.length > TOOL_TITLE_MAX_LENGTH) {
+        say(
+          path,
+          `the tool title is ${title.length} characters, over ${TOOL_TITLE_MAX_LENGTH}: "${title}"`,
+        );
       }
     }
 

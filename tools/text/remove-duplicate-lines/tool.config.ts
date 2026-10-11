@@ -10,7 +10,7 @@ export default defineTool({
     "Delete repeated lines from a list, with options to ignore case, trim spaces, drop empty lines, keep the first or last copy and sort the result.",
   tags: ["duplicates", "lines", "dedupe", "list", "sort", "text"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string(),
     ignoreCase: z.boolean(),

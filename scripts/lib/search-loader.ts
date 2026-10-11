@@ -10,13 +10,15 @@
 //      statically, and no page names it or the index in a script, preload, prefetch or
 //      modulepreload;
 //   3. a page with no island has no other script than the loader and the theme script, the
-//      service worker's registration that pwa.ts checks (ADR 0052), and, in a build with
-//      analytics, the two analytics files that analytics.ts checks (ADR 0051).
+//      service worker's registration that pwa.ts checks (ADR 0052), the app shell that
+//      app-shell.ts checks (ADR 0072), and, in a build with analytics, the two analytics files
+//      that analytics.ts checks (ADR 0051).
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, posix } from "node:path";
 import type { ContractViolation } from "@networksinsights/tool-sdk";
 import { isAnalyticsScript } from "./analytics";
+import { isAppShellScript } from "./app-shell";
 import { edgesOf, type FileWeight, resolveUrl, weigh } from "./budgets";
 import { isServiceWorkerScript } from "./pwa";
 
@@ -134,13 +136,16 @@ export function checkSearchLoader(distDir: string): SearchLoaderReport {
     if (!hasIsland) {
       const others = sources.filter(
         (source) =>
-          !loading.includes(source) && !isAnalyticsScript(source) && !isServiceWorkerScript(source),
+          !loading.includes(source) &&
+          !isAnalyticsScript(source) &&
+          !isServiceWorkerScript(source) &&
+          !isAppShellScript(source),
       );
       for (const path of others) {
         problem(
           page,
           `loads the script ${path}, and this page has no island`,
-          "a page without an island ships only the search loader, the service worker registration and the inline theme script (ADR 0046, ADR 0052)",
+          "a page without an island ships only the search loader, the service worker registration, the app shell and the inline theme script (ADR 0046, ADR 0052, ADR 0072)",
         );
       }
       const inline = [

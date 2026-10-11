@@ -14,7 +14,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["JPG", "PNG", "WebP"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     layers: z
       .array(

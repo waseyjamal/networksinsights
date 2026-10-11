@@ -10,7 +10,7 @@ export default defineTool({
   tags: ["invoice", "billing", "pdf", "business"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     number: z.string().min(1).max(500),
     issued: z.string().min(1).max(500),

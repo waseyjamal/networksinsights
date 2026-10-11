@@ -121,8 +121,11 @@ describe("Base layout theming", () => {
   // Since Mission 11 every page also carries the search dialog, and with it the one deferred
   // loader (ADR 0046). The loader is a bundled script file, so it is not among the inline scripts
   // counted above: the inline theme script is still the only one.
+  // Since Mission 19 the app shell adds the install dialog (ADR 0072): two dialogs, one of each.
   it("renders the search dialog once, in the body, after the page content", () => {
-    expect(html.match(/<dialog\b/g)).toHaveLength(1);
+    expect(html.match(/<dialog\b[^>]*\bdata-ni-search\b/g)).toHaveLength(1);
+    expect(html.match(/<dialog\b[^>]*\bdata-ni-install-dialog\b/g)).toHaveLength(1);
+    expect(html.match(/<dialog\b/g)).toHaveLength(2);
     expect(html.indexOf("<dialog")).toBeGreaterThan(html.indexOf("<body"));
     expect(html.indexOf("data-ni-search")).toBeGreaterThan(html.indexOf("<body"));
   });

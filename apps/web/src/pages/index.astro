@@ -75,4 +75,19 @@ const reasons: Array<{ icon: IconName; title: string; text: string }> = [
 ))}
     </ul>
   </section>
+
+  <section class="max-w-3xl space-y-3" aria-labelledby="about-heading">
+    <h2 id="about-heading" class="text-3xl">What {site.name} is</h2>
+    <p class="text-fg-muted">
+      {site.name}{" "}
+      is a collection of free tools for everyday jobs with PDFs, images, video, audio, text, numbers
+      and code. Each tool has its own page that explains what it does, how to use it and what its
+      limits are. There are no accounts and nothing you have to install. Today every tool does its
+      work inside your browser: the files you choose and the text you type are processed on your
+      device and are not sent to a server. Some tools first download a larger file from this site,
+      such as a PDF engine or an AI model, and then work on your device. Every tool page says where
+      that tool does its work, and the <a href={sitePages.about.href}>About page</a> explains how
+      the tools are built and tested.
+    </p>
+  </section>
 </Page>

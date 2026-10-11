@@ -45,6 +45,7 @@ export function buildLlmsTxt(tools: readonly Tool[]): string {
     link("All tools", sitePages.tools.href),
     link("About", sitePages.about.href),
     link("Contact", sitePages.contact.href),
+    link("Credits", sitePages.credits.href),
     link("Privacy", sitePages.privacy.href),
     link("Terms", sitePages.terms.href),
     "",

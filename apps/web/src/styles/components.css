@@ -154,9 +154,9 @@
     }
   }
 
+  /* The press scale is with the other controls in the press section at the end of this file. */
   .ni-btn:active:not(:disabled, [aria-disabled="true"]) {
     background: var(--btn-bg-active);
-    transform: translateY(1px) scale(0.985);
   }
 
   .ni-btn:disabled,
@@ -573,7 +573,8 @@
     color: var(--brand-text);
   }
 
-  .ni-tab[aria-selected="true"]::after {
+  /* The underline is always there, at zero width, so selecting a tab moves nothing. */
+  .ni-tab::after {
     content: "";
     position: absolute;
     right: 0.5rem;
@@ -582,6 +583,14 @@
     height: 2px;
     border-radius: var(--radius-full);
     background: var(--brand-ui);
+    transform: scaleX(0);
+    transition-property: transform;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-out-soft);
+  }
+
+  .ni-tab[aria-selected="true"]::after {
+    transform: scaleX(1);
   }
 
   .ni-tabpanel {
@@ -2587,5 +2596,189 @@
   .ni-filter__clear:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+}
+
+/* Tap feel and the app shell (Mission 19, ADR 0072). ------------------------------------------ */
+
+@layer components {
+  /* Press feedback. Every tappable element shows that it was pressed: a darker background at
+     once, and where motion is allowed a short scale to 0.97. touch-action: manipulation drops the
+     double-tap zoom wait, and the browser's grey tap flash is switched off only because :active
+     replaces it. Focus rings are untouched (base.css). Under prefers-reduced-motion only the
+     colour changes. */
+
+  :where(
+    .ni-btn,
+    .ni-tab,
+    .ni-header__link,
+    .ni-menu__summary,
+    .ni-menu__list a,
+    .ni-toolcard,
+    .ni-tile,
+    .ni-card[data-interactive="true"],
+    .ni-linklist a,
+    .ni-footer__list a,
+    .ni-breadcrumbs a,
+    .ni-theme-toggle__opt,
+    .ni-commandbar,
+    .ni-filter__clear,
+    .ni-install
+  ) {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ni-tab:active,
+  .ni-header__link:active,
+  .ni-menu__summary:active,
+  .ni-menu__list a:active,
+  .ni-linklist a:active,
+  .ni-theme-toggle__opt:active,
+  .ni-filter__clear:active {
+    background: var(--surface-sunken);
+  }
+
+  .ni-toolcard:active,
+  .ni-tile:active,
+  .ni-card[data-interactive="true"]:active,
+  .ni-commandbar:active {
+    border-color: var(--border-strong);
+    background: var(--surface-sunken);
+  }
+
+  .ni-footer__list a:active,
+  .ni-breadcrumbs a:active,
+  .ni-install:active {
+    color: var(--brand-text);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ni-btn:active:not(:disabled, [aria-disabled="true"]),
+    .ni-tab:active,
+    .ni-header__link:active,
+    .ni-menu__summary:active,
+    .ni-menu__list a:active,
+    .ni-toolcard:active,
+    .ni-tile:active,
+    .ni-card[data-interactive="true"]:active,
+    .ni-commandbar:active,
+    .ni-linklist a:active,
+    .ni-theme-toggle__opt:active,
+    .ni-filter__clear:active {
+      transform: scale(0.97);
+      transition-property: transform, background-color, border-color;
+      transition-duration: var(--duration-fast);
+      transition-timing-function: var(--ease-standard);
+    }
+  }
+
+  /* Navigation bar: a thin bar at the top of the window from the tap on a link until the next
+     page shows. It creeps towards 90% and never claims to know how far along the load is. */
+
+  .ni-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 200;
+    width: 100%;
+    height: 3px;
+    background: var(--brand-ui);
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ni-navbar[data-state="loading"] {
+    opacity: 1;
+    transform: scaleX(0.3);
+    animation: ni-navbar 8s var(--ease-out-soft) forwards;
+  }
+
+  @keyframes ni-navbar {
+    to {
+      transform: scaleX(0.9);
+    }
+  }
+
+  /* Install: the control reads as one more link in the footer and the menu. */
+
+  .ni-install {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--fg);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .ni-menu__list .ni-install {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-md);
+  }
+
+  @media (hover: hover) {
+    .ni-install:hover:not(:disabled) {
+      text-decoration: underline;
+    }
+  }
+
+  .ni-install:disabled {
+    color: var(--fg-muted);
+    cursor: default;
+  }
+
+  dialog.ni-install-dialog {
+    width: min(100% - 2rem, 26rem);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    color: var(--fg);
+  }
+
+  dialog.ni-install-dialog[open] {
+    display: grid;
+    gap: 1rem;
+    justify-items: start;
+  }
+
+  dialog.ni-install-dialog::backdrop {
+    background: color-mix(in oklab, var(--bg, var(--inverse)) 62%, transparent);
+  }
+
+  .ni-install-dialog__title {
+    font-size: var(--text-xl);
+    line-height: var(--text-xl--line-height);
+  }
+
+  .ni-install-dialog [data-steps] {
+    display: none;
+  }
+
+  .ni-install-dialog[data-platform="ios"] [data-steps="ios"],
+  .ni-install-dialog[data-platform="mac-safari"] [data-steps="mac-safari"],
+  .ni-install-dialog[data-platform="firefox-android"] [data-steps="firefox-android"],
+  .ni-install-dialog[data-platform="in-app"] [data-steps="in-app"] {
+    display: block;
+  }
+
+  /* Plain inline text, so the spaces around each label stay (an inline-flex box lost the space
+     before it in WebKit). The Share icon sits on the text's baseline. */
+  .ni-install-dialog__key {
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  .ni-install-dialog__key .ni-icon {
+    display: inline;
+    vertical-align: -0.125em;
   }
 }

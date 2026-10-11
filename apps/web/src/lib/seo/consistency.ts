@@ -93,8 +93,9 @@ export function structuredDataProblems(html: string): string[] {
       const key = [...path].reverse().find((part) => Number.isNaN(Number(part))) ?? "";
       if (CONSTANT_KEYS.has(key)) continue;
       const where = path.join(".");
-      if (text.startsWith(`${site.url}/`) || text === site.url) {
-        // A URL of the site must be one the page links to, or the page's own address.
+      if (text.startsWith(`${site.url}/`) || text === site.url || /^https:\/\//.test(text)) {
+        // A URL must be one the page links to, or the page's own address. An outside URL (only a
+        // profile in `sameAs`) is shown on the page as a link, not as text.
         if (!links.has(text)) {
           problems.push(`"${where}" points at ${text}, which is not a link on the page`);
         }

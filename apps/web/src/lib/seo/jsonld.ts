@@ -9,11 +9,12 @@
 //    is not eligible for that rich result.
 //  - No `SearchAction`. There is no site search yet, and Google no longer shows a search box
 //    for it.
-//  - No `sameAs`. The site has no profiles to point to.
+//  - `sameAs` only on the founder's `Person`, with the two profiles the About page links to. The
+//    organization has no profile of its own, and a person's profile is not the organization.
 
 import type { FaqEntry } from "@networksinsights/tool-sdk";
 import type { Category } from "../../config/categories";
-import { site } from "../../config/site";
+import { owner, site } from "../../config/site";
 import type { Tool } from "../registry/build";
 import { fileUrl, pageUrl } from "./urls";
 
@@ -25,12 +26,34 @@ export interface Crumb {
 
 export type { FaqEntry };
 
+/** A reference to a node by its `@id`, which may be written on another page of the site. */
+export interface NodeRef {
+  "@id": string;
+}
+
 export interface OrganizationNode {
   "@type": "Organization";
   "@id": string;
   name: string;
   url: string;
   logo: string;
+  founder: NodeRef;
+}
+
+export interface PersonNode {
+  "@type": "Person";
+  "@id": string;
+  name: string;
+  sameAs: string[];
+}
+
+export interface AboutPageNode {
+  "@type": "AboutPage";
+  url: string;
+  name: string;
+  description: string;
+  inLanguage: "en";
+  about: NodeRef;
 }
 
 export interface WebSiteNode {
@@ -85,7 +108,7 @@ export interface WebApplicationNode {
   inLanguage: "en";
   offers: { "@type": "Offer"; price: "0"; priceCurrency: "USD" };
   dateModified: string;
-  publisher: { "@type": "Organization"; name: string; url: string };
+  publisher: NodeRef;
 }
 
 export interface FaqPageNode {
@@ -99,6 +122,8 @@ export interface FaqPageNode {
 
 export type JsonLdNode =
   | OrganizationNode
+  | PersonNode
+  | AboutPageNode
   | WebSiteNode
   | BreadcrumbListNode
   | CollectionPageNode
@@ -110,9 +135,13 @@ export interface JsonLdDocument {
   "@graph": JsonLdNode[];
 }
 
-/** The `@id` of the organization and of the website, on the home page. */
+/**
+ * The `@id` of the organization and of the website, written in full on the home page, and of the
+ * founder, written in full on the About page. Every other node refers to them by these ids.
+ */
 export const organizationId = `${site.url}/#organization`;
 export const websiteId = `${site.url}/#website`;
+export const founderId = `${site.url}/#founder`;
 
 /** The graph of the home page: who runs the site and what the site is. */
 export function homeNodes(): [OrganizationNode, WebSiteNode] {
@@ -123,6 +152,7 @@ export function homeNodes(): [OrganizationNode, WebSiteNode] {
       name: site.name,
       url: `${site.url}/`,
       logo: fileUrl("/favicon.svg"),
+      founder: { "@id": founderId },
     },
     {
       "@type": "WebSite",
@@ -133,6 +163,34 @@ export function homeNodes(): [OrganizationNode, WebSiteNode] {
       description: site.description,
       inLanguage: "en",
       publisher: { "@id": organizationId },
+    },
+  ];
+}
+
+/**
+ * The graph of the About page: the page, which is about the organization, and the person who runs
+ * the site, with the profiles the page links to. Every word comes from the site config, which the
+ * page itself is written from.
+ */
+export function aboutNodes(input: {
+  path: string;
+  name: string;
+  description: string;
+}): [AboutPageNode, PersonNode] {
+  return [
+    {
+      "@type": "AboutPage",
+      url: pageUrl(input.path),
+      name: input.name,
+      description: input.description,
+      inLanguage: "en",
+      about: { "@id": organizationId },
+    },
+    {
+      "@type": "Person",
+      "@id": founderId,
+      name: owner.name,
+      sameAs: owner.profiles.map((profile) => profile.url),
     },
   ];
 }
@@ -206,7 +264,7 @@ export function toolNodes(input: {
     inLanguage: "en",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     dateModified: manifest.updated,
-    publisher: { "@type": "Organization", name: site.name, url: `${site.url}/` },
+    publisher: { "@id": organizationId },
   };
   if (input.faq.length === 0) return [app];
   return [

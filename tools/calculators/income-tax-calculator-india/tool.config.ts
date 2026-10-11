@@ -9,7 +9,7 @@ export default defineTool({
     "Estimate income tax for a resident individual in India for tax year 2026-27, under the new and the old regime, side by side.",
   tags: ["income-tax", "india", "tax", "new-regime", "old-regime"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     salary: z.string().max(30),
     other: z.string().max(30),

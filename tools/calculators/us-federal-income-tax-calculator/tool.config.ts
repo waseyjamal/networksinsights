@@ -9,7 +9,7 @@ export default defineTool({
     "Estimate US federal income tax for tax year 2026 from your taxable income or with the standard deduction, for all four filing statuses.",
   tags: ["income-tax", "united-states", "tax", "irs", "tax-brackets"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     income: z.string().max(30),
     status: z.enum(["single", "joint", "separate", "head"]),

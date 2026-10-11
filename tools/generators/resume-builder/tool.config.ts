@@ -17,7 +17,7 @@ export default defineTool({
   tags: ["resume", "cv", "pdf", "job"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     name: z.string().min(1).max(2000),
     contact: z.string().max(2000),

@@ -3,6 +3,7 @@ import { categories, categoryHref } from "../../config/categories";
 import { sitePages } from "../../config/site";
 import CommandBar from "../ui/CommandBar.astro";
 import Icon from "../ui/Icon.astro";
+import InstallButton from "../ui/InstallButton.astro";
 import ThemeToggle from "../ui/ThemeToggle.astro";
 import Wordmark from "../ui/Wordmark.astro";
 
@@ -49,6 +50,7 @@ import Wordmark from "../ui/Wordmark.astro";
           <ul class="ni-menu__list">
             <li><a href={sitePages.tools.href}>{sitePages.tools.label}</a></li>
             <li><a href={sitePages.about.href}>{sitePages.about.label}</a></li>
+            <li><InstallButton /></li>
           </ul>
         </nav>
         <div class="ni-menu__theme">

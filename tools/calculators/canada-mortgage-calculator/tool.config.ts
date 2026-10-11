@@ -9,7 +9,7 @@ export default defineTool({
     "Work out Canadian mortgage payments with semi-annual compounding, the CMHC minimum down payment and the mortgage loan insurance premium.",
   tags: ["mortgage", "canada", "cmhc", "home-loan", "amortization"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     price: z.string().max(30),
     down: z.string().max(30),

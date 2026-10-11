@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["JPG", "PNG", "WebP"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string().min(1).max(100),
     size: z.number().min(1).max(50),

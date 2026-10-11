@@ -11,7 +11,7 @@ export default defineTool({
   tags: ["qr-code", "qr", "generator", "barcode", "scan", "link", "url"],
   produces: ["PNG"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string(),
     level: z.enum(LEVELS),

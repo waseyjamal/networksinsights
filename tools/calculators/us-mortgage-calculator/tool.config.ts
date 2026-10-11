@@ -9,7 +9,7 @@ export default defineTool({
     "Work out the monthly payment on a US home loan, with property tax, insurance, PMI, extra payments and a full amortization table.",
   tags: ["mortgage", "home-loan", "amortization", "united-states", "pmi"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     price: z.string().max(30),
     down: z.string().max(30),

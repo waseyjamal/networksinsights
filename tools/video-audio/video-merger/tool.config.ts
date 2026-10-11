@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["MP4", "MOV", "WebM"],
   produces: ["MP4", "WebM"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ container: z.enum(["mp4", "webm"]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["video-trimmer", "video-compressor", "video-to-gif", "audio-cutter"],

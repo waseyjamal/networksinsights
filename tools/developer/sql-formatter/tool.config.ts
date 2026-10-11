@@ -10,7 +10,7 @@ export default defineTool({
     "Format SQL queries in your browser for the SQL dialect you use, with your choice of keyword case and indentation.",
   tags: ["sql", "formatter", "beautifier", "database", "developer"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string().max(LIMITS.maxCharacters),
     dialect: z.enum(DIALECT_KEYS as [Dialect, ...Dialect[]]),

@@ -14,7 +14,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["PNG", "JPG"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     layout: z.enum(["2-side", "2-stack", "3-left", "3-top", "4-grid", "6-grid"]),
     size: z.enum(["square", "portrait", "landscape", "story"]),

@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["PNG", "JPG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     regions: z
       .array(

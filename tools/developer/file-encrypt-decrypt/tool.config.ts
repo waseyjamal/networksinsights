@@ -11,7 +11,7 @@ export default defineTool({
   tags: ["encryption", "aes", "password", "file", "privacy"],
   produces: ["NIENC"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ mode: z.enum(["encrypt", "decrypt"]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["hash-generator", "password-generator", "base64"],

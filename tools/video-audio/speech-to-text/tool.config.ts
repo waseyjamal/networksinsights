@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["WAV", "MP3", "M4A", "OGG", "WebM"],
   produces: ["TXT"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({}),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
   related: ["audio-cutter", "audio-converter", "audio-silence-remover", "ocr"],

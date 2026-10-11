@@ -10,7 +10,7 @@ export default defineTool({
     "Format or minify JSON with 2 spaces, 4 spaces or tabs, validate it, and see the line and column of any syntax error.",
   tags: ["json", "formatter", "beautifier", "minifier", "validator", "developer"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ text: z.string(), mode: z.enum(MODES), indent: z.enum(INDENTS) }),
   related: ["password-generator", "qr-code-generator"],
   added: "2026-09-28",

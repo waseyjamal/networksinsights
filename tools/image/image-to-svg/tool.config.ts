@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["SVG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ preset: z.enum(["2", "4", "8", "16"]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
   related: ["image-converter", "resize-image", "exif-viewer-remover"],

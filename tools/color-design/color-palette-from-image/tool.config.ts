@@ -11,7 +11,7 @@ export default defineTool({
   tags: ["color", "palette", "image", "hex"],
   accepts: ["JPG", "PNG", "WebP"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ count: z.number().int().min(1).max(8) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["color-converter", "css-gradient-generator", "contrast-checker"],

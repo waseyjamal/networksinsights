@@ -1,0 +1,19 @@
+---
+import InstallDialog from "../ui/InstallDialog.astro";
+
+// The app shell (ADR 0072): the navigation bar, the install dialog and the one script that drives
+// both, on every page. The script is a deferred module of at most 1 KB gzip that imports nothing;
+// `pnpm check:budgets` holds it to that. Without JavaScript none of this shows. The install
+// announcements go through a plain polite live region, not role="status": a tool's own status
+// message stays the one status on its page.
+---
+
+<div class="ni-navbar" data-ni-nav aria-hidden="true"></div>
+<p class="sr-only" aria-live="polite" data-ni-install-status></p>
+<InstallDialog />
+
+<script>
+import { startAppShell } from "../../lib/pwa/app-shell";
+
+startAppShell(window);
+</script>

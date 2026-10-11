@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["JPG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     width: z.number().int().min(1).max(MAX_SIDE),
     height: z.number().int().min(1).max(MAX_SIDE),
