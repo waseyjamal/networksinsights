@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     position: z.enum(Object.keys(POSITIONS) as [keyof typeof POSITIONS]),
     format: z.enum(Object.keys(FORMATS) as [keyof typeof FORMATS]),

@@ -10,7 +10,7 @@ export default defineTool({
     "Format, validate or minify YAML in your browser, and see the line and column of any syntax error.",
   tags: ["yaml", "formatter", "validator", "minifier", "developer"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string().max(LIMITS.maxCharacters),
     mode: z.enum(MODES),

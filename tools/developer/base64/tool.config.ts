@@ -10,7 +10,7 @@ export default defineTool({
     "Encode text or files to Base64 and decode Base64 back to text or a file, in standard or URL-safe Base64URL, right in your browser.",
   tags: ["base64", "encode", "decode", "base64url", "binary", "developer"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ mode: z.enum(MODES), variant: z.enum(VARIANTS), text: z.string() }),
   limits: { maxInputBytes: MAX_BYTES, maxFiles: 1 },
   related: ["json-formatter", "password-generator"],

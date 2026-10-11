@@ -10,7 +10,7 @@ export default defineTool({
     "Format or minify XML in your browser, check that it is well formed, and see the line and column of any error.",
   tags: ["xml", "formatter", "validator", "minifier", "developer"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string().max(LIMITS.maxCharacters),
     mode: z.enum(MODES),

@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["GIF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     width: z.number().int().min(RANGES.width.min).max(RANGES.width.max),
     delay: z.number().int().min(RANGES.delay.min).max(RANGES.delay.max),

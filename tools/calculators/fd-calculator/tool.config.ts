@@ -10,7 +10,7 @@ export default defineTool({
     "Work out the maturity amount and interest of a fixed deposit from the deposit, yearly rate, tenure and compounding, with a year-by-year table.",
   tags: ["fd", "fixed-deposit", "interest", "maturity", "savings", "calculator"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     amount: z.string(),
     rate: z.string(),

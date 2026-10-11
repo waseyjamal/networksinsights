@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PNG", "JPG", "WebP"],
   produces: ["PNG", "ICO"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({}),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["resize-image", "crop-image", "meta-tag-generator"],

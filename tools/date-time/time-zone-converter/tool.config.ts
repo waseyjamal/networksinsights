@@ -9,7 +9,7 @@ export default defineTool({
     "Convert a date and time from one time zone to several others, with daylight saving time handled by your browser's IANA zone data.",
   tags: ["time-zone", "timezone", "converter", "iana", "daylight-saving", "utc"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     date: z.string(),
     time: z.string(),

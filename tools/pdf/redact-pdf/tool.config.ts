@@ -14,7 +14,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     boxes: z
       .array(

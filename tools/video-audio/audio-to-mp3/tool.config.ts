@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["WAV", "FLAC", "M4A", "OGG", "Opus", "WebM"],
   produces: ["MP3"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ bitrate: z.union([z.literal(128), z.literal(192), z.literal(320)]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
   related: ["video-to-mp3", "audio-converter", "video-to-audio"],

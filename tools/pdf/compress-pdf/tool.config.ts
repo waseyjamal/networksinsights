@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ level: z.enum(LEVEL_KEYS as [Level, ...Level[]]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   budget: {

@@ -14,7 +14,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ top: margin, right: margin, bottom: margin, left: margin }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["rotate-pdf", "split-pdf", "compress-pdf", "redact-pdf"],

@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JSON"],
   produces: ["CSV"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     text: z.string(),
     delimiter: z.enum(DELIMITERS),

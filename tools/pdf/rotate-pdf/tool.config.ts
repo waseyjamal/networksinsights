@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     turn: z.enum(["90", "180", "270"]),
     which: z.enum(["all", "chosen"]),

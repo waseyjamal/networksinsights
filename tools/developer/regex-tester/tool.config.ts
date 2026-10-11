@@ -10,7 +10,7 @@ export default defineTool({
     "Test a JavaScript regular expression against your text as you type, with every match highlighted and its groups listed. Nothing is uploaded.",
   tags: ["regex", "regular-expression", "tester", "matcher", "javascript", "developer"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ pattern: z.string(), flags: z.string(), text: z.string() }),
   limits: { maxInputBytes: MAX_TEXT_CHARS },
   related: ["json-formatter", "jwt-decoder"],

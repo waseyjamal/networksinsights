@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["MP4", "WebM", "MOV"],
   produces: ["MP4", "WebM"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     start: z.string().max(20),
     end: z.string().max(20),

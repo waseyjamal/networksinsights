@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["JPG", "PNG", "WebP"],
   produces: ["JPG", "WebP"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     format: z.enum(["jpg", "webp"]),
     quality: z.enum(["high", "balanced", "small"]),

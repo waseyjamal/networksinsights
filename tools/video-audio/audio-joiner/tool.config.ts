@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["WAV", "M4A", "MP3", "OGG", "FLAC"],
   produces: ["WAV"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ order: z.array(z.number().int().min(0)).max(LIMITS.maxFiles) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["audio-cutter", "audio-converter", "video-merger", "audio-to-mp3"],

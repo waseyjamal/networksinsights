@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["MP4", "MOV", "WebM", "MKV"],
   produces: ["MP4", "MOV", "WebM", "MKV"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({}),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["video-trimmer", "video-compressor", "video-to-audio", "video-merger"],

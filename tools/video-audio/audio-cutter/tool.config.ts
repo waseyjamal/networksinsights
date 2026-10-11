@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["WAV", "M4A", "OGG", "WebM"],
   produces: ["M4A", "WAV"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     start: z.string().max(20),
     end: z.string().max(20),

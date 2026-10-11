@@ -10,7 +10,7 @@ export default defineTool({
     "Generate filler paragraphs, sentences or words from a Latin-style word list, optionally starting with the classic opening line.",
   tags: ["lorem-ipsum", "filler-text", "dummy-text", "placeholder", "design"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     unit: z.enum(UNITS),
     count: z.string(),

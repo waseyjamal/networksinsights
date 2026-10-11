@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["MP4", "WebM", "MOV"],
   produces: ["M4A", "WAV"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ output: z.enum(["m4a", "wav"]) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: 1 },
   related: ["video-to-mp3", "audio-converter", "video-compressor"],

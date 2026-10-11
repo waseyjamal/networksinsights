@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({ mode: z.enum(["ranges", "every"]), ranges: z.string().max(1000) }),
   limits: { maxInputBytes: LIMITS.maxInputBytes, maxFiles: LIMITS.maxFiles },
   related: ["merge-pdf", "rotate-pdf", "pdf-to-jpg"],

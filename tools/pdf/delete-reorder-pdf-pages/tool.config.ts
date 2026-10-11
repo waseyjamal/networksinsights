@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["PDF"],
   produces: ["PDF"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     order: z.array(z.number().int().min(1).max(MAX_PAGES)).min(1).max(MAX_PAGES),
   }),

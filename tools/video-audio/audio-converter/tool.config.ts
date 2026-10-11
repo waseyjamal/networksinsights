@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["WAV", "FLAC", "OGG", "M4A", "WebM"],
   produces: ["WAV", "FLAC", "OGG", "M4A"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     output: z.enum(["wav", "flac", "ogg", "m4a"]),
     bitrate: z.enum(["96", "128", "192"]),

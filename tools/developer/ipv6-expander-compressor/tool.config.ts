@@ -10,7 +10,7 @@ export default defineTool({
     "Expand an IPv6 address to all eight groups, or compress it to the one canonical short form that RFC 5952 defines.",
   tags: ["ipv6", "rfc-5952", "address", "network"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ text: z.string().max(MAX_CHARS) }),
   limits: { maxInputBytes: MAX_CHARS },
   related: ["cidr-range-converter", "subnet-calculator"],

@@ -9,7 +9,7 @@ export default defineTool({
     "Calculate the end balance and interest earned on a sum with compound interest and optional regular deposits, with a year-by-year table.",
   tags: ["compound-interest", "interest", "savings", "investment", "deposit", "calculator"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({
     principal: z.string(),
     rate: z.string(),

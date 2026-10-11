@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["WAV", "M4A", "OGG", "WebM"],
   produces: ["WAV", "M4A", "OGG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     threshold: z.number().min(RANGES.threshold.min).max(RANGES.threshold.max),
     minSilence: z.number().min(RANGES.minSilence.min).max(RANGES.minSilence.max),

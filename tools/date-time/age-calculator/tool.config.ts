@@ -9,7 +9,7 @@ export default defineTool({
     "Find an exact age in years, months and days from a birth date, with the total days lived and the date of the next birthday.",
   tags: ["age", "birthday", "date", "birth-date", "calculator"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ birth: z.string(), on: z.string() }),
   related: ["date-difference-calculator"],
   added: "2026-10-02",

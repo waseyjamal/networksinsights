@@ -9,7 +9,7 @@ export default defineTool({
     "Count words, characters, sentences, paragraphs and reading time in any text, live as you type or paste.",
   tags: ["words", "characters", "sentences", "reading-time", "text"],
   runtime: "client",
-  status: "beta",
+  status: "stable",
   input: z.object({ text: z.string() }),
   related: [],
   added: "2026-09-26",

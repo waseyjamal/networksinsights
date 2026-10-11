@@ -12,7 +12,7 @@ export default defineTool({
   accepts: ["HEIC", "HEIF"],
   produces: ["JPG", "PNG"],
   runtime: "worker",
-  status: "beta",
+  status: "stable",
   input: z.object({
     format: z.enum(["jpg", "png"]),
     quality: z.enum(["high", "balanced", "small"]),
