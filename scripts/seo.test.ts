@@ -532,3 +532,27 @@ describe("the check itself", () => {
     expect(xml).toContain(`<loc>${SITE}/sitemap-pages.xml</loc>`);
   });
 });
+
+describe("tool titles", () => {
+  /** The home page, given a tool page's structured data marker and the title `title`. */
+  const withTitle = (title: string) => (d: string) =>
+    writeFileSync(
+      join(d, "index.html"),
+      html({ path: "/" }).replace(
+        "<title>T</title>",
+        `<title>${title}</title><script type="application/ld+json">{"@type":"WebApplication"}</script>`,
+      ),
+    );
+
+  it("fails a tool title over 60 characters, counting an entity as one character", () => {
+    const { dist } = build({ launched: true, tweak: withTitle(`${"x".repeat(57)} &amp; y`) });
+    expect(problemsOf(dist, true).join("\n")).toContain(
+      `/: the tool title is 61 characters, over 60: "${"x".repeat(57)} & y"`,
+    );
+  });
+
+  it("lets a tool title of exactly 60 characters through", () => {
+    const { dist } = build({ launched: true, tweak: withTitle("x".repeat(60)) });
+    expect(problemsOf(dist, true).join("\n")).not.toContain("the tool title is");
+  });
+});

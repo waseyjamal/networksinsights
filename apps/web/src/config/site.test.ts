@@ -1,7 +1,15 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { homeTitle, pageTitle, site, sitePages, staticPagePaths } from "./site";
+import {
+  homeTitle,
+  pageTitle,
+  site,
+  sitePages,
+  staticPagePaths,
+  TOOL_TITLE_MAX_LENGTH,
+  toolTitle,
+} from "./site";
 
 const pagesDir = join(import.meta.dirname, "..", "pages");
 
@@ -45,6 +53,32 @@ describe("site pages", () => {
     for (const page of Object.values(sitePages)) {
       expect(page.href).toMatch(/^\/[a-z-]+\/$/);
       expect(staticPagePaths).toContain(page.href.slice(1, -1));
+    }
+  });
+});
+
+describe("toolTitle", () => {
+  it("keeps the full title when it fits in 60 characters", () => {
+    expect(toolTitle("Merge PDF")).toBe("Merge PDF — Free online tool | NetworksInsights");
+    const longest = "x".repeat(
+      TOOL_TITLE_MAX_LENGTH - " — Free online tool | NetworksInsights".length,
+    );
+    expect(toolTitle(longest)).toHaveLength(60);
+    expect(toolTitle(longest)).toContain("Free online tool");
+  });
+
+  it('drops "tool" first, then the whole phrase, only as far as it must', () => {
+    // 23 characters: with "Free online tool" the title is 61, one too many, so only "tool" goes.
+    const name = "x".repeat(23);
+    expect(toolTitle(name)).toBe(`${name} — Free online | NetworksInsights`);
+    expect(toolTitle("IPv6 Address Expander and Compressor")).toBe(
+      "IPv6 Address Expander and Compressor | NetworksInsights",
+    );
+  });
+
+  it("never returns more than 60 characters for a name that can fit", () => {
+    for (let length = 1; length <= TOOL_TITLE_MAX_LENGTH - " | NetworksInsights".length; length++) {
+      expect(toolTitle("x".repeat(length)).length, String(length)).toBeLessThanOrEqual(60);
     }
   });
 });
