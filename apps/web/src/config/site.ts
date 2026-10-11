@@ -16,6 +16,19 @@ export const site = {
   launched: true,
 } as const;
 
+/**
+ * The person who runs the site, as the About page introduces them, and the two profiles it links
+ * to. The About page and the structured data (ADR 0039) both read this, so they cannot disagree.
+ * Nothing about this person goes anywhere else: no city, no email, no other profile.
+ */
+export const owner = {
+  name: "Wasey Jamal",
+  profiles: [
+    { label: "GitHub", url: "https://github.com/waseyjamal" },
+    { label: "LinkedIn", url: "https://www.linkedin.com/in/wasey-jamal-472996253/" },
+  ],
+} as const;
+
 /** The words at the top of the home page. The home page and its share image both use them. */
 export const homeHero = {
   headline: "Free online tools. Private by design.",
@@ -66,7 +79,7 @@ export const staticPagePaths = [
 export const pageUpdated = {
   home: "2026-09-21",
   tools: "2026-09-21",
-  about: "2026-10-10",
+  about: "2026-10-11",
   contact: "2026-10-10",
   privacy: "2026-10-10",
   terms: "2026-10-10",

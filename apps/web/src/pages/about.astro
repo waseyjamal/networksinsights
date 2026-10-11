@@ -2,17 +2,22 @@
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { credits } from "../config/credits";
-import { pageTitle, site } from "../config/site";
+import { owner, pageTitle, site, sitePages } from "../config/site";
 import Page from "../layouts/Page.astro";
+import { aboutNodes } from "../lib/seo/jsonld";
 
 // The one list of crumbs, drawn on the page and written into its structured data (ADR 0039).
 const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
+const description =
+  "About NetworksInsights: a free online tools platform that works in your browser, with no accounts and no sign-up.";
+const [github, linkedin] = owner.profiles;
 ---
 
 <Page
   breadcrumbs={breadcrumbs}
   title={pageTitle("About")}
-  description="About NetworksInsights: a free online tools platform that works in your browser, with no accounts and no sign-up."
+  description={description}
+  nodes={aboutNodes({ path: sitePages.about.href, name: "About", description })}
 >
   <div class="grid gap-4">
     <Breadcrumbs items={breadcrumbs} />
@@ -54,13 +59,13 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "About" }];
     <h2>Who runs it</h2>
     <p>
       {site.name}{" "}
-      is built and run by Wasey Jamal, founder and developer, an individual in India. It is not a
+      is built and run by {owner.name}, founder and developer, an individual in India. It is not a
       registered company. Wasey holds a B.Tech in Computer Science and Engineering (2025).
     </p>
     <p>
-      Find Wasey on <a href="https://github.com/waseyjamal">GitHub</a> and
-      <a href="https://www.linkedin.com/in/wasey-jamal-472996253/">LinkedIn</a>. To write to the
-      site, see the <a href="/contact/">contact page</a>.
+      Find Wasey on <a href={github.url}>{github.label}</a> and
+      <a href={linkedin.url}>{linkedin.label}</a>. To write to the site, see the
+      <a href={sitePages.contact.href}>contact page</a>.
     </p>
 
     <h2 id="open-source">Open-source credits</h2>

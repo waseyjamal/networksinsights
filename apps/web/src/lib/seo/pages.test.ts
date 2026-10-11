@@ -98,8 +98,14 @@ const cases: Case[] = [
     indexable: true,
     types: ["CollectionPage", "BreadcrumbList"],
   },
+  {
+    name: "/about/",
+    path: sitePages.about.href,
+    render: (c, h) => c.renderToString(About, { request: at(h, "/about/") }),
+    indexable: true,
+    types: ["AboutPage", "Person", "BreadcrumbList"],
+  },
   ...[
-    ["/about/", About],
     ["/contact/", Contact],
     ["/privacy/", Privacy],
     ["/terms/", Terms],
@@ -368,6 +374,24 @@ describe("the consistency check itself", () => {
       '"isAccessibleForFree":true,"aggregateRating":{"@type":"AggregateRating","ratingValue":"5"}',
     );
     expect(structuredDataProblems(tampered).join()).toContain("schema");
+  });
+
+  it("catches a profile in sameAs that the page does not link to", async () => {
+    const about = await container.renderToString(About, { request: at(hosts[0] ?? "", "/about/") });
+    expect(structuredDataProblems(about)).toEqual([]);
+    const unlinked = about.replace('<a href="https://github.com/waseyjamal">', "<a>");
+    expect(unlinked).not.toBe(about);
+    expect(structuredDataProblems(unlinked).join()).toContain(
+      "points at https://github.com/waseyjamal, which is not a link on the page",
+    );
+  });
+
+  it("catches a profile the schema does not know, even when the page links it", async () => {
+    const about = await container.renderToString(About, { request: at(hosts[0] ?? "", "/about/") });
+    const other = about
+      .replaceAll("https://github.com/waseyjamal", "https://github.com/someone-else")
+      .replace("</main>", '<a href="https://github.com/someone-else">x</a></main>');
+    expect(structuredDataProblems(other).join()).toContain("schema");
   });
 
   it("reports a block that is not JSON", () => {

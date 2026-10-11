@@ -2,22 +2,27 @@ import type { ToolManifest } from "@networksinsights/tool-sdk";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { categoryById } from "../../config/categories";
-import { site } from "../../config/site";
+import { owner, site } from "../../config/site";
 import type { Tool } from "../registry/build";
 import {
+  aboutNodes,
   breadcrumbNode,
   collectionNode,
+  founderId,
   graph,
   homeNodes,
+  organizationId,
   serializeJsonLd,
   toolNodes,
 } from "./jsonld";
 import {
+  aboutPageSchema,
   breadcrumbListSchema,
   collectionPageSchema,
   faqPageSchema,
   jsonLdDocumentSchema,
   organizationSchema,
+  personSchema,
   webApplicationSchema,
   webSiteSchema,
 } from "./schemas";
@@ -68,10 +73,54 @@ describe("the home page graph", () => {
     expect(website.publisher["@id"]).toBe(organization["@id"]);
   });
 
+  it("names its founder by id, the Person written in full on the About page", () => {
+    expect(organization["@id"]).toBe(organizationId);
+    expect(organization.founder).toEqual({ "@id": founderId });
+  });
+
   it("claims no profile, no search box and no rating", () => {
     const text = JSON.stringify([organization, website]);
     for (const word of ["sameAs", "potentialAction", "SearchAction", "aggregateRating", "review"]) {
       expect(text).not.toContain(word);
+    }
+  });
+});
+
+describe("the About page graph", () => {
+  const [aboutPage, person] = aboutNodes({
+    path: "/about/",
+    name: "About",
+    description: "About the site.",
+  });
+
+  it("is an AboutPage and a Person that parse", () => {
+    expect(aboutPageSchema.parse(aboutPage)).toBeTruthy();
+    expect(personSchema.parse(person)).toBeTruthy();
+  });
+
+  it("is about the organization, by id", () => {
+    expect(aboutPage.about).toEqual({ "@id": organizationId });
+    expect(aboutPage.url).toBe("https://networksinsights.com/about/");
+  });
+
+  it("names the founder and only the two profiles the About page links to", () => {
+    expect(person["@id"]).toBe(founderId);
+    expect(person.name).toBe(owner.name);
+    expect(person.sameAs).toEqual([
+      "https://github.com/waseyjamal",
+      "https://www.linkedin.com/in/wasey-jamal-472996253/",
+    ]);
+  });
+
+  it("rejects any other profile, a repeated one, or a claim the page does not make", () => {
+    expect(personSchema.safeParse({ ...person, sameAs: ["https://x.com/someone"] }).success).toBe(
+      false,
+    );
+    expect(
+      personSchema.safeParse({ ...person, sameAs: [...person.sameAs, ...person.sameAs] }).success,
+    ).toBe(false);
+    for (const extra of [{ jobTitle: "CEO" }, { award: "Best site" }, { email: "a@b.c" }]) {
+      expect(personSchema.safeParse({ ...person, ...extra }).success).toBe(false);
     }
   });
 });
@@ -143,6 +192,20 @@ describe("toolNodes", () => {
     expect(parsed.offers).toEqual({ "@type": "Offer", price: "0", priceCurrency: "USD" });
     expect(parsed.isAccessibleForFree).toBe(true);
     expect(parsed.applicationCategory).toBe(category.applicationCategory);
+  });
+
+  it("refers to its publisher by the organization's id, not an inline copy", () => {
+    expect(app.publisher).toEqual({ "@id": organizationId });
+    expect(
+      webApplicationSchema.safeParse({
+        ...app,
+        publisher: { "@type": "Organization", name: site.name, url: `${site.url}/` },
+      }).success,
+    ).toBe(false);
+    expect(
+      webApplicationSchema.safeParse({ ...app, publisher: { "@id": `${site.url}/#someone` } })
+        .success,
+    ).toBe(false);
   });
 
   it("says what the manifest says", () => {
