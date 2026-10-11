@@ -93,7 +93,7 @@ export const staticPagePaths = [
  * category page is the newest of `categoriesUpdated` and the `updated` date of its tools.
  */
 export const pageUpdated = {
-  home: "2026-09-21",
+  home: "2026-10-11",
   tools: "2026-09-21",
   about: "2026-10-11",
   contact: "2026-10-10",
