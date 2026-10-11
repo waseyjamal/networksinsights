@@ -1,5 +1,4 @@
 ---
-import Alert from "../components/ui/Alert.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import { analyticsSettings, EVENTS, MAX_ERRORS_PER_PAGE } from "../config/analytics";
@@ -24,12 +23,7 @@ const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Privacy" }];
     <PageHeader
       title="Privacy"
       intro={`This page describes what ${site.name} does with your data today. It is short because the site does very little.`}
-    >
-      <Alert tone="warning" title="Draft: owner input needed">
-        The owner has not yet done the final read-through of this page. It is listed in the launch
-        checklist.
-      </Alert>
-    </PageHeader>
+    />
   </div>
 
   <div class="ni-prose">
