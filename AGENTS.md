@@ -127,7 +127,7 @@ No AGPL, GPL, SSPL or non-commercial licenses, for code, fonts or AI models, wit
 
 ## Architecture principles
 
-- Static HTML first. JavaScript only inside islands, plus three scripts every page carries: the inline theme script, the deferred search loader (ADR 0046) and the deferred service worker registration (ADR 0052). Nothing of search loads until a visitor shows intent. A production build with analytics adds exactly two more deferred files (ADR 0051).
+- Static HTML first. JavaScript only inside islands, plus four scripts every page carries: the inline theme script, the deferred search loader (ADR 0046), the deferred service worker registration (ADR 0052) and the deferred app shell, at most 1 KB gzip and importing nothing, which shows the navigation bar and the "Install app" control (ADR 0072). Nothing of search loads until a visitor shows intent. A production build with analytics adds exactly two more deferred files (ADR 0051).
 - Tool logic is pure TypeScript with no UI or framework imports.
 - Three runtimes: browser, worker, server.
 - Process user files on the device whenever possible.
@@ -155,8 +155,8 @@ Run from the repo root:
 - `pnpm check:tools` — every tool gate on its own with a readable summary; `--tool <id>` checks one
   tool, `--json` prints JSON. Part of `pnpm check`
 - `pnpm check:budgets` — the JavaScript budget of every tool page, the size and behaviour of the
-  search loader every page carries, the analytics files when the build has them, and the installable
-  app (service worker, its registration script, manifest, icons), and that no file is over 25 MiB (ADR 0068),
+  search loader every page carries, the analytics files when the build has them, the installable
+  app (service worker, its registration script, manifest, icons), the app shell (ADR 0072), and that no file is over 25 MiB (ADR 0068),
   from the build output; run after
   `pnpm build`. Runs in CI after the build (ADR 0037, ADR 0046, ADR 0051, ADR 0052)
 - `pnpm check:lighthouse` — Lighthouse on its mobile profile against the build (`astro preview`):
@@ -207,7 +207,7 @@ CI scope (ADR 0054, ADR 0055, ADR 0058, ADR 0063): the `scope` job (`scripts/ci-
 
 - The search index is generated from the registry at build time (`apps/web/src/lib/search/`) and served as `/search-index.<hash>.json`. Only tools whose status is not `deprecated` are in it. Never edit it by hand and never link, preload or prefetch it.
 - The engine (`engine.ts`) is pure TypeScript with no dependency. Adding a search library needs an ADR that replaces ADR 0045.
-- Every page carries one search loader script, at most 2 KB gzip, whose only job is to listen for intent and `import()` the search module. Do not add code to it, and never import the engine or the index statically from a page, a layout or the loader. `pnpm check:budgets` and `budgets.spec.ts` fail if a page loads any other script (besides the service worker registration and the analytics files) or fetches search before intent.
+- Every page carries one search loader script, at most 2 KB gzip, whose only job is to listen for intent and `import()` the search module. Do not add code to it, and never import the engine or the index statically from a page, a layout or the loader. `pnpm check:budgets` and `budgets.spec.ts` fail if a page loads any other script (besides the service worker registration, the app shell and the analytics files) or fetches search before intent.
 - Words from tools and from visitors reach the page as text nodes only. `innerHTML`, `insertAdjacentHTML`, `DOMParser` and `eval` are forbidden in `apps/web/src/lib/search/`; a test fails if one appears.
 - Search stores nothing and sends nothing: no recent searches, no query logging. Adding either needs an ADR and a line in the privacy page.
 - Synthetic tools (`synthetic.ts`, `corpus.ts`) exist for tests only. No page or build imports them.

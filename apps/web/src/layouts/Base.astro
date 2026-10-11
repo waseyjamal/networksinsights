@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import Analytics from "../components/layout/Analytics.astro";
+import AppShell from "../components/layout/AppShell.astro";
 import ServiceWorker from "../components/layout/ServiceWorker.astro";
 import SearchDialog from "../components/ui/SearchDialog.astro";
 import { analyticsSettings } from "../config/analytics";
@@ -67,7 +68,8 @@ const appleTouchIcon = appIcons.find((icon) => icon.name === "apple-touch-icon")
 // SearchDialog.astro, a deferred module that imports the search code only when a visitor shows
 // intent (ADR 0046). When analytics are on, two more deferred files follow it: Umami's tracker and
 // the tool-used and error script (ADR 0051). One more registers the service worker after load
-// (ADR 0052). Astro's island bootstrap is separate and only appears on pages that have an island.
+// (ADR 0052). The app shell adds one more: the navigation bar and the install control (ADR 0072).
+// Astro's island bootstrap is separate and only appears on pages that have an island.
 ---
 
 <!doctype html>
@@ -111,6 +113,7 @@ const appleTouchIcon = appIcons.find((icon) => icon.name === "apple-touch-icon")
     <slot />
     <SearchDialog />
     <ServiceWorker />
+    <AppShell />
     {analytics && <Analytics settings={analytics} />}
   </body>
 </html>

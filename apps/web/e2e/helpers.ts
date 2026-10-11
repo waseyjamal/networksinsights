@@ -86,6 +86,13 @@ export const REGISTER_MAX_GZIP_BYTES = 1024;
 export const isServiceWorkerScript = (url: string) =>
   /^\/_astro\/ServiceWorker\.astro_astro_type_script_[\w.-]+\.js$/.test(new URL(url).pathname);
 
+/** The most the app shell may weigh, gzip (ADR 0072). */
+export const APP_SHELL_MAX_GZIP_BYTES = 1024;
+
+/** True for the app shell: the navigation bar and the install control, on every page (ADR 0072). */
+export const isAppShellScript = (url: string) =>
+  /^\/_astro\/AppShell\.astro_astro_type_script_[\w.-]+\.js$/.test(new URL(url).pathname);
+
 interface FileAudit {
   url: string;
   raw: number;
@@ -99,6 +106,7 @@ interface FileAudit {
 export interface ScriptAudit {
   loader: FileAudit;
   register: FileAudit;
+  appShell: FileAudit;
   analytics: FileAudit[];
 }
 
@@ -127,7 +135,10 @@ export async function expectOnlySearchLoader(
 ): Promise<ScriptAudit> {
   const all = responses.filter((response) => response.type === "script");
   const scripts = all.filter(
-    (script) => !isAnalyticsScript(script.url) && !isServiceWorkerScript(script.url),
+    (script) =>
+      !isAnalyticsScript(script.url) &&
+      !isServiceWorkerScript(script.url) &&
+      !isAppShellScript(script.url),
   );
   expect(
     scripts.map((script) => script.url),
@@ -140,7 +151,7 @@ export async function expectOnlySearchLoader(
     all.filter((s) => isAnalyticsScript(s.url)),
   );
   const loaderElement = page.locator(
-    'script[src]:not([data-website-id]):not([src*="Analytics.astro_astro_type_script_"]):not([src*="ServiceWorker.astro_astro_type_script_"])',
+    'script[src]:not([data-website-id]):not([src*="Analytics.astro_astro_type_script_"]):not([src*="ServiceWorker.astro_astro_type_script_"]):not([src*="AppShell.astro_astro_type_script_"])',
   );
   expect(await loaderElement.count(), "script elements with a src, besides analytics").toBe(1);
   await expect(loaderElement).toHaveAttribute("type", "module");
@@ -180,9 +191,25 @@ export async function expectOnlySearchLoader(
     REGISTER_MAX_GZIP_BYTES,
   );
 
+  // The app shell: one module file on every page (ADR 0072).
+  const shells = all.filter((s) => isAppShellScript(s.url));
+  expect(
+    shells.map((s) => s.url),
+    "app shell scripts",
+  ).toHaveLength(1);
+  const [shell] = shells;
+  if (!shell) throw new Error("unreachable: the length was just asserted");
+  await expect(page.locator('script[src*="AppShell.astro_astro_type_script_"]')).toHaveAttribute(
+    "type",
+    "module",
+  );
+  const shellBody = await shell.body();
+  const appShell = { url: shell.url, raw: shellBody.length, gzip: compressed.gzip(shellBody) };
+  expect(appShell.gzip, "app shell gzip bytes").toBeLessThanOrEqual(APP_SHELL_MAX_GZIP_BYTES);
+
   // Nothing of search is fetched until intent: not the module, not the index.
   expect(requests.filter(isSearchRequest), "search requests before intent").toEqual([]);
-  return { loader: audit, register: registerAudit, analytics };
+  return { loader: audit, register: registerAudit, appShell, analytics };
 }
 
 /**

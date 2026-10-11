@@ -7,6 +7,7 @@ import {
   compressed,
   expectOnlySearchLoader,
   isAnalyticsScript,
+  isAppShellScript,
   isServiceWorkerScript,
 } from "./helpers";
 
@@ -122,11 +123,15 @@ test.describe("home page weight", () => {
     const responses = collectResponses(page);
     await page.goto("/", { waitUntil: "networkidle" });
 
-    // Analytics files (ADR 0051) and the service worker's registration (ADR 0052) have their own
-    // budgets, checked by expectOnlySearchLoader.
+    // Analytics files (ADR 0051), the service worker's registration (ADR 0052) and the app shell
+    // (ADR 0072) have their own budgets, checked by expectOnlySearchLoader.
     const size = async (type: string) => {
       const items = responses.filter(
-        (r) => r.type === type && !isAnalyticsScript(r.url) && !isServiceWorkerScript(r.url),
+        (r) =>
+          r.type === type &&
+          !isAnalyticsScript(r.url) &&
+          !isServiceWorkerScript(r.url) &&
+          !isAppShellScript(r.url),
       );
       const files = new Map<string, Buffer>();
       for (const item of items) files.set(item.url, await item.body());

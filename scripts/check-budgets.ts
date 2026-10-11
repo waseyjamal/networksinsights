@@ -15,6 +15,7 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { formatViolation, indentMessage, toolManifestSchema } from "@networksinsights/tool-sdk";
 import { checkAnalytics, formatAnalyticsReport } from "./lib/analytics";
+import { checkAppShell, formatAppShellReport } from "./lib/app-shell";
 import {
   budgetReportToJson,
   checkBudgets,
@@ -88,6 +89,7 @@ async function main(): Promise<number> {
   const loader = checkSearchLoader(distDir);
   const analytics = checkAnalytics(distDir);
   const pwa = checkPwa(distDir);
+  const appShell = checkAppShell(distDir);
   const lame = checkLameCopies(distDir);
   const onnxruntime = checkOnnxruntimePages(distDir);
   const fileSizes = checkFileSizes(distDir);
@@ -98,7 +100,8 @@ async function main(): Promise<number> {
     report.ok &&
     loader.violations.length === 0 &&
     analytics.violations.length === 0 &&
-    pwa.violations.length === 0;
+    pwa.violations.length === 0 &&
+    appShell.violations.length === 0;
   if (values.json) {
     console.log(
       JSON.stringify(
@@ -144,6 +147,16 @@ async function main(): Promise<number> {
             icons: pwa.icons,
             problems: pwa.violations.map((v) => ({ page: v.dir, problem: v.problem, fix: v.fix })),
           },
+          appShell: {
+            ok: appShell.violations.length === 0,
+            pages: appShell.pages,
+            gzip: appShell.script?.gzip ?? null,
+            problems: appShell.violations.map((v) => ({
+              page: v.dir,
+              problem: v.problem,
+              fix: v.fix,
+            })),
+          },
         },
         null,
         2,
@@ -158,6 +171,8 @@ ${formatAnalyticsReport(analytics)}`);
     console.log(`
 ${formatPwaReport(pwa)}`);
     console.log(`
+${formatAppShellReport(appShell)}`);
+    console.log(`
 ${formatLameReport(lame)}`);
     console.log(`
 ${formatOnnxruntimeReport(onnxruntime)}`);
@@ -167,6 +182,7 @@ ${formatFileSizeReport(fileSizes)}`);
       ["search", loader.violations],
       ["analytics", analytics.violations],
       ["installable app", pwa.violations],
+      ["app shell", appShell.violations],
     ];
     for (const [name, violations] of sections) {
       if (violations.length === 0) continue;

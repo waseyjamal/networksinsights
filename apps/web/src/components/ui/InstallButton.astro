@@ -1,0 +1,23 @@
+---
+// The "Install app" control (ADR 0072). It is hidden in the HTML: a page without JavaScript, a
+// browser that cannot install the site and the installed app itself never show it. The app shell
+// script (lib/pwa/app-shell.ts) shows it when this browser can install the site, and every copy on
+// the page (the footer and the mobile menu) changes together.
+interface Props {
+  class?: string;
+  /** For the style guide only: shown, and left alone by the app shell script. */
+  demo?: boolean;
+}
+
+const { class: className, demo = false } = Astro.props;
+---
+
+{demo ? (
+  <button type="button" class:list={["ni-install", className]}>
+    Install app
+  </button>
+) : (
+  <button type="button" class:list={["ni-install", className]} data-ni-install hidden>
+    Install app
+  </button>
+)}

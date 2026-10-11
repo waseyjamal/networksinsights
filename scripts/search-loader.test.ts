@@ -31,6 +31,8 @@ interface Site {
   home?: boolean;
   dialog?: boolean;
   island?: boolean;
+  /** The service worker's registration and the app shell, which other checks own. */
+  shell?: boolean;
 }
 
 function build(site: Site = {}) {
@@ -49,13 +51,22 @@ function build(site: Site = {}) {
   if (site.staticImporter)
     put("_astro/other.CCC.js", `import{open}from"./search-ui.AAA.js";open();`);
   if (site.pageExtra) put("_astro/extra.DDD.js", "export default 1;");
+  const shell = site.shell
+    ? [
+        "_astro/ServiceWorker.astro_astro_type_script_index_0_lang.EEE.js",
+        "_astro/AppShell.astro_astro_type_script_index_0_lang.FFF.js",
+      ]
+    : [];
+  for (const file of shell) put(file, "document.title;");
   const inline = Array.from(
     { length: site.inlineScripts ?? 1 },
     () => "<script>localStorage.getItem('ni-theme')</script>",
   ).join("");
   const html = `<!doctype html><html><head>${inline}${site.head ?? ""}</head><body>${
     site.island ? '<astro-island uid="x"></astro-island>' : ""
-  }${site.dialog === false ? "" : "<dialog data-ni-search></dialog>"}<script type="module" src="/_astro/Loader.BBB.js"></script>${site.pageExtra ?? ""}</body></html>`;
+  }${site.dialog === false ? "" : "<dialog data-ni-search></dialog>"}<script type="module" src="/_astro/Loader.BBB.js"></script>${shell
+    .map((file) => `<script type="module" src="/${file}"></script>`)
+    .join("")}${site.pageExtra ?? ""}</body></html>`;
   put("about/index.html", html);
   if (site.home !== false) put("index.html", html);
   return dist;
@@ -128,6 +139,10 @@ describe("a build that breaks it", () => {
       pageExtra: '<script type="module" src="/_astro/extra.DDD.js"></script>',
     });
     expect(found.some((text) => text.includes("has no island"))).toBe(true);
+  });
+
+  it("leaves the service worker registration and the app shell to their own checks", () => {
+    expect(problems({ shell: true })).toEqual([]);
   });
 
   it("fails a second inline script on a page with no island", () => {
